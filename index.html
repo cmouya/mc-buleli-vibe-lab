@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>McBuleli Vibe Lab</title>
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <p class="badge">Hackathon</p>
+        <h1>McBuleli Vibe Lab</h1>
+        <p class="subtitle">Tes tâches du hackathon, simplement.</p>
+      </header>
+
+      <main class="card">
+        <p id="compteur" class="compteur" aria-live="polite">Aucune tâche restante</p>
+
+        <form id="formulaire" class="formulaire" autocomplete="off">
+          <label class="sr-only" for="titre">Nouvelle tâche</label>
+          <input
+            id="titre"
+            name="titre"
+            type="text"
+            placeholder="Nouvelle tâche"
+            maxlength="200"
+            required
+          />
+          <button type="submit">Ajouter</button>
+        </form>
+
+        <ul id="liste" class="liste"></ul>
+        <p id="vide" class="vide">Ajoute ta première tâche.</p>
+      </main>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
