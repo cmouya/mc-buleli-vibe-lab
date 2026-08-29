@@ -1,77 +1,89 @@
-import './style.css'
-import {
-  charger,
-  lister,
-  ajouter,
-  basculer,
-  supprimer,
-  compterRestantes,
-} from './app.js'
+import "./style.css"
+import { initRouter } from "./router.js"
+import { loadState } from "./store.js"
+import { renderLanding } from "./views/landing.js"
+import { bindGoal, renderGoal } from "./views/goal.js"
+import { bindRoadmap, renderRoadmap } from "./views/roadmap.js"
+import { renderDashboard } from "./views/dashboard.js"
+import { bindLesson, renderLesson } from "./views/lesson.js"
 
-const formulaire = document.querySelector('#formulaire')
-const champTitre = document.querySelector('#titre')
-const liste = document.querySelector('#liste')
-const vide = document.querySelector('#vide')
-const compteur = document.querySelector('#compteur')
+const app = document.querySelector("#app")
+loadState()
+let pendingScrollId = null
+let currentParts = []
 
-function libelleCompteur(restantes) {
-  if (restantes === 0) {
-    return 'Aucune tâche restante'
-  }
-  if (restantes === 1) {
-    return '1 tâche restante'
-  }
-  return `${restantes} tâches restantes`
+function shell(content) {
+  return `
+    <div class="layout">
+      <header class="topbar">
+        <a class="brand" href="#/">
+          <span class="logo" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="28" height="28">
+              <circle cx="16" cy="16" r="14" fill="#4f46e5"/>
+              <path d="M10 18.5 14.2 22 22 11" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          Learnova
+        </a>
+        <nav aria-label="Navigation principale">
+          <a href="#/">Accueil</a>
+          <a href="#/goal">Objectif</a>
+          <a href="#/roadmap">Itinéraire</a>
+          <a href="#/dashboard">Dashboard</a>
+          <a href="#/lesson">Leçon</a>
+        </nav>
+      </header>
+      <main class="main">${content}</main>
+      <footer class="footer">
+        <p><strong>Learnova</strong> — GPS des compétences · prototype hackathon</p>
+        <p>Apprentissage intelligent, orienté objectifs.</p>
+      </footer>
+    </div>
+  `
 }
 
-function rendre() {
-  const taches = lister()
-  compteur.textContent = libelleCompteur(compterRestantes())
-  vide.hidden = taches.length > 0
+function render({ parts }) {
+  currentParts = parts
+  const key = parts[0] === "path" ? "roadmap" : parts[0] || "home"
 
-  liste.replaceChildren()
+  const views = {
+    home: renderLanding,
+    goal: renderGoal,
+    roadmap: renderRoadmap,
+    dashboard: renderDashboard,
+    lesson: renderLesson,
+  }
 
-  for (const tache of taches) {
-    const item = document.createElement('li')
-    item.className = tache.terminee ? 'tache tache--faite' : 'tache'
+  const html = (views[key] || views.home)()
+  app.innerHTML = shell(html)
+  const main = app.querySelector(".main")
 
-    const caseACocher = document.createElement('input')
-    caseACocher.type = 'checkbox'
-    caseACocher.checked = tache.terminee
-    caseACocher.setAttribute('aria-label', `Marquer « ${tache.titre} » comme terminée`)
-    caseACocher.addEventListener('change', () => {
-      basculer(tache.id)
-      rendre()
-    })
+  if (key === "goal") {
+    bindGoal(main, () => render({ parts: currentParts }))
+  }
+  if (key === "roadmap") {
+    bindRoadmap(() => render({ parts: ["roadmap"] }))
+  }
+  if (key === "lesson") {
+    bindLesson(main, () => render({ parts: currentParts }))
+  }
 
-    const titre = document.createElement('span')
-    titre.className = 'tache__titre'
-    titre.textContent = tache.titre
+  const discover = app.querySelector("[data-discover]")
+  discover?.addEventListener("click", (event) => {
+    event.preventDefault()
+    if (key === "home") {
+      document.getElementById("concept")?.scrollIntoView({ behavior: "smooth" })
+      return
+    }
+    pendingScrollId = "concept"
+    window.location.hash = "#/"
+  })
 
-    const boutonSupprimer = document.createElement('button')
-    boutonSupprimer.type = 'button'
-    boutonSupprimer.className = 'tache__supprimer'
-    boutonSupprimer.textContent = 'Supprimer'
-    boutonSupprimer.addEventListener('click', () => {
-      supprimer(tache.id)
-      rendre()
-    })
-
-    item.append(caseACocher, titre, boutonSupprimer)
-    liste.append(item)
+  if (pendingScrollId && key === "home") {
+    const id = pendingScrollId
+    pendingScrollId = null
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
   }
 }
 
-formulaire.addEventListener('submit', (event) => {
-  event.preventDefault()
-  const ok = ajouter(champTitre.value)
-  if (!ok) {
-    return
-  }
-  champTitre.value = ''
-  champTitre.focus()
-  rendre()
-})
-
-charger()
-rendre()
+initRouter(render)
