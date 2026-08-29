@@ -25,10 +25,3 @@ export function initRouter(onRoute) {
 
   return () => window.removeEventListener("hashchange", handle)
 }
-
-export function matchLesson(parts) {
-  if (parts[0] === "lecon" && parts[1]) {
-    return parts[1]
-  }
-  return null
-}

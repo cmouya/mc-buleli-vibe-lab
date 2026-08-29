@@ -60,14 +60,16 @@ Matrice de migration **progressive**. Aucun fichier n’est déplacé en Phase 0
 
 ---
 
-## Vues legacy (non câblées)
+## Vues legacy (supprimées Phase 1C)
 
-| Fichier actuel | Responsabilité actuelle | Module cible | Action future | Phase |
-|----------------|------------------------|--------------|---------------|-------|
-| `src/views/diagnostic.js` | Ancien formulaire objectif | `goals/` | ARCHIVE | 1 |
-| `src/views/generating.js` | Ancien écran génération | `learning-path/` | ARCHIVE | 1 |
-| `src/views/path.js` | Ancien GPS + `/lecon/:id` | `learning-path/` | ARCHIVE | 1 |
-| `src/views/placeholders.js` | Placeholders hackathon | — | ARCHIVE | 1 |
+| Fichier (historique) | Responsabilité | Module cible | Action | Phase |
+|----------------------|----------------|--------------|--------|-------|
+| `src/views/diagnostic.js` | Ancien formulaire objectif (`#/objectif`) | `goals/` | REMOVED ✅ | 1C |
+| `src/views/generating.js` | Ancien écran génération (`#/generation`) | `learning-path/` | REMOVED ✅ | 1C |
+| `src/views/path.js` | Ancien GPS + `#/lecon/:id` | `learning-path/` | REMOVED ✅ | 1C |
+| `src/views/placeholders.js` | Placeholders hackathon | — | REMOVED ✅ | 1C |
+
+Fonctionnalités remplacées par : `goal.js`, `roadmap.js`, `lesson.js`. Historique git conservé.
 
 ---
 
@@ -130,7 +132,7 @@ Matrice de migration **progressive**. Aucun fichier n’est déplacé en Phase 0
 
 ```
 Phase 0  docs + types (non branchés)                    ← ACTUEL
-Phase 1  tests e2e + archive legacy + README
+Phase 1  tests e2e + archive legacy + README (1C: legacy views removed)
 Phase 2  extract store → modules TS + ai/validators
 Phase 3  content + assessment modules + unify lesson schema
 Phase 4  Next.js routes + Tailwind + retire Vite (quand parity)

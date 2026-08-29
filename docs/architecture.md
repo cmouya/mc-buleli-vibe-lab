@@ -33,10 +33,6 @@ src/
     roadmap.js         # Actif
     dashboard.js       # Actif
     lesson.js          # Actif
-    diagnostic.js      # Legacy (non câblé)
-    generating.js      # Legacy (non câblé)
-    path.js            # Legacy (non câblé)
-    placeholders.js    # Legacy (non câblé)
 ```
 
 ### Flux runtime Prototype 0
