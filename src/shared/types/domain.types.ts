@@ -35,18 +35,36 @@ export interface Skill {
   prerequisiteIds?: string[]
 }
 
-/** Niveau de maîtrise évalué (distinct de PathStepStatus) */
+/** Niveau de maîtrise évalué (distinct de PathStepStatus / Progress) */
 export type MasteryLevel = "none" | "emerging" | "proficient" | "expert"
 
 /**
- * État de compétence d'un apprenant pour une skill donnée
+ * LearnerSkill — état d'un apprenant vis-à-vis d'une Skill (≠ Skill).
+ * Canonical name per Architecture Baseline (Phase 2.1-B).
  */
-export interface CompetencyState {
+export interface LearnerSkill {
   skillId: string
   learnerId?: string
   masteryLevel: MasteryLevel
   evidenceIds: string[]
   lastAssessedAt?: string
+}
+
+/**
+ * @deprecated Use LearnerSkill — Phase 0 alias retained for continuity.
+ */
+export type CompetencyState = LearnerSkill
+
+/**
+ * SkillGap — écart dérivé entre niveau requis et niveau courant (non persisté).
+ */
+export interface SkillGap {
+  skillId: string
+  requiredLevel: MasteryLevel
+  currentLevel: MasteryLevel
+  /** Distance ordinale ; 0 = gap fermé */
+  gapSize: number
+  isClosed: boolean
 }
 
 /** Statut du parcours */
