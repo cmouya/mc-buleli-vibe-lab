@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import {
   completeStep,
+  confirmCurrentGoal,
   getCompletedCompetenciesCount,
   getCurrentStep,
   getNextStep,
@@ -8,6 +9,7 @@ import {
   getState,
   loadState,
   resetLearner,
+  setAnalyzed,
   setPath,
   setProfile,
 } from "../../src/store.js"
@@ -17,6 +19,13 @@ const SAMPLE_STEPS = [
   { id: "s2", title: "Step 2", description: "D2", level: "Débutant", duration: "50 min", skill: "Skill B" },
   { id: "s3", title: "Step 3", description: "D3", level: "Intermédiaire", duration: "55 min", skill: "Skill C" },
 ]
+
+/** Golden journey fixture: draft → analyzed → confirmed → path (I-01). */
+function confirmAndSetPath(path) {
+  setAnalyzed(true)
+  confirmCurrentGoal()
+  setPath(path)
+}
 
 describe("store — progression", () => {
   beforeEach(() => {
@@ -28,7 +37,7 @@ describe("store — progression", () => {
       level: "debutant",
       hoursPerWeek: 5,
     })
-    setPath({
+    confirmAndSetPath({
       pathId: "test-path",
       pathTitle: "Test path",
       steps: SAMPLE_STEPS.map((step) => ({ ...step })),
@@ -95,7 +104,8 @@ describe("store — path initialization", () => {
   })
 
   it("sets first step as current and others as todo", () => {
-    setPath({
+    setProfile({ goal: "G", level: "debutant", hoursPerWeek: 5 })
+    confirmAndSetPath({
       pathId: "p1",
       pathTitle: "Path",
       steps: SAMPLE_STEPS.map((step) => ({ ...step })),
@@ -106,7 +116,7 @@ describe("store — path initialization", () => {
 
   it("clears path when profile is reset via setProfile", () => {
     setProfile({ goal: "G", level: "debutant", hoursPerWeek: 5 })
-    setPath({ pathId: "p1", pathTitle: "P", steps: SAMPLE_STEPS.map((s) => ({ ...s })) })
+    confirmAndSetPath({ pathId: "p1", pathTitle: "P", steps: SAMPLE_STEPS.map((s) => ({ ...s })) })
     setProfile({ goal: "New goal", level: "debutant", hoursPerWeek: 5 })
     expect(getState().steps).toHaveLength(0)
     expect(getProgressPercent()).toBe(0)

@@ -1,4 +1,5 @@
 import {
+  confirmCurrentGoal,
   getState,
   labelHours,
   labelLevel,
@@ -155,6 +156,11 @@ export function bindGoal(root, rerender) {
   root.querySelector("#edit-goal")?.addEventListener("click", () => {
     setAnalyzed(false)
     rerender()
+  })
+
+  const confirmCta = root.querySelector(".goal-confirm a.btn--primary[href='#/roadmap']")
+  confirmCta?.addEventListener("click", () => {
+    confirmCurrentGoal()
   })
 }
 

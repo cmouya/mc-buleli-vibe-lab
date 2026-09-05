@@ -1,3 +1,11 @@
+import {
+  applyConfirmGoal,
+  applyCreateProfile,
+  applyMarkAnalyzed,
+  assertGoalReadyForPathFromLegacy,
+  pathBindPatch,
+} from "./adapters/store/index.js"
+
 const STORAGE_KEY = "learnova-learner"
 
 const emptyState = () => ({
@@ -5,6 +13,7 @@ const emptyState = () => ({
   level: "debutant",
   hoursPerWeek: 5,
   analyzed: false,
+  confirmed: false,
   intent: "professionnel",
   pathId: "",
   pathTitle: "",
@@ -19,6 +28,17 @@ const listeners = new Set()
 function notify() {
   for (const listener of listeners) {
     listener(state)
+  }
+}
+
+function legacyGoalFields() {
+  return {
+    goal: state.goal,
+    level: state.level,
+    hoursPerWeek: state.hoursPerWeek,
+    intent: state.intent,
+    analyzed: Boolean(state.analyzed),
+    confirmed: Boolean(state.confirmed),
   }
 }
 
@@ -38,6 +58,7 @@ export function loadState() {
       state.skills = []
     }
     state.analyzed = Boolean(state.analyzed)
+    state.confirmed = Boolean(state.confirmed)
     state.hoursPerWeek = Number(state.hoursPerWeek) || 5
   } catch {
     state = emptyState()
@@ -65,28 +86,51 @@ export function hasPath() {
 }
 
 export function setProfile({ goal, level, hoursPerWeek, intent }) {
-  state.goal = goal
-  state.level = level
-  state.hoursPerWeek = hoursPerWeek
-  if (intent) {
-    state.intent = intent
-  }
+  const patch = applyCreateProfile({
+    goal,
+    level,
+    hoursPerWeek,
+    intent,
+  })
+  state.goal = patch.goal
+  state.level = patch.level
+  state.hoursPerWeek = patch.hoursPerWeek
+  state.intent = patch.intent
   state.analyzed = false
-  state.pathId = ""
-  state.pathTitle = ""
-  state.steps = []
-  state.skills = []
+  state.confirmed = false
+  state.pathId = patch.pathId ?? ""
+  state.pathTitle = patch.pathTitle ?? ""
+  state.steps = Array.isArray(patch.steps) ? patch.steps : []
+  state.skills = Array.isArray(patch.skills) ? patch.skills : []
   saveState()
 }
 
 export function setAnalyzed(value) {
-  state.analyzed = Boolean(value)
+  const patch = applyMarkAnalyzed(legacyGoalFields(), Boolean(value))
+  state.analyzed = Boolean(patch.analyzed)
+  state.confirmed = Boolean(patch.confirmed)
+  saveState()
+}
+
+/**
+ * Explicit human confirmation (Confirmation CTA). Does not set path.
+ */
+export function confirmCurrentGoal() {
+  const patch = applyConfirmGoal(legacyGoalFields())
+  state.confirmed = Boolean(patch.confirmed)
+  if (patch.analyzed !== undefined) {
+    state.analyzed = Boolean(patch.analyzed)
+  }
   saveState()
 }
 
 export function setPath({ pathId, pathTitle, steps }) {
-  state.pathId = pathId
-  state.pathTitle = pathTitle
+  // I-01: assert only — never silently confirm
+  assertGoalReadyForPathFromLegacy(legacyGoalFields())
+
+  const bound = pathBindPatch({ pathId, pathTitle })
+  state.pathId = bound.pathId
+  state.pathTitle = bound.pathTitle
   state.steps = steps.map((step, index) => ({
     ...step,
     status: index === 0 ? "current" : "todo",

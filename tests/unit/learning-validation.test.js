@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest"
 import { evaluateQuizSubmission } from "../../src/shared/assessment.js"
 import {
   completeStep,
+  confirmCurrentGoal,
   getProgressPercent,
   getState,
   loadState,
   resetLearner,
+  setAnalyzed,
   setPath,
   setProfile,
 } from "../../src/store.js"
@@ -26,6 +28,8 @@ function setupPath() {
   resetLearner()
   loadState()
   setProfile({ goal: "Test", level: "debutant", hoursPerWeek: 5 })
+  setAnalyzed(true)
+  confirmCurrentGoal()
   setPath({ pathId: "test", pathTitle: "Test", steps: STEPS.map((s) => ({ ...s })) })
 }
 
