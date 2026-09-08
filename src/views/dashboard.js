@@ -1,3 +1,4 @@
+import { t } from "../i18n/index.js"
 import {
   getCompletedCompetenciesCount,
   getCurrentStep,
@@ -5,9 +6,6 @@ import {
   getProgressPercent,
   getState,
   hasPath,
-  labelHours,
-  labelLevel,
-  labelStatus,
 } from "../store.js"
 
 export function renderDashboard() {
@@ -15,19 +13,19 @@ export function renderDashboard() {
 
   if (!state.goal) {
     return emptyPanel(
-      "Commencez par votre destination",
-      "Exprimez un objectif pour ouvrir votre console de navigation.",
+      t("dash.emptyGoalTitle"),
+      t("dash.emptyGoalNote"),
       "#/goal",
-      "Exprimer mon objectif",
+      t("dash.emptyGoalCta"),
     )
   }
 
   if (!hasPath()) {
     return emptyPanel(
-      "Itinéraire en attente",
-      "Construisez d'abord votre GPS des compétences à partir de votre objectif.",
+      t("dash.emptyPathTitle"),
+      t("dash.emptyPathNote"),
       "#/roadmap",
-      "Voir mon itinéraire",
+      t("dash.emptyPathCta"),
     )
   }
 
@@ -36,59 +34,64 @@ export function renderDashboard() {
   const percent = getProgressPercent()
   const completed = getCompletedCompetenciesCount()
   const total = state.steps.length
+  const skillsLabel =
+    completed > 1
+      ? t("dash.skillsMany", { count: completed, total })
+      : t("dash.skillsOne", { count: completed, total })
 
   if (!current) {
     return emptyPanel(
-      "Parcours terminé",
-      "Vous avez atteint votre destination. Félicitations !",
+      t("dash.finishedTitle"),
+      t("dash.finishedNote"),
       "#/roadmap",
-      "Revoir l'itinéraire",
+      t("dash.finishedCta"),
     )
   }
 
   return `
     <section class="panel dash-hero">
-      <p class="eyebrow">Console apprenant</p>
-      <h1>Où en suis-je sur mon chemin ?</h1>
-      <p class="muted">Votre tableau de bord n'est pas un catalogue — c'est votre position sur l'itinéraire.</p>
+      <p class="eyebrow">${t("dash.eyebrow")}</p>
+      <h1>${t("dash.title")}</h1>
+      <p class="muted">${t("dash.lead")}</p>
     </section>
 
     <section class="panel">
-      <h2>Ma destination</h2>
+      <h2>${t("dash.destination")}</h2>
       <p class="destination destination--compact">${escapeHtml(state.goal)}</p>
-      <p class="step-meta">${labelLevel(state.level)} · ${labelHours(state.hoursPerWeek)}</p>
+      <p class="step-meta">${t(`levels.${state.level}`)} · ${t(`hours.${state.hoursPerWeek}`)}</p>
     </section>
 
     <section class="panel">
-      <h2>Ma progression</h2>
-      <div class="progress" aria-label="Progression">
+      <h2>${t("dash.progression")}</h2>
+      <div class="progress" aria-label="${t("roadmap.progressAria")}">
         <div class="progress__bar" style="width:${percent}%"></div>
       </div>
-      <p class="progress__label" data-testid="progress-label">Progression : ${percent} %</p>
+      <p class="progress__label" data-testid="progress-label">${t("roadmap.progressLabel", { percent })}</p>
       <p class="dash-stat">
-        <strong>${completed}</strong> compétence${completed > 1 ? "s" : ""} acquise${completed > 1 ? "s" : ""}
-        sur <strong>${total}</strong>
+        ${skillsLabel}
       </p>
     </section>
 
     <section class="panel dash-here">
-      <h2>Vous êtes ici</h2>
+      <h2>${t("dash.youAreHere")}</h2>
       <article class="dash-step dash-step--current">
         <header>
           <h3>${escapeHtml(current.title)}</h3>
-          <span class="badge badge--current">${labelStatus(current.status)}</span>
+          <span class="badge badge--current">${t(`status.${current.status}`)}</span>
         </header>
         <p>${escapeHtml(current.description)}</p>
         <p class="step-meta">
-          Compétence : ${escapeHtml(current.skill || "À valider")}
-          · ${escapeHtml(current.level)}
-          · ${escapeHtml(current.duration)}
+          ${t("dash.skillLine", {
+            skill: escapeHtml(current.skill || t("dash.skillFallback")),
+            level: escapeHtml(current.level),
+            duration: escapeHtml(current.duration),
+          })}
         </p>
       </article>
     </section>
 
     <section class="panel">
-      <h2>Prochaine étape</h2>
+      <h2>${t("dash.nextStep")}</h2>
       ${
         next
           ? `
@@ -97,13 +100,13 @@ export function renderDashboard() {
           <p>${escapeHtml(next.description)}</p>
           <p class="step-meta">${escapeHtml(next.level)} · ${escapeHtml(next.duration)}</p>
         </article>`
-          : `<p class="muted">Aucune étape suivante — vous approchez de votre destination finale.</p>`
+          : `<p class="muted">${t("dash.noNext")}</p>`
       }
     </section>
 
     <section class="panel">
-      <h2>Votre itinéraire</h2>
-      <ol class="dash-track" aria-label="Progression sur l'itinéraire">
+      <h2>${t("dash.itinerary")}</h2>
+      <ol class="dash-track" aria-label="${t("dash.itineraryAria")}">
         ${state.steps
           .map(
             (step, index) => `
@@ -115,8 +118,8 @@ export function renderDashboard() {
           .join("")}
       </ol>
       <div class="actions">
-        <a class="btn btn--primary" href="#/lesson">Continuer mon parcours</a>
-        <a class="btn btn--ghost" href="#/roadmap">Voir le GPS complet</a>
+        <a class="btn btn--primary" href="#/lesson">${t("dash.ctaContinue")}</a>
+        <a class="btn btn--ghost" href="#/roadmap">${t("dash.ctaGps")}</a>
       </div>
     </section>
   `
@@ -125,7 +128,7 @@ export function renderDashboard() {
 function emptyPanel(title, note, href, label) {
   return `
     <section class="panel panel--center">
-      <p class="eyebrow">Tableau de bord</p>
+      <p class="eyebrow">${t("dash.eyebrowEmpty")}</p>
       <h1>${title}</h1>
       <p class="muted">${note}</p>
       <a class="btn btn--primary" href="${href}">${label}</a>

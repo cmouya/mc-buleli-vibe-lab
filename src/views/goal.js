@@ -1,17 +1,5 @@
-import {
-  confirmCurrentGoal,
-  getState,
-  labelHours,
-  labelLevel,
-  setAnalyzed,
-  setProfile,
-} from "../store.js"
-
-const EXAMPLES = [
-  "Je veux apprendre à utiliser l'IA pour développer mon activité.",
-  "Je veux devenir Data Analyst.",
-  "Je veux améliorer mon anglais professionnel.",
-]
+import { t, tList } from "../i18n/index.js"
+import { confirmCurrentGoal, getState, setAnalyzed, setProfile } from "../store.js"
 
 export function renderGoal() {
   const state = getState()
@@ -23,45 +11,48 @@ export function renderGoal() {
 
 function renderForm(state) {
   const hours = String(state.hoursPerWeek === 10 ? 10 : state.hoursPerWeek === 2 ? 2 : 5)
+  const examples = tList("goal.examples")
 
   return `
     <section class="panel goal">
-      <p class="eyebrow">Votre destination</p>
-      <h1>Quel objectif souhaitez-vous atteindre ?</h1>
-      <p class="muted">Pas de catalogue. Décrivez où vous voulez aller — Learnova s'occupera de l'itinéraire.</p>
+      <p class="eyebrow">${t("goal.eyebrow")}</p>
+      <h1>${t("goal.title")}</h1>
+      <p class="muted">${t("goal.lead")}</p>
 
       <form id="goal-form" class="form goal__form" data-testid="goal-form">
-        <label class="sr-only" for="goal">Objectif</label>
-        <textarea id="goal" name="goal" rows="4" maxlength="280" required placeholder="Exprimez votre objectif en une ou deux phrases…">${escapeHtml(state.goal)}</textarea>
+        <label class="sr-only" for="goal">${t("goal.labelGoal")}</label>
+        <textarea id="goal" name="goal" rows="4" maxlength="280" required placeholder="${t("goal.placeholder")}">${escapeHtml(state.goal)}</textarea>
 
-        <p class="chips-label">Exemples</p>
+        <p class="chips-label">${t("goal.examplesLabel")}</p>
         <div class="chips" id="examples">
-          ${EXAMPLES.map(
-            (example) =>
-              `<button type="button" class="chip" data-example="${escapeAttr(example)}">${escapeHtml(example)}</button>`,
-          ).join("")}
+          ${examples
+            .map(
+              (example) =>
+                `<button type="button" class="chip" data-example="${escapeAttr(example)}">${escapeHtml(example)}</button>`,
+            )
+            .join("")}
         </div>
 
         <fieldset class="choices">
-          <legend>Niveau actuel</legend>
+          <legend>${t("goal.levelLegend")}</legend>
           <div class="choices__row">
-            ${choice("level", "debutant", "Débutant", state.level === "debutant")}
-            ${choice("level", "intermediaire", "Intermédiaire", state.level === "intermediaire")}
-            ${choice("level", "avance", "Avancé", state.level === "avance")}
+            ${choice("level", "debutant", t("levels.debutant"), state.level === "debutant")}
+            ${choice("level", "intermediaire", t("levels.intermediaire"), state.level === "intermediaire")}
+            ${choice("level", "avance", t("levels.avance"), state.level === "avance")}
           </div>
         </fieldset>
 
         <fieldset class="choices">
-          <legend>Temps disponible</legend>
+          <legend>${t("goal.hoursLegend")}</legend>
           <div class="choices__row">
-            ${choice("hours", "2", "2 h / semaine", hours === "2")}
-            ${choice("hours", "5", "5 h / semaine", hours === "5")}
-            ${choice("hours", "10", "10 h+ / semaine", hours === "10")}
+            ${choice("hours", "2", t("hours.2"), hours === "2")}
+            ${choice("hours", "5", t("hours.5"), hours === "5")}
+            ${choice("hours", "10", t("hours.10"), hours === "10")}
           </div>
         </fieldset>
 
-        <p id="form-error" class="error" hidden>Indiquez un objectif avant de continuer.</p>
-        <button class="btn btn--primary" type="submit">Analyser mon objectif</button>
+        <p id="form-error" class="error" hidden>${t("goal.formError")}</p>
+        <button class="btn btn--primary" type="submit">${t("goal.submit")}</button>
       </form>
     </section>
   `
@@ -70,9 +61,9 @@ function renderForm(state) {
 function renderAnalyzing() {
   return `
     <section class="panel panel--center goal-wait">
-      <p class="eyebrow">Learnova</p>
-      <h1>Analyse en cours…</h1>
-      <p class="muted">Nous clarifions votre objectif, votre niveau et votre rythme.</p>
+      <p class="eyebrow">${t("goal.analyzingEyebrow")}</p>
+      <h1>${t("goal.analyzingTitle")}</h1>
+      <p class="muted">${t("goal.analyzingLead")}</p>
       <div class="spinner" aria-hidden="true"></div>
     </section>
   `
@@ -81,25 +72,25 @@ function renderAnalyzing() {
 function renderConfirmation(state) {
   return `
     <section class="panel goal-confirm" data-testid="goal-confirmation">
-      <p class="eyebrow">Objectif compris</p>
-      <h1>Voici ce que Learnova a retenu</h1>
+      <p class="eyebrow">${t("goal.confirmEyebrow")}</p>
+      <h1>${t("goal.confirmTitle")}</h1>
       <div class="meta-grid meta-grid--confirm">
         <article>
-          <p class="meta-label">Objectif</p>
+          <p class="meta-label">${t("goal.metaGoal")}</p>
           <p>${escapeHtml(state.goal)}</p>
         </article>
         <article>
-          <p class="meta-label">Niveau</p>
-          <p>${labelLevel(state.level)}</p>
+          <p class="meta-label">${t("goal.metaLevel")}</p>
+          <p>${t(`levels.${state.level}`)}</p>
         </article>
         <article>
-          <p class="meta-label">Temps disponible</p>
-          <p>${labelHours(state.hoursPerWeek)}</p>
+          <p class="meta-label">${t("goal.metaHours")}</p>
+          <p>${t(`hours.${state.hoursPerWeek}`)}</p>
         </article>
       </div>
       <div class="actions">
-        <a class="btn btn--primary" href="#/roadmap">Construire mon parcours</a>
-        <button type="button" class="btn btn--ghost" id="edit-goal">Modifier l'objectif</button>
+        <a class="btn btn--primary" href="#/roadmap">${t("goal.ctaBuild")}</a>
+        <button type="button" class="btn btn--ghost" id="edit-goal">${t("goal.ctaEdit")}</button>
       </div>
     </section>
   `

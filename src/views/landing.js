@@ -1,3 +1,5 @@
+import { t } from "../i18n/index.js"
+
 export function renderLanding() {
   return `
     <section class="hero" aria-labelledby="hero-title">
@@ -10,58 +12,56 @@ export function renderLanding() {
         </span>
         <span>Learnova</span>
       </div>
-      <p class="eyebrow">Plateforme d'apprentissage intelligent · GPS des compétences</p>
-      <h1 id="hero-title">L'apprentissage intelligent, orienté vers vos objectifs.</h1>
+      <p class="eyebrow">${t("landing.eyebrow")}</p>
+      <h1 id="hero-title">${t("landing.title")}</h1>
       <p class="lead lead--quote">
-        Ne cherchez plus quel cours suivre.<br />
-        Dites-nous où vous voulez aller.
+        ${t("landing.quote")}
       </p>
       <p class="hero__value">
-        Learnova n'est pas un catalogue de cours. Vous exprimez un objectif ;
-        l'IA construit l'itinéraire de compétences pour y arriver.
+        ${t("landing.value")}
       </p>
       <div class="hero__actions">
-        <a class="btn btn--primary" href="#/goal">Construire mon parcours</a>
-        <a class="btn btn--ghost" href="#/" data-discover>Découvrir Learnova</a>
+        <a class="btn btn--primary" href="#/goal">${t("landing.ctaBuild")}</a>
+        <a class="btn btn--ghost" href="#/" data-discover>${t("landing.ctaDiscover")}</a>
       </div>
     </section>
 
-    <section class="chain" id="concept" aria-label="Le concept en trois étapes">
-      <h2 class="section-title">Objectif → IA → Parcours personnalisé</h2>
+    <section class="chain" id="concept" aria-label="${t("landing.chainAria")}">
+      <h2 class="section-title">${t("landing.chainTitle")}</h2>
       <div class="chain__row">
         <article>
           <span>1</span>
-          <h3>Objectif</h3>
-          <p>Vous dites où vous voulez aller — métier, étude ou projet personnel.</p>
+          <h3>${t("landing.step1Title")}</h3>
+          <p>${t("landing.step1Body")}</p>
         </article>
         <div class="chain__arrow" aria-hidden="true">→</div>
         <article>
           <span>2</span>
-          <h3>IA</h3>
-          <p>Learnova analyse l'objectif et diagnostique le chemin le plus utile.</p>
+          <h3>${t("landing.step2Title")}</h3>
+          <p>${t("landing.step2Body")}</p>
         </article>
         <div class="chain__arrow" aria-hidden="true">→</div>
         <article>
           <span>3</span>
-          <h3>Parcours personnalisé</h3>
-          <p>Un GPS pédagogique : étapes, niveau, durée, prochaine action.</p>
+          <h3>${t("landing.step3Title")}</h3>
+          <p>${t("landing.step3Body")}</p>
         </article>
       </div>
     </section>
 
     <section class="compare" id="avant-apres">
-      <h2>LMS traditionnel vs Learnova</h2>
-      <p class="muted">La différence que le jury doit voir en un coup d'œil.</p>
+      <h2>${t("landing.compareTitle")}</h2>
+      <p class="muted">${t("landing.compareLead")}</p>
       <div class="compare__pair">
         <article class="compare__card compare__card--old">
-          <p class="compare__label">LMS traditionnel</p>
-          <h3>Je cherche un cours.</h3>
-          <p>Je dois déjà savoir ce dont j'ai besoin. Le catalogue décide pour moi.</p>
+          <p class="compare__label">${t("landing.lmsLabel")}</p>
+          <h3>${t("landing.lmsTitle")}</h3>
+          <p>${t("landing.lmsBody")}</p>
         </article>
         <article class="compare__card compare__card--accent">
-          <p class="compare__label">Learnova · GPS des compétences</p>
-          <h3>Je donne mon objectif.</h3>
-          <p>L'IA construit mon parcours. Je commence par la destination, pas par la liste.</p>
+          <p class="compare__label">${t("landing.learnovaLabel")}</p>
+          <h3>${t("landing.learnovaTitle")}</h3>
+          <p>${t("landing.learnovaBody")}</p>
         </article>
       </div>
     </section>

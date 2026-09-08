@@ -91,6 +91,32 @@ body {
   color: #fff;
 }
 
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.25rem;
+}
+
+.lang-switch button {
+  background: none;
+  border: none;
+  color: #c7d2fe;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0;
+}
+
+.lang-switch button:hover,
+.lang-switch button[aria-pressed="true"] {
+  color: #fff;
+}
+
+.lang-switch button[aria-pressed="true"] {
+  font-weight: 700;
+}
+
 .main {
   display: grid;
   gap: 1.25rem;

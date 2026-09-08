@@ -1,15 +1,7 @@
+import { t } from "../i18n/index.js"
 import { getAIService } from "../ai/index.js"
 import { navigate } from "../router.js"
-import {
-  getCurrentStep,
-  getProgressPercent,
-  getState,
-  hasPath,
-  labelHours,
-  labelLevel,
-  labelStatus,
-  setPath,
-} from "../store.js"
+import { getCurrentStep, getProgressPercent, getState, hasPath, setPath } from "../store.js"
 
 let generating = false
 
@@ -19,10 +11,10 @@ export function renderRoadmap() {
   if (!state.goal) {
     return `
       <section class="panel panel--center">
-        <p class="eyebrow">Destination manquante</p>
-        <h1>Commencez par votre objectif</h1>
-        <p class="muted">Learnova construit un itinéraire à partir d'une destination, pas d'un catalogue.</p>
-        <a class="btn btn--primary" href="#/goal">Exprimer mon objectif</a>
+        <p class="eyebrow">${t("roadmap.missingEyebrow")}</p>
+        <h1>${t("roadmap.missingTitle")}</h1>
+        <p class="muted">${t("roadmap.missingLead")}</p>
+        <a class="btn btn--primary" href="#/goal">${t("roadmap.missingCta")}</a>
       </section>
     `
   }
@@ -30,11 +22,11 @@ export function renderRoadmap() {
   if (!hasPath()) {
     return `
       <section class="panel panel--center">
-        <p class="eyebrow">GPS des compétences</p>
-        <h1>Construction de votre itinéraire…</h1>
-        <p class="muted">Learnova relie votre destination à des étapes de compétence.</p>
+        <p class="eyebrow">${t("roadmap.buildingEyebrow")}</p>
+        <h1>${t("roadmap.buildingTitle")}</h1>
+        <p class="muted">${t("roadmap.buildingLead")}</p>
         <div class="spinner" aria-hidden="true"></div>
-        <p class="hint">Moteur local de démonstration — aucun modèle externe n'est appelé.</p>
+        <p class="hint">${t("roadmap.buildingHint")}</p>
       </section>
     `
   }
@@ -43,49 +35,46 @@ export function renderRoadmap() {
   const current = getCurrentStep()
   const allDone = state.steps.every((step) => step.status === "done")
   const nextLabel = allDone
-    ? "Objectif atteint"
+    ? t("roadmap.goalReached")
     : current?.status !== "done"
       ? current.title
-      : "Destination finale"
-  const finalTitle = allDone ? "Objectif atteint" : "Destination finale"
-  const finalBadge = allDone ? "Objectif atteint" : "À atteindre"
-  const finalText = allDone
-    ? "Vous avez parcouru toutes les étapes de votre itinéraire."
-    : "Votre objectif devient réalité une fois toutes les étapes de compétence validées."
+      : t("roadmap.finalDestination")
+  const finalTitle = allDone ? t("roadmap.goalReached") : t("roadmap.finalDestination")
+  const finalBadge = allDone ? t("roadmap.goalReached") : t("roadmap.toReach")
+  const finalText = allDone ? t("roadmap.allDoneText") : t("roadmap.notDoneText")
 
   return `
     <section class="panel roadmap-hero">
-      <h1>Votre destination</h1>
+      <h1>${t("roadmap.destinationTitle")}</h1>
       <p class="destination">${escapeHtml(state.goal)}</p>
-      <h2 class="section-title">Votre GPS des compétences</h2>
-      <p class="gps-count">${state.steps.length} étapes personnalisées</p>
+      <h2 class="section-title">${t("roadmap.gpsTitle")}</h2>
+      <p class="gps-count">${t("roadmap.stepsCount", { count: state.steps.length })}</p>
       <p class="muted">
-        Learnova ne vous demande pas de choisir parmi des centaines de cours.
-        À partir de votre objectif, il construit un itinéraire adapté à votre situation.
+        ${t("roadmap.gpsLead")}
       </p>
       <div class="dash-grid">
         <article>
-          <p class="meta-label">Niveau de départ</p>
-          <p>${labelLevel(state.level)}</p>
+          <p class="meta-label">${t("roadmap.metaStartLevel")}</p>
+          <p>${t(`levels.${state.level}`)}</p>
         </article>
         <article>
-          <p class="meta-label">Rythme</p>
-          <p>${labelHours(state.hoursPerWeek)}</p>
+          <p class="meta-label">${t("roadmap.metaPace")}</p>
+          <p>${t(`hours.${state.hoursPerWeek}`)}</p>
         </article>
         <article>
-          <p class="meta-label">Prochaine étape</p>
+          <p class="meta-label">${t("roadmap.metaNext")}</p>
           <p>${escapeHtml(nextLabel)}</p>
         </article>
       </div>
-      <div class="progress" aria-label="Progression">
+      <div class="progress" aria-label="${t("roadmap.progressAria")}">
         <div class="progress__bar" style="width:${percent}%"></div>
       </div>
-      <p class="progress__label">Progression : ${percent} %</p>
+      <p class="progress__label">${t("roadmap.progressLabel", { percent })}</p>
     </section>
 
-    <section class="panel gps" aria-label="Itinéraire personnalisé" data-testid="roadmap-ready">
-      <h2>Votre itinéraire personnalisé</h2>
-      <p class="muted">${escapeHtml(state.pathTitle)} · ${state.steps.length} étapes de compétence</p>
+    <section class="panel gps" aria-label="${t("roadmap.itineraryAria")}" data-testid="roadmap-ready">
+      <h2>${t("roadmap.itineraryTitle")}</h2>
+      <p class="muted">${t("roadmap.itineraryMeta", { title: escapeHtml(state.pathTitle), count: state.steps.length })}</p>
       <ol class="roadmap">
         ${state.steps
           .map(
@@ -94,14 +83,16 @@ export function renderRoadmap() {
             <div class="roadmap__node" aria-hidden="true">${index + 1}</div>
             <article>
               <header>
-                <h3>Étape ${index + 1} · ${escapeHtml(step.title)}</h3>
-                <span class="badge badge--${step.status}">${labelStatus(step.status)}</span>
+                <h3>${t("roadmap.stepHeading", { n: index + 1, title: escapeHtml(step.title) })}</h3>
+                <span class="badge badge--${step.status}">${t(`status.${step.status}`)}</span>
               </header>
               <p>${escapeHtml(step.description)}</p>
               <p class="step-meta">
-                Compétence : ${escapeHtml(step.skill || "À valider")}
-                · ${escapeHtml(step.level)}
-                · ${escapeHtml(step.duration)}
+                ${t("roadmap.skillLine", {
+                  skill: escapeHtml(step.skill || t("roadmap.skillFallback")),
+                  level: escapeHtml(step.level),
+                  duration: escapeHtml(step.duration),
+                })}
               </p>
             </article>
           </li>`,
@@ -119,8 +110,8 @@ export function renderRoadmap() {
         </li>
       </ol>
       <div class="actions">
-        <a class="btn btn--primary" href="#/dashboard">Commencer mon parcours</a>
-        <a class="btn btn--ghost" href="#/goal">Revoir l'objectif</a>
+        <a class="btn btn--primary" href="#/dashboard">${t("roadmap.ctaStart")}</a>
+        <a class="btn btn--ghost" href="#/goal">${t("roadmap.ctaReview")}</a>
       </div>
     </section>
   `

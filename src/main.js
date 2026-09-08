@@ -1,4 +1,5 @@
 import "./style.css"
+import { getLanguage, loadLanguage, setLanguage, t } from "./i18n/index.js"
 import { initRouter } from "./router.js"
 import { loadState } from "./store.js"
 import { renderLanding } from "./views/landing.js"
@@ -9,10 +10,12 @@ import { bindLesson, renderLesson } from "./views/lesson.js"
 
 const app = document.querySelector("#app")
 loadState()
+loadLanguage()
 let pendingScrollId = null
 let currentParts = []
 
 function shell(content) {
+  const lang = getLanguage()
   return `
     <div class="layout">
       <header class="topbar">
@@ -25,18 +28,23 @@ function shell(content) {
           </span>
           Learnova
         </a>
-        <nav aria-label="Navigation principale">
-          <a href="#/">Accueil</a>
-          <a href="#/goal">Objectif</a>
-          <a href="#/roadmap">Itinéraire</a>
-          <a href="#/dashboard">Dashboard</a>
-          <a href="#/lesson">Leçon</a>
+        <nav aria-label="${t("nav.aria")}">
+          <a href="#/">${t("nav.home")}</a>
+          <a href="#/goal">${t("nav.goal")}</a>
+          <a href="#/roadmap">${t("nav.roadmap")}</a>
+          <a href="#/dashboard">${t("nav.dashboard")}</a>
+          <a href="#/lesson">${t("nav.lesson")}</a>
+          <div class="lang-switch" data-testid="lang-switch" role="group" aria-label="${t("meta.langGroup")}">
+            <button type="button" data-lang="fr" aria-pressed="${lang === "fr"}">FR</button>
+            <span aria-hidden="true">|</span>
+            <button type="button" data-lang="en" aria-pressed="${lang === "en"}">EN</button>
+          </div>
         </nav>
       </header>
       <main class="main">${content}</main>
       <footer class="footer">
-        <p><strong>Learnova</strong> — GPS des compétences · prototype hackathon</p>
-        <p>Apprentissage intelligent, orienté objectifs.</p>
+        <p>${t("footer.line1").replace("Learnova", "<strong>Learnova</strong>")}</p>
+        <p>${t("footer.line2")}</p>
       </footer>
     </div>
   `
@@ -67,6 +75,16 @@ function render({ parts }) {
   if (key === "lesson") {
     bindLesson(main, () => render({ parts: currentParts }))
   }
+
+  app.querySelector("[data-testid='lang-switch']")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-lang]")
+    if (!button) {
+      return
+    }
+    setLanguage(button.dataset.lang)
+    event.stopPropagation()
+    render({ parts: currentParts })
+  })
 
   const discover = app.querySelector("[data-discover]")
   discover?.addEventListener("click", (event) => {

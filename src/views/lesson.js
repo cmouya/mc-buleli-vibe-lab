@@ -1,17 +1,11 @@
 import { buildFallbackLesson, getLesson } from "../data/lessons.js"
+import { t } from "../i18n/index.js"
 import {
   DEFAULT_PASS_SCORE,
   evaluateQuizSubmission,
   normalizeQuizQuestions,
 } from "../shared/assessment.js"
-import {
-  completeStep,
-  getCurrentStep,
-  getNextStep,
-  getState,
-  hasPath,
-  labelStatus,
-} from "../store.js"
+import { completeStep, getCurrentStep, getNextStep, getState, hasPath } from "../store.js"
 
 export function renderLesson() {
   const state = getState()
@@ -19,67 +13,67 @@ export function renderLesson() {
 
   if (!state.goal || !hasPath() || !step) {
     return emptyState(
-      "Parcours en attente",
-      "Construisez votre itinéraire depuis le dashboard pour accéder à une leçon.",
+      t("lesson.waitingTitle"),
+      t("lesson.waitingNote"),
       "#/dashboard",
-      "Retour au dashboard",
+      t("lesson.waitingCta"),
     )
   }
 
   if (step.status === "todo") {
     return emptyState(
-      "Étape verrouillée",
-      "Terminez l'étape en cours avant d'accéder à celle-ci.",
+      t("lesson.lockedTitle"),
+      t("lesson.lockedNote"),
       "#/dashboard",
-      "Retour au dashboard",
+      t("lesson.lockedCta"),
     )
   }
 
   const lesson = getLesson(step.id) || buildFallbackLesson(step)
   if (!lesson) {
     return emptyState(
-      "Contenu indisponible",
-      "Cette étape n'a pas encore de contenu pédagogique.",
+      t("lesson.unavailableTitle"),
+      t("lesson.unavailableNote"),
       "#/dashboard",
-      "Retour au dashboard",
+      t("lesson.unavailableCta"),
     )
   }
 
   const alreadyDone = step.status === "done"
   const next = getNextStep()
-  const concepts = lesson.keyConcepts || lesson.keyPoints?.map((text, index) => ({
-    title: `Concept ${index + 1}`,
-    description: text,
-  })) || []
+  const concepts = conceptsForDisplay(lesson)
 
   return `
     <section class="panel lesson-header">
-      <p class="eyebrow">Module d'apprentissage</p>
+      <p class="eyebrow" data-testid="lesson-eyebrow">${t("lesson.eyebrow")}</p>
       <h1>${escapeHtml(step.title)}</h1>
       <p class="step-meta">
-        Étape en cours · Compétence : ${escapeHtml(step.skill || "À valider")}
-        · ${escapeHtml(step.level)} · ${escapeHtml(step.duration)}
-        · ${escapeHtml(labelStatus(step.status))}
+        ${t("lesson.inProgress", {
+          skill: escapeHtml(step.skill || t("lesson.skillFallback")),
+          level: escapeHtml(step.level),
+          duration: escapeHtml(step.duration),
+          status: t(`status.${step.status}`),
+        })}
       </p>
     </section>
 
     <section class="panel lesson-context">
-      <h2>Destination</h2>
+      <h2>${t("lesson.destination")}</h2>
       <p class="destination destination--compact">${escapeHtml(state.goal)}</p>
     </section>
 
     <section class="panel lesson">
-      <h2>Introduction</h2>
+      <h2>${t("lesson.intro")}</h2>
       <p class="lesson__body">${escapeHtml(lesson.introduction || lesson.body || "")}</p>
 
-      <h2>Concepts clés</h2>
+      <h2>${t("lesson.concepts")}</h2>
       <ol class="concept-list">
         ${concepts
           .map(
             (concept) => `
           <li>
-            <strong>${escapeHtml(concept.title)}</strong>
-            <p>${escapeHtml(concept.description)}</p>
+            <strong>${escapeHtml(concept.heading)}</strong>
+            <p>${escapeHtml(concept.body)}</p>
           </li>`,
           )
           .join("")}
@@ -88,7 +82,7 @@ export function renderLesson() {
       ${
         lesson.example
           ? `
-      <h2>Exemple pratique</h2>
+      <h2>${t("lesson.example")}</h2>
       <article class="lesson-example">
         <h3>${escapeHtml(lesson.example.title)}</h3>
         <p>${escapeHtml(lesson.example.body)}</p>
@@ -96,24 +90,36 @@ export function renderLesson() {
           : ""
       }
 
-      <h2>À retenir</h2>
+      <h2>${t("lesson.takeaway")}</h2>
       <p class="lesson-takeaway">${escapeHtml(lesson.takeaway || lesson.keyPoints?.join(" ") || "")}</p>
     </section>
 
     <section class="panel" id="quiz-section">
-      ${
-        alreadyDone
-          ? renderValidatedPanel(step, next)
-          : renderQuizPanel(step, lesson)
-      }
+      ${alreadyDone ? renderValidatedPanel(step, next) : renderQuizPanel(step, lesson)}
     </section>
 
     <section class="panel">
       <div class="actions">
-        <a class="btn btn--ghost" href="#/dashboard">Retour au dashboard</a>
+        <a class="btn btn--ghost" href="#/dashboard">${t("lesson.backDashboard")}</a>
       </div>
     </section>
   `
+}
+
+function conceptsForDisplay(lesson) {
+  if (Array.isArray(lesson.keyConcepts) && lesson.keyConcepts.length) {
+    return lesson.keyConcepts.map((concept, index) => ({
+      heading: t("lesson.conceptFallback", { n: index + 1 }),
+      body: [concept.title, concept.description].filter(Boolean).join(" — "),
+    }))
+  }
+  if (Array.isArray(lesson.keyPoints) && lesson.keyPoints.length) {
+    return lesson.keyPoints.map((text, index) => ({
+      heading: t("lesson.conceptFallback", { n: index + 1 }),
+      body: text,
+    }))
+  }
+  return []
 }
 
 function renderQuizPanel(step, lesson) {
@@ -121,14 +127,14 @@ function renderQuizPanel(step, lesson) {
   const passScore = lesson.quiz?.passScore ?? DEFAULT_PASS_SCORE
 
   return `
-    <h2>Quiz de validation</h2>
-    <p class="muted">Répondez aux ${questions.length} questions pour valider la compétence. Seuil : ${passScore}/${questions.length} bonnes réponses.</p>
+    <h2>${t("lesson.quizTitle")}</h2>
+    <p class="muted">${t("lesson.quizLead", { count: questions.length, pass: passScore })}</p>
     <form id="quiz-form" class="quiz" novalidate>
       ${questions
         .map(
           (item, qIndex) => `
         <fieldset class="quiz__block">
-          <legend>Question ${qIndex + 1} · ${escapeHtml(item.question)}</legend>
+          <legend>${t("lesson.questionPrefix", { n: qIndex + 1 })} · ${escapeHtml(item.question)}</legend>
           ${item.options
             .map(
               (option, oIndex) => `
@@ -141,7 +147,7 @@ function renderQuizPanel(step, lesson) {
         </fieldset>`,
         )
         .join("")}
-      <button class="btn btn--primary" type="submit">Valider mes réponses</button>
+      <button class="btn btn--primary" type="submit" data-testid="quiz-submit">${t("lesson.submit")}</button>
     </form>
     <div id="quiz-results" data-testid="quiz-results" hidden></div>
   `
@@ -150,19 +156,19 @@ function renderQuizPanel(step, lesson) {
 function renderValidatedPanel(step, next) {
   return `
     <div class="validation-success">
-      <p class="eyebrow">Validation</p>
-      <h2>Compétence validée</h2>
-      <p class="success">Vous avez validé « ${escapeHtml(step.skill || step.title)} ».</p>
+      <p class="eyebrow">${t("lesson.validation")}</p>
+      <h2>${t("lesson.skillValidated")}</h2>
+      <p class="success">${t("lesson.youValidated", { skill: escapeHtml(step.skill || step.title) })}</p>
       ${
         next
           ? `
-        <p class="muted">Prochaine étape : ${escapeHtml(next.title)}</p>
+        <p class="muted">${t("lesson.nextStep", { title: escapeHtml(next.title) })}</p>
         <div class="actions">
-          <a class="btn btn--primary" href="#/dashboard">Continuer vers l'étape ${getStepNumber(next)}</a>
+          <a class="btn btn--primary" href="#/dashboard">${t("lesson.continueStep", { n: getStepNumber(next) })}</a>
         </div>`
           : `
         <div class="actions">
-          <a class="btn btn--primary" href="#/dashboard">Retour au dashboard</a>
+          <a class="btn btn--primary" href="#/dashboard">${t("lesson.backDashboard")}</a>
         </div>`
       }
     </div>
@@ -175,17 +181,17 @@ function renderResults({ lesson, step, score, total, passed, details, next }) {
   if (passed) {
     return `
       <div class="validation-success">
-        <p class="eyebrow">Validation</p>
-        <h2>Compétence validée</h2>
-        <p class="quiz-score">Score : ${score}/${total}</p>
-        <p class="success">Bravo — vous maîtrisez les fondamentaux de cette étape.</p>
+        <p class="eyebrow">${t("lesson.validation")}</p>
+        <h2>${t("lesson.skillValidated")}</h2>
+        <p class="quiz-score">${t("lesson.score", { score, total })}</p>
+        <p class="success">${t("lesson.bravo")}</p>
         <ul class="quiz-review">
           ${details
             .map(
               (item) => `
             <li class="quiz-review__item quiz-review__item--${item.correct ? "ok" : "ko"}">
-              <strong>Question ${item.index + 1}</strong>
-              <p>${item.correct ? "Correct." : `Incorrect — bonne réponse : ${escapeHtml(item.options[item.answer])}`}</p>
+              <strong>${t("lesson.questionPrefix", { n: item.index + 1 })}</strong>
+              <p>${item.correct ? t("lesson.correct") : t("lesson.incorrect", { answer: escapeHtml(item.options[item.answer]) })}</p>
               <p class="muted">${escapeHtml(item.explanation)}</p>
             </li>`,
             )
@@ -195,7 +201,7 @@ function renderResults({ lesson, step, score, total, passed, details, next }) {
           next
             ? `
           <div class="actions">
-            <a class="btn btn--primary" href="#/dashboard" id="continue-btn">Continuer vers l'étape ${getStepNumber(next)}</a>
+            <a class="btn btn--primary" href="#/dashboard" id="continue-btn">${t("lesson.continueStep", { n: getStepNumber(next) })}</a>
           </div>`
             : ""
         }
@@ -205,24 +211,24 @@ function renderResults({ lesson, step, score, total, passed, details, next }) {
 
   return `
     <div class="validation-retry">
-      <h2>Validation non atteinte</h2>
-      <p class="quiz-score">Score : ${score}/${total} — seuil requis : ${passScore}/${total}</p>
+      <h2>${t("lesson.notReached")}</h2>
+      <p class="quiz-score">${t("lesson.failScore", { score, total, pass: passScore })}</p>
       <p class="quiz__feedback quiz__feedback--bad">
-        Relisez les concepts clés et l'exemple pratique, puis réessayez. La progression se met à jour uniquement après validation.
+        ${t("lesson.retryLead")}
       </p>
       <ul class="quiz-review">
         ${details
           .map(
             (item) => `
           <li class="quiz-review__item quiz-review__item--${item.correct ? "ok" : "ko"}">
-            <strong>Question ${item.index + 1}</strong>
-            <p>${item.correct ? "Correct." : `Incorrect — bonne réponse : ${escapeHtml(item.options[item.answer])}`}</p>
-            <p class="muted">${escapeHtml(item.explanation)}</p>
-          </li>`,
+              <strong>${t("lesson.questionPrefix", { n: item.index + 1 })}</strong>
+              <p>${item.correct ? t("lesson.correct") : t("lesson.incorrect", { answer: escapeHtml(item.options[item.answer]) })}</p>
+              <p class="muted">${escapeHtml(item.explanation)}</p>
+            </li>`,
           )
           .join("")}
       </ul>
-      <button class="btn btn--primary" type="button" id="retry-quiz">Réessayer le quiz</button>
+      <button class="btn btn--primary" type="button" id="retry-quiz">${t("lesson.retry")}</button>
     </div>
   `
 }
@@ -264,7 +270,7 @@ export function bindLesson(root, rerender) {
 
     if (unanswered) {
       results.hidden = false
-      results.innerHTML = `<p class="quiz__feedback quiz__feedback--bad">Répondez à toutes les questions avant de valider.</p>`
+      results.innerHTML = `<p class="quiz__feedback quiz__feedback--bad">${t("lesson.unanswered")}</p>`
       return
     }
 
@@ -293,7 +299,7 @@ function getStepNumber(step) {
 function emptyState(title, note, href, label) {
   return `
     <section class="panel panel--center">
-      <p class="eyebrow">Leçon</p>
+      <p class="eyebrow">${t("lesson.eyebrowEmpty")}</p>
       <h1>${title}</h1>
       <p class="muted">${note}</p>
       <a class="btn btn--primary" href="${href}">${label}</a>
