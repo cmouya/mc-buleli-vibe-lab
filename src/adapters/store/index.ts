@@ -14,3 +14,6 @@ export type {
 
 export { pathClearPatchForGoalChange, pathBindPatch } from "./learner-state-adapter.js"
 export type { PathBindInput } from "./learner-state-adapter.js"
+
+export { applyQuizAttempt, assertCanCompleteStep } from "./completion-adapter.js"
+export type { QuizAttemptInput, QuizAttemptPatch } from "./completion-adapter.js"

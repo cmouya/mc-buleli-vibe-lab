@@ -2,6 +2,8 @@ import {
   applyConfirmGoal,
   applyCreateProfile,
   applyMarkAnalyzed,
+  applyQuizAttempt,
+  assertCanCompleteStep,
   assertGoalReadyForPathFromLegacy,
   pathBindPatch,
 } from "./adapters/store/index.js"
@@ -19,6 +21,7 @@ const emptyState = () => ({
   pathTitle: "",
   steps: [],
   skills: [],
+  evidence: [],
   updatedAt: null,
 })
 
@@ -56,6 +59,9 @@ export function loadState() {
     }
     if (!Array.isArray(state.skills)) {
       state.skills = []
+    }
+    if (!Array.isArray(state.evidence)) {
+      state.evidence = []
     }
     state.analyzed = Boolean(state.analyzed)
     state.confirmed = Boolean(state.confirmed)
@@ -102,6 +108,7 @@ export function setProfile({ goal, level, hoursPerWeek, intent }) {
   state.pathTitle = patch.pathTitle ?? ""
   state.steps = Array.isArray(patch.steps) ? patch.steps : []
   state.skills = Array.isArray(patch.skills) ? patch.skills : []
+  state.evidence = []
   saveState()
 }
 
@@ -136,6 +143,7 @@ export function setPath({ pathId, pathTitle, steps }) {
     status: index === 0 ? "current" : "todo",
   }))
   state.skills = []
+  state.evidence = []
   saveState()
 }
 
@@ -172,7 +180,42 @@ export function getStepById(id) {
   return state.steps.find((step) => step.id === id) || null
 }
 
-export function completeStep(stepId) {
+/**
+ * Record a quiz attempt. Failed attempts persist Evidence but do not complete the step (I-05).
+ */
+export function submitQuizAttempt(stepId, evaluation) {
+  const { evidence, completionAllowed } = applyQuizAttempt({
+    stepId,
+    score: evaluation.score,
+    total: evaluation.total,
+    passed: evaluation.passed,
+    details: evaluation.details,
+  })
+
+  if (!Array.isArray(state.evidence)) {
+    state.evidence = []
+  }
+  state.evidence.push(evidence)
+
+  if (completionAllowed) {
+    applyStepCompletion(stepId)
+  }
+
+  saveState()
+  return { evidence, completed: completionAllowed }
+}
+
+/**
+ * Complete a step. Requires passed Evidence for that step (I-05).
+ * Does not append evidence — callers that have a quiz result should use submitQuizAttempt.
+ */
+export function completeStep(stepId, evidence) {
+  assertCanCompleteStep(evidence, stepId)
+  applyStepCompletion(stepId)
+  saveState()
+}
+
+function applyStepCompletion(stepId) {
   const index = state.steps.findIndex((step) => step.id === stepId)
   if (index === -1) {
     return
@@ -188,8 +231,6 @@ export function completeStep(stepId) {
   if (next && next.status === "todo") {
     next.status = "current"
   }
-
-  saveState()
 }
 
 export function resetLearner() {

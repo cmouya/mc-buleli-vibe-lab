@@ -5,7 +5,7 @@ import {
   evaluateQuizSubmission,
   normalizeQuizQuestions,
 } from "../shared/assessment.js"
-import { completeStep, getCurrentStep, getNextStep, getState, hasPath } from "../store.js"
+import { getCurrentStep, getNextStep, getState, hasPath, submitQuizAttempt } from "../store.js"
 
 export function renderLesson() {
   const state = getState()
@@ -274,9 +274,7 @@ export function bindLesson(root, rerender) {
       return
     }
 
-    if (passed) {
-      completeStep(step.id)
-    }
+    submitQuizAttempt(step.id, { details, score, total, passed })
 
     form.hidden = true
     results.hidden = false
