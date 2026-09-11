@@ -1,5 +1,6 @@
 import { t } from "../i18n/index.js"
-import { getAIService } from "../ai/index.js"
+import { getPathGenerator } from "../adapters/ai/path-generator.js"
+import { generateLearningPath } from "../application/index.js"
 import { navigate } from "../router.js"
 import { getCurrentStep, getProgressPercent, getState, hasPath, setPath } from "../store.js"
 
@@ -129,13 +130,15 @@ export function bindRoadmap(rerender) {
 
   generating = true
   const started = Date.now()
-  getAIService()
-    .generatePath({
+  generateLearningPath(
+    {
       goal: state.goal,
       level: state.level,
       hoursPerWeek: state.hoursPerWeek,
       intent: state.intent,
-    })
+    },
+    getPathGenerator(),
+  )
     .then(async (result) => {
       const wait = Math.max(0, 1400 - (Date.now() - started))
       await new Promise((resolve) => setTimeout(resolve, wait))
