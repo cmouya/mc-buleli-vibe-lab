@@ -1,12 +1,11 @@
 import {
-  applyConfirmGoal,
   applyCreateProfile,
   applyMarkAnalyzed,
-  applyQuizAttempt,
   assertCanCompleteStep,
   assertGoalReadyForPathFromLegacy,
   pathBindPatch,
 } from "./adapters/store/index.js"
+import { confirmGoal, submitAssessment } from "./application/index.js"
 
 const STORAGE_KEY = "learnova-learner"
 
@@ -123,7 +122,7 @@ export function setAnalyzed(value) {
  * Explicit human confirmation (Confirmation CTA). Does not set path.
  */
 export function confirmCurrentGoal() {
-  const patch = applyConfirmGoal(legacyGoalFields())
+  const patch = confirmGoal(legacyGoalFields())
   state.confirmed = Boolean(patch.confirmed)
   if (patch.analyzed !== undefined) {
     state.analyzed = Boolean(patch.analyzed)
@@ -184,7 +183,7 @@ export function getStepById(id) {
  * Record a quiz attempt. Failed attempts persist Evidence but do not complete the step (I-05).
  */
 export function submitQuizAttempt(stepId, evaluation) {
-  const { evidence, completionAllowed } = applyQuizAttempt({
+  const { evidence, completionAllowed } = submitAssessment({
     stepId,
     score: evaluation.score,
     total: evaluation.total,
