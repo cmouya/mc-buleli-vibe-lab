@@ -47,7 +47,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 | Inclus | Exclu |
 |--------|-------|
 | Vision produit et contexte architectural | Spécifications UI détaillées |
-| État actuel du prototype (Prototype 0) | Schéma SQL détaillé |
+| État actuel du prototype (Golden Reference) + persistance M4 | Catalogue exhaustif du schéma MVP (org, mastery, …) |
 | Architecture cible validée | Catalogue exhaustif d’endpoints API |
 | Principes, invariants et ADR | Implémentation de code |
 | Frontières MVP / V1.1 / V2 | Décisions non encore validées |
@@ -59,6 +59,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/product-principles.md`](product-principles.md) — Principes non négociables
 - [`docs/architecture.md`](architecture.md) — État des lieux Prototype 0 (historique)
 - [`docs/migration-map.md`](migration-map.md) — Matrice de migration fichier par fichier
+- [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md) — Brief M5 **non contraignant** (audit + validation humaine requis)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -124,9 +125,9 @@ Cette chaîne est le noyau conceptuel de Learnova. Le prototype actuel en couvre
 
 ## 3. Current State
 
-> **État actuel** — Prototype 0 fonctionnel. L’architecture cible (section 4) n’est **pas** entièrement déployée.
+> **État actuel** — Golden Reference (Prototype 0) toujours en `localStorage`. M0–M4 sont **Done**. L’architecture cible (section 4) n’est **pas** entièrement déployée (auth, React, vertical slice).
 
-### Stack runtime active
+### Stack runtime Golden Reference
 
 | Couche | Technologie | Fichiers |
 |--------|-------------|----------|
@@ -134,10 +135,25 @@ Cette chaîne est le noyau conceptuel de Learnova. Le prototype actuel en couvre
 | UI | JavaScript vanilla, HTML strings | `src/views/*.js`, `src/style.css` |
 | Routing | Hash router maison | `src/router.js` |
 | État | Singleton module | `src/store.js` |
-| Persistance | `localStorage` (`learnova-learner`) | `src/store.js` |
+| Persistance UI | `localStorage` (`learnova-learner`) | `src/store.js` |
 | IA | MockAIService (local, déterministe) | `src/ai/*` |
 | Contenu | Leçons statiques | `src/data/lessons.js` |
 | Logique quiz | Fonctions pures | `src/shared/assessment.js` |
+
+### Plateforme serveur (M3–M4, Done)
+
+| Couche | Technologie | Fichiers |
+|--------|-------------|----------|
+| API | Fastify + OpenAPI `/api/v1/` | `src/server/` |
+| Use cases | Application TS | `src/application/` |
+| Domain | Modules purs + ports repository | `src/modules/` |
+| Persistance | PostgreSQL + Drizzle | `src/infra/db/`, `drizzle/` |
+
+Chaîne durable (sans identité apprenant) :
+
+`Goal → Accepted Learning Path → learning_path_steps → Evidence`
+
+Les routes HTTP confirm/generate restent **stateless**. Les use cases `persist*` / `acceptLearningPath` existent mais **ne sont pas exposés** à l’API ni au Golden Reference. Pas de dual-write.
 
 ### Parcours utilisateur actif
 
@@ -165,34 +181,38 @@ Source : [`README.md`](../README.md), [`src/main.js`](../src/main.js)
 
 | Suite | Outil | Volume | Rôle |
 |-------|-------|--------|------|
-| Unit tests | Vitest + jsdom | 25 tests | Store, assessment, Mock AI |
-| E2E tests | Playwright (Chromium) | 10 tests | Parcours golden (TEST-E2E-001→008 + scénarios validation) |
-| Typecheck | TypeScript | Contrats types | Non-runtime |
-| CI | GitHub Actions | push/PR | typecheck → test → build → test:e2e |
+| Unit / application | Vitest | 99 tests | Domaine, adapters, use cases, frontières |
+| API | Vitest + Fastify `inject()` | 9 tests | health, confirm-goal, generate-path, OpenAPI |
+| DB | Vitest + PostgreSQL | 9 tests | migrate, Goal, Path, Evidence |
+| E2E | Playwright (Chromium) | 13 tests | Golden Reference |
+| Typecheck / build | TypeScript, Vite | — | Contrats + bundle GR |
+| CI | GitHub Actions | push/PR | typecheck → test → test:api → test:db → build → test:e2e |
 
 Source : [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
 
-### Limites connues (Prototype 0)
+### Limites connues (après M4)
 
 | Limite | Impact |
 |--------|--------|
-| Single-user, client-only | Pas de multi-tenant, pas d’auth |
-| Pas de backend | Pas de persistance serveur, pas de sync |
-| Evidence implicite | Quiz validé mais pas d’entité Evidence persistée |
-| Mastery non modélisé | `skills[]` = liste de noms, pas de niveaux de maîtrise |
-| Skill = string label | Pas de référentiel Skill réutilisable |
+| Pas d’auth / pas de tenant | M5 ; tables actuelles sans `user_id` / `organization_id` |
+| Golden Reference = localStorage | Pas de sync UI ↔ PostgreSQL ; pas de dual-write |
+| Persist HTTP absent | Goal/Path/Evidence durables hors API |
+| Progress navigateur | `todo/current/done` et % restent dans `store.js` |
+| Mastery non implémenté | Type seulement ; I-04 / M6 |
+| Skill = string label au runtime | Modules Skill/LearnerSkill non branchés |
 | Pas de diagnostic structuré | Intake limité au formulaire Goal |
 | Mock AI template matching | Parcours non adaptatif au profil réel |
-| Types TS déconnectés | Contrats Phase 0 non consommés par le runtime JS |
+| Seed data produit | Non livré (sans identité, seed jetable) |
 
 ### Ce qui n’est PAS l’état actuel
 
-Les éléments suivants font partie de l’**architecture cible** (section 4) et ne doivent pas être présentés comme déployés :
+Les éléments suivants restent **cible**, pas déployés :
 
-- React, Fastify, PostgreSQL, Drizzle
-- Multi-tenancy, RBAC serveur
-- Evidence et Mastery persistés
-- API REST `/api/v1/`
+- React (M7)
+- Authentication, sessions, multi-tenancy, RBAC serveur (M5)
+- Mastery persistée / calculée (M6)
+- Vertical slice Organization → Mastery via API (M6)
+- Progress / LearnerState / Skill persistés côté serveur
 
 ---
 
@@ -528,7 +548,7 @@ Organization
 
 ### État actuel
 
-Prototype 0 : **aucune authentification, aucun multi-tenant**. Sécurité = responsabilité du navigateur local uniquement.
+Après M4 : **aucune authentification, aucun multi-tenant**. La Golden Reference reste un navigateur anonyme. L’API Fastify n’applique pas encore de session. M5 est le prochain stage (**Planned**). Brief non contraignant : [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md). Les décisions d’implémentation M5 restent soumises à un audit d’architecture M5 dédié et à une validation humaine.
 
 ---
 
@@ -568,9 +588,20 @@ Pendant la migration (stages M1–M6), `localStorage` peut subsister pour :
 
 `localStorage` n’est **jamais** source de vérité en production multi-tenant.
 
-### Schéma SQL
+### Schéma SQL (M4 clos)
 
-**Décision différée** — le schéma physique détaillé sera défini lors de l’étape M4 (PostgreSQL + Drizzle).
+Spine durable dans [`src/infra/db/schema.ts`](../src/infra/db/schema.ts) (`SCHEMA_SLICE = m4.4-evidence`) :
+
+| Table | Rôle |
+|-------|------|
+| `goals` | Goal confirmable (UUID PK, CHECKs level/intent/status) |
+| `learning_paths` | Path accepté ; FK `goal_id` ON DELETE RESTRICT |
+| `learning_path_steps` | Étapes relationnelles UUID ; unique `(path_id, position)` |
+| `evidence` | Tentatives quiz append-only ; FK `step_id` ON DELETE RESTRICT ; `answers` JSONB |
+
+Pas de colonnes `user_id` / `learner_id` / `organization_id` / statut de progression aujourd’hui. La stratégie d’attache d’identité (colonnes, tables de jointure, backfill, ou conservation de lignes anonymes) reste une **question d’audit M5** — non décidée ici.
+
+Le catalogue MVP complet (Organization, Mastery, …) reste **hors M4**. Seed data produit : différé (M6).
 
 ---
 
@@ -797,8 +828,8 @@ Source : [`docs/migration-map.md`](migration-map.md), [`docs/architecture.md`](a
 | **M1** | Domain extraction | Modules TS purs (`src/modules/`) ; store.js → adapters ; domain unit tests | **Done** |
 | **M2** | Application Services | Use cases orchestrant domaine + ports ; application tests | **Done** |
 | **M3** | Fastify API | REST `/api/v1/` ; OpenAPI ; API integration tests (auth production = M5) | **Done** |
-| **M4** | PostgreSQL + Drizzle | Repositories implémentés ; migrations ; seed data | Planned |
-| **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | Planned |
+| **M4** | PostgreSQL + Drizzle | Infra + repos Goal/Path/Evidence ; migrations versionnées. Seed produit différé. | **Done** |
+| **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | **Next** (Planned) |
 | **M6** | First complete Vertical Slice | Organization → Mastery end-to-end via API | Planned |
 | **M7** | React | UI React + TypeScript + Vite consommant l’API ; retrait progressif views legacy | Planned |
 
@@ -810,6 +841,12 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
     Domain first          Vertical slice
                           before full React
 ```
+
+### Prochain slice : M5 (plan seulement)
+
+M4 est **clos**. Pas de M4.5. Ne pas persister Progress, LearnerState, Skill, AssessmentAttempt, ni Mastery avant qu’une identité réelle existe.
+
+M5 (Authentication + Multi-tenancy) est le **prochain stage**, Planned seulement. Brief non contraignant : [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md). **Les décisions d’implémentation M5 restent soumises à un audit d’architecture M5 dédié et à une validation humaine.** Ne pas implémenter M5 dans le même mouvement que la clôture documentaire M4. Ne pas figer ici User, Organization, memberships, rôles, ni FKs d’ownership.
 
 ---
 
@@ -1069,7 +1106,7 @@ Les éléments suivants sont **volontairement non décidés**. Ils ne doivent pa
 | D-12 | Component library (Tailwind, shadcn…) | À définir ultérieurement |
 | D-13 | Hosting provider (Vercel, Railway, AWS…) | À définir ultérieurement |
 | D-14 | Matrice RBAC détaillée par ressource | À définir ultérieurement |
-| D-15 | Schéma SQL détaillé | À définir ultérieurement (M4) |
+| D-15 | Schéma SQL spine Goal/Path/Steps/Evidence | **Décidé en M4** (`src/infra/db/schema.ts`). Reste différé : org/user/session, progress, mastery, skill catalog. |
 | D-16 | Event bus technology (si nécessaire) | À définir ultérieurement |
 
 ---
@@ -1126,7 +1163,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Phase 2.2 (M1 — Domain extraction) peut commencer après FROZEN
+4. Trajectoire d’implémentation : M0–M4 **Done** ; prochain stage **M5** (**Planned**, auth + tenancy) — pas un M4.5 persistence. Implémentation M5 non autorisée tant qu’un audit dédié n’est pas validé.
 
 ### Ce document ne remplace pas
 

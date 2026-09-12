@@ -29,7 +29,7 @@ Domain principles (see `docs/product-principles.md`):
 
 ## Current MVP purpose
 
-This repository is **Prototype 0** — a functional hackathon baseline evolving toward Learnova 1.0.
+This repository is **Prototype 0 evolving through M4**. The Golden Reference UI is still the Vite app on `localStorage`. M0–M4 are **done**: domain modules, application use cases, Fastify `/api/v1/`, and PostgreSQL + Drizzle for Goal → accepted Path → Steps → Evidence.
 
 It demonstrates:
 
@@ -38,9 +38,9 @@ It demonstrates:
 - Personalized learning path generation (Mock AI)
 - Learner dashboard (navigation console)
 - First interactive lesson with quiz validation
-- Progress update after successful assessment
+- Progress update after successful assessment (browser only)
 
-No backend, authentication, or real AI API in this MVP.
+The learner UI does **not** dual-write to PostgreSQL. There is **no** authentication or multi-tenancy yet (next: M5, Planned). See [`docs/architecture-baseline.md`](docs/architecture-baseline.md). The file [`docs/m5-auth-tenancy-plan.md`](docs/m5-auth-tenancy-plan.md) is a **non-binding** brief: M5 implementation decisions remain subject to a dedicated M5 architecture audit and human approval.
 
 ## Main learning journey
 
@@ -57,16 +57,18 @@ No backend, authentication, or real AI API in this MVP.
 
 | Layer | Technology |
 |-------|------------|
-| UI | Vanilla JavaScript (ES modules) |
+| UI (Golden Reference) | Vanilla JavaScript (ES modules) |
 | Build | Vite 7 |
 | Routing | Hash router (`#/goal`, `#/roadmap`, …) |
-| State | `localStorage` (`learnova-learner`) |
+| Learner state (UI) | `localStorage` (`learnova-learner`) |
+| API | Fastify + OpenAPI (`/api/v1/`) |
+| Persistence (server) | PostgreSQL + Drizzle (`goals`, paths, steps, `evidence`) |
 | AI (demo) | `MockAIService` — local, deterministic |
-| Unit tests | Vitest + jsdom |
+| Unit / API / DB tests | Vitest |
 | E2E tests | Playwright (Chromium) |
-| Domain contracts | TypeScript (`src/shared/types/`, not wired to runtime) |
+| Domain | TypeScript modules (`src/modules/`) |
 
-Architecture documentation: [`docs/architecture.md`](docs/architecture.md)
+Architecture: [`docs/architecture-baseline.md`](docs/architecture-baseline.md) (stages). Golden Reference snapshot: [`docs/architecture.md`](docs/architecture.md).
 
 ## Installation
 
@@ -103,30 +105,39 @@ Do not assume `http://localhost:5173` unless Vite shows it.
 | `npm run dev` | Start Vite dev server |
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
-| `npm run typecheck` | TypeScript strict check (`src/shared/types/`) |
+| `npm run typecheck` | TypeScript check |
 | `npm run test` | Unit tests (Vitest) |
+| `npm run test:api` | Fastify API tests (`inject()`) |
+| `npm run test:db` | PostgreSQL + Drizzle tests (`DATABASE_URL`) |
 | `npm run test:e2e` | End-to-end tests (Playwright + dev server) |
+| `npm run db:generate` | Generate Drizzle migrations |
+| `npm run db:migrate` | Apply Drizzle migrations |
 
 ## Testing architecture
 
 ```
 tests/
-  unit/           # Vitest — store, assessment, MockAIService
-  e2e/            # Playwright — critical user journeys
+  unit/           # Vitest — domain, application, store, MockAI
+  api/            # Fastify inject()
+  db/             # real PostgreSQL
+  e2e/            # Playwright — Golden Reference journeys
 ```
 
-- **Vitest** — progression logic, quiz scoring, path generation
+- **Vitest** — domain rules, quiz scoring, persist wrappers, path generation
 - **Playwright** — full browser journey (Landing → Progression)
-- **TypeScript** — domain type contracts in `src/shared/types/` (Phase 0 foundation)
+- **PostgreSQL tests** — Goal / Path / Evidence repositories (CI service)
 
-Run all checks locally:
+Run checks locally:
 
 ```bash
 npm run typecheck
 npm run test
+npm run test:api
 npm run build
 npm run test:e2e
 ```
+
+`npm run test:db` needs PostgreSQL and `DATABASE_URL` (CI provides this).
 
 CI runs the same pipeline on push and pull requests (see `.github/workflows/ci.yml`).
 

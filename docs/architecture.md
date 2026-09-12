@@ -1,5 +1,7 @@
 # Architecture — Learnova
 
+> Snapshot Prototype 0. **Source of truth for stages:** [`docs/architecture-baseline.md`](architecture-baseline.md) (M0–M4 Done; next M5). Golden Reference persistence is still `localStorage`; server Goal/Path/Evidence live in PostgreSQL (not wired to the UI).
+
 ## État des lieux : Prototype 0
 
 ### Stack actuelle
