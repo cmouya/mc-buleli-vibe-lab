@@ -7,7 +7,13 @@ const applicationDir = join(dirname(fileURLToPath(import.meta.url)), "../../../s
 
 describe("application — layer boundary", () => {
   it("does not import store, views, localStorage, or framework/backend stacks", () => {
-    const files = ["confirm-goal.ts", "submit-assessment.ts", "generate-learning-path.ts", "index.ts"]
+    const files = [
+      "confirm-goal.ts",
+      "persist-goal.ts",
+      "submit-assessment.ts",
+      "generate-learning-path.ts",
+      "index.ts",
+    ]
     for (const file of files) {
       const source = readFileSync(join(applicationDir, file), "utf8")
       expect(source).not.toMatch(/store\.js/)

@@ -8,6 +8,13 @@
       "when": 1789222134135,
       "tag": "0000_m4_infra_bootstrap",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789227081307,
+      "tag": "0001_m4_2_goals",
+      "breakpoints": true
     }
   ]
 }

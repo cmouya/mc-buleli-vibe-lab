@@ -6,5 +6,6 @@ export default defineConfig({
     include: ["tests/db/**/*.{test,spec}.{js,ts}"],
     restoreMocks: true,
     testTimeout: 20000,
+    fileParallelism: false,
   },
 })

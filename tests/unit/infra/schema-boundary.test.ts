@@ -1,8 +1,8 @@
+import { SCHEMA_SLICE } from "../../../src/infra/db/schema.js"
 import { readdirSync, readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
-import { SCHEMA_SLICE } from "../../../src/infra/db/schema.js"
 
 const modulesDir = join(dirname(fileURLToPath(import.meta.url)), "../../../src/modules")
 const schemaPath = join(dirname(fileURLToPath(import.meta.url)), "../../../src/infra/db/schema.ts")
@@ -21,17 +21,19 @@ function listSourceFiles(dir: string): string[] {
   return files
 }
 
-describe("infra — M4.1 schema boundary", () => {
-  it("is infrastructure-only with no business or identity tables", () => {
-    expect(SCHEMA_SLICE).toBe("m4.1-infra-only")
+describe("infra — M4.2 schema boundary", () => {
+  it("persists Goal only — no path, evidence, or identity tables", () => {
+    expect(SCHEMA_SLICE).toBe("m4.2-goal")
     const source = readFileSync(schemaPath, "utf8")
-    expect(source).not.toMatch(/pgTable/)
-    expect(source).not.toMatch(/\bGoal\b/)
+    expect(source).toMatch(/pgTable\(\s*"goals"/)
     expect(source).not.toMatch(/LearningPath/)
     expect(source).not.toMatch(/Evidence/)
     expect(source).not.toMatch(/\bUser\b/)
     expect(source).not.toMatch(/Organization/)
     expect(source).not.toMatch(/Session/)
+    expect(source).not.toMatch(/learner_id/)
+    expect(source).not.toMatch(/user_id/)
+    expect(source).not.toMatch(/organization_id/)
   })
 
   it("keeps domain modules free of Drizzle", () => {

@@ -1,4 +1,6 @@
-export { SCHEMA_SLICE } from "./schema.js"
+export { SCHEMA_SLICE, goals } from "./schema.js"
 export { requireDatabaseUrl } from "./url.js"
 export { pingDatabase } from "./ping.js"
 export { migrateDatabase } from "./migrate.js"
+export { createSqlClient, createDb } from "./client.js"
+export { createDrizzleGoalRepository } from "./goal-repository.js"
