@@ -17,6 +17,12 @@
     "allowJs": true,
     "checkJs": false
   },
-  "include": ["src/shared/types/**/*.ts", "src/modules/**/*.ts", "src/adapters/**/*.ts", "src/application/**/*.ts"],
+  "include": [
+    "src/shared/types/**/*.ts",
+    "src/modules/**/*.ts",
+    "src/adapters/**/*.ts",
+    "src/application/**/*.ts",
+    "src/server/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
