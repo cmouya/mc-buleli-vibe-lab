@@ -17,6 +17,9 @@ describe("application — layer boundary", () => {
       expect(source).not.toMatch(/fastify/i)
       expect(source).not.toMatch(/react/i)
       expect(source).not.toMatch(/from ["']\.\.\/ai\//)
+      expect(source).not.toMatch(/drizzle-orm/)
+      expect(source).not.toMatch(/drizzle-kit/)
+      expect(source).not.toMatch(/from ["']postgres["']/)
     }
   })
 })

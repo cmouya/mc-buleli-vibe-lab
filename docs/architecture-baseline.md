@@ -794,9 +794,9 @@ Source : [`docs/migration-map.md`](migration-map.md), [`docs/architecture.md`](a
 | Stage | Nom | Objectif | État |
 |-------|-----|----------|------|
 | **M0** | Baseline protégée | Tests E2E + unit + CI verts ; docs Phase 0–1.5 ; legacy nettoyé | **Done** |
-| **M1** | Domain extraction | Modules TS purs (`src/modules/`) ; store.js → adapters ; domain unit tests | Planned |
-| **M2** | Application Services | Use cases orchestrant domaine + ports ; application tests | Planned |
-| **M3** | Fastify API | REST `/api/v1/` ; auth middleware ; API integration tests | Planned |
+| **M1** | Domain extraction | Modules TS purs (`src/modules/`) ; store.js → adapters ; domain unit tests | **Done** |
+| **M2** | Application Services | Use cases orchestrant domaine + ports ; application tests | **Done** |
+| **M3** | Fastify API | REST `/api/v1/` ; OpenAPI ; API integration tests (auth production = M5) | **Done** |
 | **M4** | PostgreSQL + Drizzle | Repositories implémentés ; migrations ; seed data | Planned |
 | **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | Planned |
 | **M6** | First complete Vertical Slice | Organization → Mastery end-to-end via API | Planned |

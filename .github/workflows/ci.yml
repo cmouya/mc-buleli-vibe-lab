@@ -9,6 +9,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: learnova
+          POSTGRES_PASSWORD: learnova
+          POSTGRES_DB: learnova
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U learnova -d learnova"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://learnova:learnova@localhost:5432/learnova
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,6 +48,9 @@ jobs:
 
       - name: API tests
         run: npm run test:api
+
+      - name: Database infrastructure tests
+        run: npm run test:db
 
       - name: Build
         run: npm run build

@@ -30,6 +30,8 @@ describe("server — layer boundary", () => {
       expect(source, file).not.toMatch(/localStorage/)
       expect(source, file).not.toMatch(/\bdocument\b/)
       expect(source, file).not.toMatch(/MockAIService/)
+      expect(source, file).not.toMatch(/drizzle-orm/)
+      expect(source, file).not.toMatch(/drizzle-kit/)
     }
   })
 })

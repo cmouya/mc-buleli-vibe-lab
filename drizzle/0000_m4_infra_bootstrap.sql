@@ -1,0 +1,2 @@
+-- M4.1 infrastructure bootstrap.
+-- Applies the migration runner without creating business or identity tables.
