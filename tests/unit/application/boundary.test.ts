@@ -10,6 +10,7 @@ describe("application — layer boundary", () => {
     const files = [
       "confirm-goal.ts",
       "persist-goal.ts",
+      "accept-learning-path.ts",
       "submit-assessment.ts",
       "generate-learning-path.ts",
       "index.ts",

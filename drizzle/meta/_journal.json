@@ -15,6 +15,13 @@
       "when": 1789227081307,
       "tag": "0001_m4_2_goals",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789231018909,
+      "tag": "0002_m4_3_learning_paths",
+      "breakpoints": true
     }
   ]
 }
