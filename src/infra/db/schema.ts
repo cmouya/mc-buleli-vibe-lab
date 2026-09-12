@@ -1,8 +1,10 @@
 import { sql } from "drizzle-orm"
 import {
+  boolean,
   check,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   text,
@@ -11,7 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
-export const SCHEMA_SLICE = "m4.3-accepted-path" as const
+export const SCHEMA_SLICE = "m4.4-evidence" as const
 
 export const goals = pgTable(
   "goals",
@@ -80,5 +82,31 @@ export const learningPathSteps = pgTable(
   (table) => [
     check("learning_path_steps_position_check", sql`${table.position} >= 0`),
     unique("learning_path_steps_path_position").on(table.pathId, table.position),
+  ],
+)
+
+export const evidence = pgTable(
+  "evidence",
+  {
+    id: uuid("id").primaryKey(),
+    stepId: uuid("step_id")
+      .notNull()
+      .references(() => learningPathSteps.id, { onDelete: "restrict" }),
+    type: text("type").notNull(),
+    score: numeric("score").notNull(),
+    maxScore: numeric("max_score").notNull(),
+    passed: boolean("passed").notNull(),
+    answers: jsonb("answers").notNull().default([]),
+    recordedAt: timestamp("recorded_at", { withTimezone: true, mode: "string" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check("evidence_type_check", sql`${table.type} IN ('quiz_attempt')`),
+    check("evidence_score_check", sql`${table.score} >= 0`),
+    check("evidence_max_score_check", sql`${table.maxScore} > 0`),
+    check("evidence_score_lte_max_check", sql`${table.score} <= ${table.maxScore}`),
+    index("evidence_step_id_idx").on(table.stepId),
   ],
 )

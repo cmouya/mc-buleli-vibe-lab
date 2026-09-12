@@ -10,3 +10,4 @@ export type {
   RecordQuizEvidenceInput,
   DomainClockOptions,
 } from "./evidence.js"
+export type { EvidenceRepository } from "./evidence-repository.js"

@@ -21,14 +21,14 @@ function listSourceFiles(dir: string): string[] {
   return files
 }
 
-describe("infra — M4.3 schema boundary", () => {
-  it("persists Goal and accepted path steps — no evidence or identity tables", () => {
-    expect(SCHEMA_SLICE).toBe("m4.3-accepted-path")
+describe("infra — M4.4 schema boundary", () => {
+  it("persists Goal, accepted path, and evidence — no identity or progress columns", () => {
+    expect(SCHEMA_SLICE).toBe("m4.4-evidence")
     const source = readFileSync(schemaPath, "utf8")
     expect(source).toMatch(/pgTable\(\s*"goals"/)
     expect(source).toMatch(/pgTable\(\s*"learning_paths"/)
     expect(source).toMatch(/pgTable\(\s*"learning_path_steps"/)
-    expect(source).not.toMatch(/Evidence/)
+    expect(source).toMatch(/pgTable\(\s*"evidence"/)
     expect(source).not.toMatch(/\bUser\b/)
     expect(source).not.toMatch(/Organization/)
     expect(source).not.toMatch(/Session/)
@@ -36,7 +36,8 @@ describe("infra — M4.3 schema boundary", () => {
     expect(source).not.toMatch(/user_id/)
     expect(source).not.toMatch(/organization_id/)
     expect(source).not.toMatch(/todo/)
-    expect(source).not.toMatch(/current/)
+    expect(source).not.toMatch(/\bcurrent\b/)
+    expect(source).not.toMatch(/mastery/i)
   })
 
   it("keeps domain modules free of Drizzle", () => {
