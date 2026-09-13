@@ -13,7 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
-export const SCHEMA_SLICE = "m4.4-evidence" as const
+export const SCHEMA_SLICE = "m5.1-identity" as const
 
 export const goals = pgTable(
   "goals",
@@ -108,5 +108,65 @@ export const evidence = pgTable(
     check("evidence_max_score_check", sql`${table.maxScore} > 0`),
     check("evidence_score_lte_max_check", sql`${table.score} <= ${table.maxScore}`),
     index("evidence_step_id_idx").on(table.stepId),
+  ],
+)
+
+export const organizations = pgTable("organizations", {
+  id: uuid("id").primaryKey(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    .notNull()
+    .defaultNow(),
+})
+
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    .notNull()
+    .defaultNow(),
+})
+
+export const userCredentials = pgTable(
+  "user_credentials",
+  {
+    id: uuid("id").primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    type: text("type").notNull(),
+    identifier: text("identifier").notNull(),
+    secretHash: text("secret_hash").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check("user_credentials_type_check", sql`${table.type} IN ('password')`),
+    unique("user_credentials_type_identifier").on(table.type, table.identifier),
+    index("user_credentials_user_id_idx").on(table.userId),
+  ],
+)
+
+export const organizationMemberships = pgTable(
+  "organization_memberships",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "restrict" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    role: text("role").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "organization_memberships_role_check",
+      sql`${table.role} IN ('org_admin', 'member')`,
+    ),
+    unique("organization_memberships_org_user").on(table.organizationId, table.userId),
   ],
 )

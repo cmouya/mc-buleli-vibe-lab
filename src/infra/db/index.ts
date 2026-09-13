@@ -1,4 +1,4 @@
-export { SCHEMA_SLICE, goals, learningPaths, learningPathSteps, evidence } from "./schema.js"
+export { SCHEMA_SLICE, goals, learningPaths, learningPathSteps, evidence, organizations, users, userCredentials, organizationMemberships } from "./schema.js"
 export { requireDatabaseUrl } from "./url.js"
 export { pingDatabase } from "./ping.js"
 export { migrateDatabase } from "./migrate.js"
@@ -6,3 +6,9 @@ export { createSqlClient, createDb } from "./client.js"
 export { createDrizzleGoalRepository } from "./goal-repository.js"
 export { createDrizzleLearningPathRepository } from "./learning-path-repository.js"
 export { createDrizzleEvidenceRepository } from "./evidence-repository.js"
+export {
+  createDrizzleOrganizationRepository,
+  createDrizzleUserRepository,
+  createDrizzleUserCredentialRepository,
+  createDrizzleOrganizationMembershipRepository,
+} from "./identity-repository.js"

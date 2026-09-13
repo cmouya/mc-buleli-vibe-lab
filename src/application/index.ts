@@ -2,6 +2,13 @@ export { confirmGoal } from "./confirm-goal.js"
 export { persistGoal, confirmAndPersistGoal } from "./persist-goal.js"
 export { submitAssessment } from "./submit-assessment.js"
 export { persistEvidence, submitAndPersistEvidence } from "./persist-evidence.js"
+export {
+  persistOrganization,
+  persistUser,
+  persistPasswordCredential,
+  persistMembership,
+  bootstrapTestIdentity,
+} from "./persist-identity.js"
 export { generateLearningPath } from "./generate-learning-path.js"
 export { acceptLearningPath } from "./accept-learning-path.js"
 export type {
@@ -12,3 +19,11 @@ export type {
 export type { ConfirmAndPersistGoalInput, GoalRepository } from "./persist-goal.js"
 export type { AcceptLearningPathInput, LearningPathRepository } from "./accept-learning-path.js"
 export type { EvidenceRepository } from "./persist-evidence.js"
+export type {
+  BootstrapTestIdentityInput,
+  IdentityRepositories,
+  OrganizationMembershipRepository,
+  OrganizationRepository,
+  UserCredentialRepository,
+  UserRepository,
+} from "./persist-identity.js"

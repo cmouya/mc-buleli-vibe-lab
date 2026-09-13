@@ -13,6 +13,7 @@ describe("application — layer boundary", () => {
       "accept-learning-path.ts",
       "submit-assessment.ts",
       "persist-evidence.ts",
+      "persist-identity.ts",
       "generate-learning-path.ts",
       "index.ts",
     ]
