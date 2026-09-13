@@ -34,4 +34,12 @@ describe("server — layer boundary", () => {
       expect(source, file).not.toMatch(/drizzle-kit/)
     }
   })
+
+  it("always registers auth routes and requires injected auth deps", () => {
+    const source = readFileSync(join(serverDir, "app.ts"), "utf8")
+    expect(source).toMatch(/auth: LoginDependencies/)
+    expect(source).toMatch(/await registerAuthRoutes\(app, opts\.auth\)/)
+    expect(source).not.toMatch(/if \(opts\?\.auth\)/)
+    expect(source).not.toMatch(/from ["'].*infra\/db/)
+  })
 })

@@ -27,3 +27,8 @@ export type {
   UserCredentialRepository,
   UserRepository,
 } from "./persist-identity.js"
+export { login } from "./login.js"
+export { logout } from "./logout.js"
+export { resolveSession } from "./resolve-session.js"
+export type { AuthContext } from "./resolve-session.js"
+export type { LoginDependencies, LoginInput, LoginResult } from "./login.js"

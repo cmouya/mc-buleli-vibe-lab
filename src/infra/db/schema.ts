@@ -13,7 +13,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
-export const SCHEMA_SLICE = "m5.1-identity" as const
+export const SCHEMA_SLICE = "m5.2-sessions" as const
 
 export const goals = pgTable(
   "goals",
@@ -168,5 +168,25 @@ export const organizationMemberships = pgTable(
       sql`${table.role} IN ('org_admin', 'member')`,
     ),
     unique("organization_memberships_org_user").on(table.organizationId, table.userId),
+  ],
+)
+
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: uuid("id").primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true, mode: "string" }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true, mode: "string" }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique("sessions_token_hash").on(table.tokenHash),
+    index("sessions_user_id_idx").on(table.userId),
   ],
 )

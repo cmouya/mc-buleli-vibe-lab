@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
+import { inertAuth } from "./inert-auth.js"
 
 describe("API — health", () => {
   it("returns ok without listening on a port", async () => {
-    const app = await buildApp()
+    const app = await buildApp({ auth: inertAuth() })
     const response = await app.inject({
       method: "GET",
       url: "/api/v1/health",

@@ -36,6 +36,13 @@
       "when": 1789257789796,
       "tag": "0004_m5_1_identity",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789305396883,
+      "tag": "0005_m5_2_sessions",
+      "breakpoints": true
     }
   ]
 }

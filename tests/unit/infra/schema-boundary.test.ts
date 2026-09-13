@@ -28,9 +28,9 @@ function tableBlock(source: string, exportName: string): string {
   return next === -1 ? source.slice(start) : source.slice(start, next)
 }
 
-describe("infra — M5.1 schema boundary", () => {
-  it("adds identity island tables without owning the M4 spine or sessions", () => {
-    expect(SCHEMA_SLICE).toBe("m5.1-identity")
+describe("infra — M5.2 schema boundary", () => {
+  it("adds sessions without owning the M4 spine or Learner", () => {
+    expect(SCHEMA_SLICE).toBe("m5.2-sessions")
     const source = readFileSync(schemaPath, "utf8")
     expect(source).toMatch(/pgTable\(\s*"goals"/)
     expect(source).toMatch(/pgTable\(\s*"learning_paths"/)
@@ -40,7 +40,7 @@ describe("infra — M5.1 schema boundary", () => {
     expect(source).toMatch(/pgTable\(\s*"users"/)
     expect(source).toMatch(/pgTable\(\s*"user_credentials"/)
     expect(source).toMatch(/pgTable\(\s*"organization_memberships"/)
-    expect(source).not.toMatch(/pgTable\(\s*"sessions"/)
+    expect(source).toMatch(/pgTable\(\s*"sessions"/)
     expect(source).not.toMatch(/pgTable\(\s*"learners"/)
     for (const name of ["goals", "learningPaths", "learningPathSteps", "evidence"]) {
       const block = tableBlock(source, name)
@@ -48,6 +48,9 @@ describe("infra — M5.1 schema boundary", () => {
       expect(block, name).not.toMatch(/learner_id/)
       expect(block, name).not.toMatch(/organization_id/)
     }
+    const sessionsBlock = tableBlock(source, "sessions")
+    expect(sessionsBlock).not.toMatch(/organization_id/)
+    expect(sessionsBlock).not.toMatch(/learner_id/)
     expect(source).not.toMatch(/todo/)
     expect(source).not.toMatch(/mastery/i)
   })

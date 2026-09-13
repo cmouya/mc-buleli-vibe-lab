@@ -62,7 +62,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md) — Brief M5 historique **non contraignant**
 - [`docs/m5-decisions.md`](m5-decisions.md) — Décisions M5 enregistrées (audit §22)
 - [`docs/m5.1-identity-island.md`](m5.1-identity-island.md) — M5.1 identity island (**Done**)
-- [`docs/m5.2-decisions.md`](m5.2-decisions.md) — Décisions M5.2 (humain) ; [`docs/m5.2-implementation-plan.md`](m5.2-implementation-plan.md) — plan de code (**non exécuté**)
+- [`docs/m5.2-decisions.md`](m5.2-decisions.md) — Décisions M5.2 (humain) ; [`docs/m5.2-implementation-plan.md`](m5.2-implementation-plan.md) — M5.2 sessions (**Done**)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -626,7 +626,7 @@ Le catalogue MVP complet (Organization, Mastery, …) reste **hors M4**. Seed da
 | Thin controllers | Routes HTTP délèguent aux application services |
 | Validation entrées | Schema validation (Zod) à la frontière API |
 | Pas de logique domaine | L’API orchestre, le domaine décide |
-| Tenant scoping | `organizationId` injecté depuis la session, jamais depuis le body seul |
+| Tenant scoping | `organizationId` vient des **memberships** après résolution de l’utilisateur de session, jamais depuis le body seul. La session n’a pas d’`organization_id`. |
 | Sérialisation | DTOs API ≠ entités domaine |
 
 ### Organisation logique (aperçu, non exhaustif)
@@ -687,7 +687,7 @@ User
 | Librairie session (Lucia, custom, etc.) | À définir ultérieurement |
 | Durée de session / refresh | À définir ultérieurement |
 | Rate limiting login | **M5.2** — `@fastify/rate-limit` sur `POST /api/v1/auth/login` (mémoire ; Redis différé). Pas M5.3. |
-| Password hashing | **Argon2id** (décidé). Librairie npm **non figée** (`@node-rs/argon2` ou `argon2`) jusqu’à vérif Windows/CI. |
+| Password hashing | **Argon2id** via **`@node-rs/argon2`** (M5.2). |
 
 ---
 
@@ -832,7 +832,7 @@ Source : [`docs/migration-map.md`](migration-map.md), [`docs/architecture.md`](a
 | **M2** | Application Services | Use cases orchestrant domaine + ports ; application tests | **Done** |
 | **M3** | Fastify API | REST `/api/v1/` ; OpenAPI ; API integration tests (auth production = M5) | **Done** |
 | **M4** | PostgreSQL + Drizzle | Infra + repos Goal/Path/Evidence ; migrations versionnées. Seed produit différé. | **Done** |
-| **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | **In progress** (M5.1 Done) |
+| **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | **In progress** (M5.1–M5.2 Done) |
 | **M6** | First complete Vertical Slice | Organization → Mastery end-to-end via API | Planned |
 | **M7** | React | UI React + TypeScript + Vite consommant l’API ; retrait progressif views legacy | Planned |
 
@@ -847,11 +847,11 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
 
 ### Slice M5.1 Identity island — Done
 
-M4 est **clos**. Pas de M4.5. M5.1 est **exécuté** : `organizations`, `users`, `user_credentials`, `organization_memberships` (`org_admin` \| `member`). Spine M4 toujours non possédé. Confirm/generate publics. Pas de sessions HTTP (M5.2).
+M4 est **clos**. Pas de M4.5. M5.1 est **exécuté**. M5.2 est **exécuté** : sessions hachées, cookie `learnova.sid`, login/logout/GET session. Spine M4 toujours non possédé. Confirm/generate publics.
 
-Décisions : [`docs/m5-decisions.md`](m5-decisions.md). ADR-013. Récap : [`docs/m5.1-identity-island.md`](m5.1-identity-island.md).
+Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md). ADR-013, ADR-014.
 
-**Prochain :** M5.2 — sessions serveur + cookie HTTP-only (ADR-005). Ne pas figer `sessions.organization_id` sans audit M5.2.
+**Prochain :** M5.3 — preuve d’isolation tenant. Ne pas figer un tenant actif sur la session.
 
 ---
 

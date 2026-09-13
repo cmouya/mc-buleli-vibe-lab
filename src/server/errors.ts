@@ -12,8 +12,13 @@ export function mapErrorToHttp(
 ): FastifyReply {
   void request
   if (error instanceof DomainError) {
-    const status = error.code === "GOAL_NOT_ANALYZED" ? 409 : 400
-    return reply.status(status).send({ code: error.code, message: error.message })
+    if (error.code === "GOAL_NOT_ANALYZED") {
+      return reply.status(409).send({ code: error.code, message: error.message })
+    }
+    if (error.code === "AUTH_INVALID_CREDENTIALS" || error.code === "AUTH_UNAUTHENTICATED") {
+      return reply.status(401).send({ code: error.code, message: error.message })
+    }
+    return reply.status(400).send({ code: error.code, message: error.message })
   }
 
   if (typeof error === "object" && error !== null && isFastifyValidationError(error as FastifyError)) {
@@ -21,6 +26,18 @@ export function mapErrorToHttp(
     return reply.status(400).send({
       code: "VALIDATION_ERROR",
       message: fastifyError.message,
+    })
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "statusCode" in error &&
+    (error as { statusCode?: number }).statusCode === 429
+  ) {
+    return reply.status(429).send({
+      code: "RATE_LIMITED",
+      message: "Too many requests",
     })
   }
 

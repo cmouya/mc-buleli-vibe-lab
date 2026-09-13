@@ -1,6 +1,6 @@
 /**
  * Persist identity island. No HTTP auth routes or learning-spine ownership.
- * secretHash is opaque — M5.1 does not hash or verify passwords.
+ * persistPasswordCredential is hash-in only — never persist plaintext passwords.
  */
 
 import {

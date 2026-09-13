@@ -40,7 +40,7 @@ It demonstrates:
 - First interactive lesson with quiz validation
 - Progress update after successful assessment (browser only)
 
-The learner UI does **not** dual-write to PostgreSQL. There is **no** authentication HTTP yet (M5.2). M5.1 identity tables exist in PostgreSQL. Decisions: [`docs/m5-decisions.md`](docs/m5-decisions.md). ADR-013: [`docs/architecture-baseline.md`](docs/architecture-baseline.md).
+The learner UI does **not** dual-write to PostgreSQL. HTTP auth exists (`POST /api/v1/auth/login`) with an HTTP-only cookie; the Golden Reference UI does not use it. M5.1 identity and M5.2 sessions live in PostgreSQL. Decisions: [`docs/m5-decisions.md`](docs/m5-decisions.md), [`docs/m5.2-decisions.md`](docs/m5.2-decisions.md).
 
 ## Main learning journey
 
