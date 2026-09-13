@@ -40,7 +40,7 @@ It demonstrates:
 - First interactive lesson with quiz validation
 - Progress update after successful assessment (browser only)
 
-The learner UI does **not** dual-write to PostgreSQL. There is **no** authentication or multi-tenancy yet (next: M5, Planned). See [`docs/architecture-baseline.md`](docs/architecture-baseline.md). The file [`docs/m5-auth-tenancy-plan.md`](docs/m5-auth-tenancy-plan.md) is a **non-binding** brief: M5 implementation decisions remain subject to a dedicated M5 architecture audit and human approval.
+The learner UI does **not** dual-write to PostgreSQL. There is **no** authentication HTTP yet (M5.2). M5.1 identity tables exist in PostgreSQL. Decisions: [`docs/m5-decisions.md`](docs/m5-decisions.md). ADR-013: [`docs/architecture-baseline.md`](docs/architecture-baseline.md).
 
 ## Main learning journey
 

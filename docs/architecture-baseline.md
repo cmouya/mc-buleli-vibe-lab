@@ -59,7 +59,9 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/product-principles.md`](product-principles.md) — Principes non négociables
 - [`docs/architecture.md`](architecture.md) — État des lieux Prototype 0 (historique)
 - [`docs/migration-map.md`](migration-map.md) — Matrice de migration fichier par fichier
-- [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md) — Brief M5 **non contraignant** (audit + validation humaine requis)
+- [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md) — Brief M5 historique **non contraignant**
+- [`docs/m5-decisions.md`](m5-decisions.md) — Décisions M5 enregistrées (audit §22)
+- [`docs/m5.1-identity-island.md`](m5.1-identity-island.md) — M5.1 identity island (**Done**)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -548,7 +550,7 @@ Organization
 
 ### État actuel
 
-Après M4 : **aucune authentification, aucun multi-tenant**. La Golden Reference reste un navigateur anonyme. L’API Fastify n’applique pas encore de session. M5 est le prochain stage (**Planned**). Brief non contraignant : [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md). Les décisions d’implémentation M5 restent soumises à un audit d’architecture M5 dédié et à une validation humaine.
+Après M4 : **aucune authentification HTTP, aucun multi-tenant applicatif**. M5.1 identity island est **Done** ([`docs/m5.1-identity-island.md`](m5.1-identity-island.md)). Décisions : [`docs/m5-decisions.md`](m5-decisions.md). Prochain : M5.2 sessions.
 
 ---
 
@@ -829,7 +831,7 @@ Source : [`docs/migration-map.md`](migration-map.md), [`docs/architecture.md`](a
 | **M2** | Application Services | Use cases orchestrant domaine + ports ; application tests | **Done** |
 | **M3** | Fastify API | REST `/api/v1/` ; OpenAPI ; API integration tests (auth production = M5) | **Done** |
 | **M4** | PostgreSQL + Drizzle | Infra + repos Goal/Path/Evidence ; migrations versionnées. Seed produit différé. | **Done** |
-| **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | **Next** (Planned) |
+| **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | **In progress** (M5.1 Done) |
 | **M6** | First complete Vertical Slice | Organization → Mastery end-to-end via API | Planned |
 | **M7** | React | UI React + TypeScript + Vite consommant l’API ; retrait progressif views legacy | Planned |
 
@@ -842,11 +844,13 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
                           before full React
 ```
 
-### Prochain slice : M5 (plan seulement)
+### Slice M5.1 Identity island — Done
 
-M4 est **clos**. Pas de M4.5. Ne pas persister Progress, LearnerState, Skill, AssessmentAttempt, ni Mastery avant qu’une identité réelle existe.
+M4 est **clos**. Pas de M4.5. M5.1 est **exécuté** : `organizations`, `users`, `user_credentials`, `organization_memberships` (`org_admin` \| `member`). Spine M4 toujours non possédé. Confirm/generate publics. Pas de sessions HTTP (M5.2).
 
-M5 (Authentication + Multi-tenancy) est le **prochain stage**, Planned seulement. Brief non contraignant : [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md). **Les décisions d’implémentation M5 restent soumises à un audit d’architecture M5 dédié et à une validation humaine.** Ne pas implémenter M5 dans le même mouvement que la clôture documentaire M4. Ne pas figer ici User, Organization, memberships, rôles, ni FKs d’ownership.
+Décisions : [`docs/m5-decisions.md`](m5-decisions.md). ADR-013. Récap : [`docs/m5.1-identity-island.md`](m5.1-identity-island.md).
+
+**Prochain :** M5.2 — sessions serveur + cookie HTTP-only (ADR-005). Ne pas figer `sessions.organization_id` sans audit M5.2.
 
 ---
 
@@ -1049,6 +1053,16 @@ Règles opérationnelles pour toute contribution future :
 | **Alternatives considered** | Big-bang rewrite (risque régression), parallel run infini (dette), freeze prototype (bloque dev) |
 | **Consequences** | Prototype Vite maintenu jusqu’à M7 ; extraction progressive M1→M6 |
 
+### ADR-013 — M5 identity island
+
+| | |
+|---|---|
+| **Status** | Accepted |
+| **Decision** | **User ≠ Learner.** Organization membership is a separate aggregate from User. M5.1 persists an **identity island** only (`organizations`, `users`, `user_credentials`, `organization_memberships`). Existing M4 `goals` / `learning_paths` / `learning_path_steps` / `evidence` rows remain **structurally unowned** during M5.1. Learner and learning-resource ownership are **deferred to M6**. |
+| **Context** | M5 must introduce verified identity and multi-org membership without collapsing User into Learner, without owning the anonymous learning spine, and without implementing sessions (ADR-005 remains the session *style*; session **tables/HTTP** are M5.2). |
+| **Alternatives considered** | User = Learner (rejeté — formateurs/admins) ; `organization_id` on `users` (rejeté — multi-org) ; nullable FKs on M4 tables now (rejeté — pas de backfill) |
+| **Consequences** | ADR-002 (PostgreSQL) et ADR-005 (sessions + cookies HTTP-only) **inchangés**. Pas de table `learners` ni `sessions` en M5.1. Rôles membership `org_admin` \| `member` uniquement (pas `learner`). |
+
 ---
 
 ## 21. ADR Coherence Matrix
@@ -1074,7 +1088,7 @@ Matrice de compatibilité entre les 12 ADR validées :
 
 ### Conclusion
 
-**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR.
+**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1) et cohérent avec ADR-002 (PostgreSQL), ADR-005 (sessions plus tard), ADR-007 (repos), ADR-008 (bounded context `identity/`).
 
 ### Zones de vigilance
 
@@ -1106,7 +1120,7 @@ Les éléments suivants sont **volontairement non décidés**. Ils ne doivent pa
 | D-12 | Component library (Tailwind, shadcn…) | À définir ultérieurement |
 | D-13 | Hosting provider (Vercel, Railway, AWS…) | À définir ultérieurement |
 | D-14 | Matrice RBAC détaillée par ressource | À définir ultérieurement |
-| D-15 | Schéma SQL spine Goal/Path/Steps/Evidence | **Décidé en M4** (`src/infra/db/schema.ts`). Reste différé : org/user/session, progress, mastery, skill catalog. |
+| D-15 | Schéma SQL spine Goal/Path/Steps/Evidence | **Décidé en M4**. Identity island **ADR-013 / M5.1**. Sessions = M5.2. Progress/mastery/skill catalog différés. |
 | D-16 | Event bus technology (si nécessaire) | À définir ultérieurement |
 
 ---
@@ -1163,7 +1177,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Trajectoire d’implémentation : M0–M4 **Done** ; prochain stage **M5** (**Planned**, auth + tenancy) — pas un M4.5 persistence. Implémentation M5 non autorisée tant qu’un audit dédié n’est pas validé.
+4. Trajectoire : M0–M4 **Done** ; M5.1 **Done** ; M5 **In progress** ; prochain = **M5.2** (sessions). Pas de M4.5.
 
 ### Ce document ne remplace pas
 
