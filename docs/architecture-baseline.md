@@ -62,6 +62,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m5-auth-tenancy-plan.md`](m5-auth-tenancy-plan.md) — Brief M5 historique **non contraignant**
 - [`docs/m5-decisions.md`](m5-decisions.md) — Décisions M5 enregistrées (audit §22)
 - [`docs/m5.1-identity-island.md`](m5.1-identity-island.md) — M5.1 identity island (**Done**)
+- [`docs/m5.2-decisions.md`](m5.2-decisions.md) — Décisions M5.2 (humain) ; [`docs/m5.2-implementation-plan.md`](m5.2-implementation-plan.md) — plan de code (**non exécuté**)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -685,8 +686,8 @@ User
 |---------|--------|
 | Librairie session (Lucia, custom, etc.) | À définir ultérieurement |
 | Durée de session / refresh | À définir ultérieurement |
-| Rate limiting login | À définir ultérieurement |
-| Password hashing (argon2/bcrypt) | À définir ultérieurement |
+| Rate limiting login | **M5.2** — `@fastify/rate-limit` sur `POST /api/v1/auth/login` (mémoire ; Redis différé). Pas M5.3. |
+| Password hashing | **Argon2id** (décidé). Librairie npm **non figée** (`@node-rs/argon2` ou `argon2`) jusqu’à vérif Windows/CI. |
 
 ---
 
@@ -1063,6 +1064,16 @@ Règles opérationnelles pour toute contribution future :
 | **Alternatives considered** | User = Learner (rejeté — formateurs/admins) ; `organization_id` on `users` (rejeté — multi-org) ; nullable FKs on M4 tables now (rejeté — pas de backfill) |
 | **Consequences** | ADR-002 (PostgreSQL) et ADR-005 (sessions + cookies HTTP-only) **inchangés**. Pas de table `learners` ni `sessions` en M5.1. Rôles membership `org_admin` \| `member` uniquement (pas `learner`). |
 
+### ADR-014 — M5.2 sessions (hashed cookie token)
+
+| | |
+|---|---|
+| **Status** | Accepted |
+| **Decision** | Authentication uses **revocable server-side sessions**. The browser cookie **`learnova.sid`** contains a **random high-entropy opaque token**. PostgreSQL stores **only SHA-256(token)** as `token_hash`. A **raw reusable session secret is never stored** in PostgreSQL. Table `sessions` has **no `organization_id`**. A session authenticates **User only**; organization context must later be **validated through memberships**. Cookie: **HttpOnly**, **SameSite=Lax**, **Path=/**, **host-only**, **Secure in production only**. Absolute expiry **24h**; **no sliding/idle** expiry in M5.2. Revocation uses **`revoked_at`**; logout revokes the **current** session. **Argon2id** is approved; the **exact npm library is not frozen**. M5.2 **includes login rate limiting** on `POST /api/v1/auth/login`. **JWT is not** the primary auth mechanism. **No public registration** in M5.2. **M5.3** owns full tenant-isolation proof. M4 Goal/Path/Step/Evidence **ownership remains unchanged**. Golden Reference **remains unchanged**. |
+| **Context** | ADR-005 already decided server sessions + HTTP-only cookies. This ADR records M5.2 token storage, cookie attributes, TTL, hasher, and login rate-limit **without changing ADR-002 or ADR-005 Decision rows**. |
+| **Alternatives considered** | Raw session secret in PostgreSQL ; `organization_id` on `sessions` as active tenant ; JWT as primary auth ; encrypted cookie-only (no server revoke) ; sliding/idle expiry in M5.2 |
+| **Consequences** | Schema `sessions` and auth HTTP follow this ADR (C-11). Confirm/generate stay public. Identity island (ADR-013) unchanged. Argon2 npm package chosen at implementation after Windows/CI check. |
+
 ---
 
 ## 21. ADR Coherence Matrix
@@ -1088,7 +1099,7 @@ Matrice de compatibilité entre les 12 ADR validées :
 
 ### Conclusion
 
-**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1) et cohérent avec ADR-002 (PostgreSQL), ADR-005 (sessions plus tard), ADR-007 (repos), ADR-008 (bounded context `identity/`).
+**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**).
 
 ### Zones de vigilance
 
