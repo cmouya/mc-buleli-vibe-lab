@@ -63,6 +63,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m5-decisions.md`](m5-decisions.md) — Décisions M5 enregistrées (audit §22)
 - [`docs/m5.1-identity-island.md`](m5.1-identity-island.md) — M5.1 identity island (**Done**)
 - [`docs/m5.2-decisions.md`](m5.2-decisions.md) — Décisions M5.2 (humain) ; [`docs/m5.2-implementation-plan.md`](m5.2-implementation-plan.md) — M5.2 sessions (**Done**)
+- [`docs/m5.3-decisions.md`](m5.3-decisions.md) — Décisions M5.3 (humain) ; [`docs/m5.3-implementation-plan.md`](m5.3-implementation-plan.md) — M5.3 tenant isolation (**plan only**)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -551,7 +552,7 @@ Organization
 
 ### État actuel
 
-Après M4 : **aucune authentification HTTP, aucun multi-tenant applicatif**. M5.1 identity island est **Done** ([`docs/m5.1-identity-island.md`](m5.1-identity-island.md)). Décisions : [`docs/m5-decisions.md`](m5-decisions.md). Prochain : M5.2 sessions.
+M5.1 identity island et M5.2 sessions HTTP sont **Done**. Confirm/generate restent publics. La preuve d’isolation tenant (OrganizationContext) est **M5.3** ([ADR-015](#adr-015--m53-request-scoped-organization-context) Accepted ; implémentation pas encore commencée).
 
 ---
 
@@ -849,9 +850,9 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
 
 M4 est **clos**. Pas de M4.5. M5.1 est **exécuté**. M5.2 est **exécuté** : sessions hachées, cookie `learnova.sid`, login/logout/GET session. Spine M4 toujours non possédé. Confirm/generate publics.
 
-Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md). ADR-013, ADR-014.
+Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md). ADR-013, ADR-014, **ADR-015 Accepted** (preuve HTTP pas encore implémentée).
 
-**Prochain :** M5.3 — preuve d’isolation tenant. Ne pas figer un tenant actif sur la session.
+**Prochain :** M5.3 — preuve d’isolation tenant (plan only). Ne pas figer un tenant actif sur la session.
 
 ---
 
@@ -1074,6 +1075,16 @@ Règles opérationnelles pour toute contribution future :
 | **Alternatives considered** | Raw session secret in PostgreSQL ; `organization_id` on `sessions` as active tenant ; JWT as primary auth ; encrypted cookie-only (no server revoke) ; sliding/idle expiry in M5.2 |
 | **Consequences** | Schema `sessions` and auth HTTP follow this ADR (C-11). Confirm/generate stay public. Identity island (ADR-013) unchanged. Argon2 npm package chosen at implementation after Windows/CI check. |
 
+### ADR-015 — M5.3 request-scoped organization context
+
+| | |
+|---|---|
+| **Status** | Accepted |
+| **Decision** | M5.3 introduces a **request-scoped OrganizationContext**. Authentication remains **User-only** through ADR-014 server sessions. OrganizationContext is derived from **AuthContext + requested `organizationId`** only after validating that requested id against **AuthContext.memberships**. A client `organizationId` is a **request**, never authorization authority. For the M5.3 proof resource, organization selection uses the path parameter **`GET /api/v1/organizations/:organizationId/context`**. Successful context contains only **`userId`**, **`organizationId`**, **`role`**. Missing or invalid authentication → **`AUTH_UNAUTHENTICATED`** → HTTP **401**. Authenticated user without membership in the requested organization → **`ORG_FORBIDDEN`** → HTTP **403**. **`ORG_FORBIDDEN` is generic** and must not reveal whether the organization exists (unknown org, other tenant, zero memberships, and missing membership share the same denial). Table `sessions` still has **no `organization_id`**. Do **not** introduce a session-owned or current organization. Do **not** introduce global tenant-selection middleware in M5.3. **Confirm/generate remain public.** M4 Goal/Path/Step/Evidence **ownership remains unchanged**. **No Learner.** **No full RBAC.** **No schema change or migration.** Golden Reference **remains unchanged**. |
+| **Context** | ADR-014 establishes that sessions authenticate User only and that organization context must later be membership-validated. M5.3 records the smallest production-meaningful tenant-isolation proof without turning the session into tenant authority. |
+| **Alternatives considered** | `X-Organization-Id` request header ; `organizationId` in body ; `organizationId` query parameter ; server-selected single organization ; switch-organization endpoint persisted on session ; `sessions.organization_id` ; tests-only proof without an HTTP resource |
+| **Consequences** | M5.3 may implement one request-scoped OrganizationContext resolver and one proof route `GET /api/v1/organizations/:organizationId/context`. Existing AuthContext remains unchanged. Existing `organization_memberships` and `listByUserId` are sufficient. No DB repository or schema extension is required. M6 owns learning-object tenant ownership and later broader tenant-aware operations. A request header may be reconsidered later when multiple organization-scoped routes exist. |
+
 ---
 
 ## 21. ADR Coherence Matrix
@@ -1099,7 +1110,7 @@ Matrice de compatibilité entre les 12 ADR validées :
 
 ### Conclusion
 
-**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**).
+**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`).
 
 ### Zones de vigilance
 
@@ -1188,7 +1199,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Trajectoire : M0–M4 **Done** ; M5.1 **Done** ; M5 **In progress** ; prochain = **M5.2** (sessions). Pas de M4.5.
+4. Trajectoire : M0–M4 **Done** ; M5.1 **Done** ; M5.2 **Done** ; M5 **In progress** ; prochain = **M5.3** (preuve d’isolation tenant ; ADR-015 Accepted, code pas encore commencé). Pas de M4.5.
 
 ### Ce document ne remplace pas
 
