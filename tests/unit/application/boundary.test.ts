@@ -10,14 +10,18 @@ describe("application — layer boundary", () => {
     const files = [
       "confirm-goal.ts",
       "persist-goal.ts",
+      "persist-owned-goal.ts",
       "accept-learning-path.ts",
       "submit-assessment.ts",
       "persist-evidence.ts",
       "persist-identity.ts",
+      "persist-learner.ts",
       "login.ts",
       "logout.ts",
       "resolve-session.ts",
       "resolve-organization-context.ts",
+      "resolve-learner-context.ts",
+      "get-owned-derived-content.ts",
       "generate-learning-path.ts",
       "index.ts",
     ]

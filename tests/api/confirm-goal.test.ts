@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
-import { inertAuth } from "./inert-auth.js"
+import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedGoals } from "./inert-auth.js"
 
 const analyzedBody = {
   goal: "Maîtriser Outlook",
@@ -12,7 +12,7 @@ const analyzedBody = {
 
 describe("API — POST /api/v1/goals/confirm", () => {
   it("confirms an analyzed goal via the application use case", async () => {
-    const app = await buildApp({ auth: inertAuth() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/goals/confirm",
@@ -26,7 +26,7 @@ describe("API — POST /api/v1/goals/confirm", () => {
   })
 
   it("maps GOAL_NOT_ANALYZED to 409 without confirming", async () => {
-    const app = await buildApp({ auth: inertAuth() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/goals/confirm",
@@ -38,7 +38,7 @@ describe("API — POST /api/v1/goals/confirm", () => {
   })
 
   it("rejects a malformed body with 400", async () => {
-    const app = await buildApp({ auth: inertAuth() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/goals/confirm",

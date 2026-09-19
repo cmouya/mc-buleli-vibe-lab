@@ -1,8 +1,8 @@
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js"
 import type { Goal, GoalStatus } from "../../shared/types/domain.types.js"
 import type { GoalIntent, LearnerLevel } from "../../shared/types/learner.types.js"
-import type { GoalRepository } from "../../modules/goals/index.js"
+import type { GoalRepository, OwnedGoalRepository } from "../../modules/goals/index.js"
 import { goals } from "./schema.js"
 import * as schema from "./schema.js"
 
@@ -44,6 +44,8 @@ function toRow(goal: Goal) {
     status: goal.status,
     analyzedAt: goal.analyzedAt ?? null,
     confirmedAt: goal.confirmedAt ?? null,
+    organizationId: goal.organizationId ?? null,
+    learnerId: goal.learnerId ?? null,
     updatedAt: new Date().toISOString(),
   }
 }
@@ -76,6 +78,12 @@ function toGoal(row: typeof goals.$inferSelect): Goal {
   if (confirmedAt) {
     goal.confirmedAt = confirmedAt
   }
+  if (row.organizationId) {
+    goal.organizationId = row.organizationId
+  }
+  if (row.learnerId) {
+    goal.learnerId = row.learnerId
+  }
   return goal
 }
 
@@ -98,6 +106,8 @@ export function createDrizzleGoalRepository(
             status: row.status,
             analyzedAt: row.analyzedAt,
             confirmedAt: row.confirmedAt,
+            organizationId: row.organizationId,
+            learnerId: row.learnerId,
             updatedAt: row.updatedAt,
           },
         })
@@ -110,6 +120,50 @@ export function createDrizzleGoalRepository(
 
     async getById(id: string): Promise<Goal | null> {
       const rows = await db.select().from(goals).where(eq(goals.id, id))
+      return rows[0] ? toGoal(rows[0]) : null
+    },
+  }
+}
+
+export function createDrizzleOwnedGoalRepository(
+  db: PostgresJsDatabase<typeof schema>,
+): OwnedGoalRepository {
+  return {
+    async saveOwned(goal, scope) {
+      const stamped: Goal = {
+        ...goal,
+        organizationId: scope.organizationId,
+        learnerId: scope.learnerId,
+      }
+      const row = toRow(stamped)
+      await db.insert(goals).values(row)
+      const saved = await db
+        .select()
+        .from(goals)
+        .where(
+          and(
+            eq(goals.id, row.id),
+            eq(goals.organizationId, scope.organizationId),
+            eq(goals.learnerId, scope.learnerId),
+          ),
+        )
+      if (!saved[0]) {
+        throw new Error("Owned Goal save did not persist")
+      }
+      return toGoal(saved[0])
+    },
+
+    async getOwnedById(goalId, scope) {
+      const rows = await db
+        .select()
+        .from(goals)
+        .where(
+          and(
+            eq(goals.id, goalId),
+            eq(goals.organizationId, scope.organizationId),
+            eq(goals.learnerId, scope.learnerId),
+          ),
+        )
       return rows[0] ? toGoal(rows[0]) : null
     },
   }

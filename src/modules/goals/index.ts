@@ -9,3 +9,4 @@ export {
 
 export type { Goal, CreateGoalInput, DomainClockOptions } from "./goal.js"
 export type { GoalRepository } from "./goal-repository.js"
+export type { GoalOwnerScope, OwnedGoalRepository } from "./owned-goal-repository.js"

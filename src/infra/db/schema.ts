@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm"
 import {
   boolean,
   check,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -13,7 +14,42 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
-export const SCHEMA_SLICE = "m5.2-sessions" as const
+export const SCHEMA_SLICE = "m6.1-goal-ownership" as const
+
+export const organizations = pgTable("organizations", {
+  id: uuid("id").primaryKey(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    .notNull()
+    .defaultNow(),
+})
+
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+    .notNull()
+    .defaultNow(),
+})
+
+export const learners = pgTable(
+  "learners",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "restrict" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique("learners_org_user").on(table.organizationId, table.userId),
+    unique("learners_org_id").on(table.organizationId, table.id),
+  ],
+)
 
 export const goals = pgTable(
   "goals",
@@ -32,6 +68,10 @@ export const goals = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
+    organizationId: uuid("organization_id").references(() => organizations.id, {
+      onDelete: "restrict",
+    }),
+    learnerId: uuid("learner_id").references(() => learners.id, { onDelete: "restrict" }),
   },
   (table) => [
     check("goals_level_check", sql`${table.level} IN ('debutant', 'intermediaire', 'avance')`),
@@ -44,6 +84,15 @@ export const goals = pgTable(
       sql`${table.status} IN ('draft', 'analyzed', 'confirmed', 'achieved')`,
     ),
     check("goals_hours_check", sql`${table.hoursPerWeek} > 0`),
+    check(
+      "goals_ownership_pair_check",
+      sql`(${table.organizationId} IS NULL AND ${table.learnerId} IS NULL) OR (${table.organizationId} IS NOT NULL AND ${table.learnerId} IS NOT NULL)`,
+    ),
+    foreignKey({
+      name: "goals_org_learner_fk",
+      columns: [table.organizationId, table.learnerId],
+      foreignColumns: [learners.organizationId, learners.id],
+    }).onDelete("restrict"),
   ],
 )
 
@@ -110,21 +159,6 @@ export const evidence = pgTable(
     index("evidence_step_id_idx").on(table.stepId),
   ],
 )
-
-export const organizations = pgTable("organizations", {
-  id: uuid("id").primaryKey(),
-  name: text("name").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
-    .notNull()
-    .defaultNow(),
-})
-
-export const users = pgTable("users", {
-  id: uuid("id").primaryKey(),
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
-    .notNull()
-    .defaultNow(),
-})
 
 export const userCredentials = pgTable(
   "user_credentials",

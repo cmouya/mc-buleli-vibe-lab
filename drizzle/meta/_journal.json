@@ -43,6 +43,20 @@
       "when": 1789305396883,
       "tag": "0005_m5_2_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789816548887,
+      "tag": "0006_m6_1_learners",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789817644870,
+      "tag": "0007_m6_1_goal_ownership",
+      "breakpoints": true
     }
   ]
 }

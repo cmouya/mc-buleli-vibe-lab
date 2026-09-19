@@ -28,9 +28,9 @@ function tableBlock(source: string, exportName: string): string {
   return next === -1 ? source.slice(start) : source.slice(start, next)
 }
 
-describe("infra — M5.2 schema boundary", () => {
-  it("adds sessions without owning the M4 spine or Learner", () => {
-    expect(SCHEMA_SLICE).toBe("m5.2-sessions")
+describe("infra — M6.1 schema boundary", () => {
+  it("adds nullable Goal ownership without Path/Step/Evidence or session tenant columns", () => {
+    expect(SCHEMA_SLICE).toBe("m6.1-goal-ownership")
     const source = readFileSync(schemaPath, "utf8")
     expect(source).toMatch(/pgTable\(\s*"goals"/)
     expect(source).toMatch(/pgTable\(\s*"learning_paths"/)
@@ -41,8 +41,14 @@ describe("infra — M5.2 schema boundary", () => {
     expect(source).toMatch(/pgTable\(\s*"user_credentials"/)
     expect(source).toMatch(/pgTable\(\s*"organization_memberships"/)
     expect(source).toMatch(/pgTable\(\s*"sessions"/)
-    expect(source).not.toMatch(/pgTable\(\s*"learners"/)
-    for (const name of ["goals", "learningPaths", "learningPathSteps", "evidence"]) {
+    expect(source).toMatch(/pgTable\(\s*"learners"/)
+    const goalsBlock = tableBlock(source, "goals")
+    expect(goalsBlock).toMatch(/organization_id/)
+    expect(goalsBlock).toMatch(/learner_id/)
+    expect(goalsBlock).toMatch(/goals_ownership_pair_check/)
+    expect(goalsBlock).toMatch(/goals_org_learner_fk/)
+    expect(goalsBlock).not.toMatch(/user_id/)
+    for (const name of ["learningPaths", "learningPathSteps", "evidence"]) {
       const block = tableBlock(source, name)
       expect(block, name).not.toMatch(/user_id/)
       expect(block, name).not.toMatch(/learner_id/)
@@ -51,6 +57,13 @@ describe("infra — M5.2 schema boundary", () => {
     const sessionsBlock = tableBlock(source, "sessions")
     expect(sessionsBlock).not.toMatch(/organization_id/)
     expect(sessionsBlock).not.toMatch(/learner_id/)
+    const learnersBlock = tableBlock(source, "learners")
+    expect(learnersBlock).toMatch(/organization_id/)
+    expect(learnersBlock).toMatch(/user_id/)
+    expect(learnersBlock).toMatch(/learners_org_user/)
+    expect(learnersBlock).toMatch(/learners_org_id/)
+    expect(learnersBlock).not.toMatch(/role/)
+    expect(learnersBlock).not.toMatch(/membership/)
     expect(source).not.toMatch(/todo/)
     expect(source).not.toMatch(/mastery/i)
   })

@@ -22,6 +22,8 @@ export interface Goal {
   status: GoalStatus
   analyzedAt?: string
   confirmedAt?: string
+  organizationId?: string
+  learnerId?: string
 }
 
 /**

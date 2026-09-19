@@ -1,5 +1,13 @@
 export { confirmGoal } from "./confirm-goal.js"
 export { persistGoal, confirmAndPersistGoal } from "./persist-goal.js"
+export { persistOwnedGoal, getOwnedGoal } from "./persist-owned-goal.js"
+export type { OwnedGoalRepository, PersistOwnedGoalInput } from "./persist-owned-goal.js"
+export {
+  getOwnedPath,
+  getOwnedStep,
+  getOwnedEvidence,
+} from "./get-owned-derived-content.js"
+export type { OwnedDerivedContentRepository } from "./get-owned-derived-content.js"
 export { submitAssessment } from "./submit-assessment.js"
 export { persistEvidence, submitAndPersistEvidence } from "./persist-evidence.js"
 export {
@@ -9,6 +17,8 @@ export {
   persistMembership,
   bootstrapTestIdentity,
 } from "./persist-identity.js"
+export { persistLearner } from "./persist-learner.js"
+export type { LearnerRepository, PersistLearnerInput } from "./persist-learner.js"
 export { generateLearningPath } from "./generate-learning-path.js"
 export { acceptLearningPath } from "./accept-learning-path.js"
 export type {
@@ -33,4 +43,6 @@ export { resolveSession } from "./resolve-session.js"
 export type { AuthContext } from "./resolve-session.js"
 export { resolveOrganizationContext } from "./resolve-organization-context.js"
 export type { OrganizationContext } from "./resolve-organization-context.js"
+export { resolveLearnerContext } from "./resolve-learner-context.js"
+export type { LearnerContext } from "./resolve-learner-context.js"
 export type { LoginDependencies, LoginInput, LoginResult } from "./login.js"

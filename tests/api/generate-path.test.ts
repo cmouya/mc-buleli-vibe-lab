@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { buildApp } from "../../src/server/app.js"
-import { inertAuth } from "./inert-auth.js"
+import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedGoals } from "./inert-auth.js"
 import type { GeneratedPath, PathGenerator, PathGeneratorInput } from "../../src/application/index.js"
 
 const generateBody: PathGeneratorInput = {
@@ -33,7 +33,7 @@ describe("API — POST /api/v1/paths/generate", () => {
   it("returns a path proposal from the injected PathGenerator", async () => {
     const calls: PathGeneratorInput[] = []
     const app = await buildApp({
-      auth: inertAuth(),
+      auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(),
       pathGenerator: {
         async generatePath(input) {
           calls.push(input)
@@ -53,7 +53,7 @@ describe("API — POST /api/v1/paths/generate", () => {
   })
 
   it("rejects a malformed body with 400", async () => {
-    const app = await buildApp({ auth: inertAuth(), pathGenerator: stubGenerator() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), pathGenerator: stubGenerator() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/paths/generate",
@@ -66,7 +66,7 @@ describe("API — POST /api/v1/paths/generate", () => {
 
   it("maps generator failure to 500 INTERNAL_ERROR", async () => {
     const app = await buildApp({
-      auth: inertAuth(),
+      auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(),
       pathGenerator: {
         async generatePath() {
           throw new Error("generator-failed")

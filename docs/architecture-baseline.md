@@ -64,7 +64,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m5.1-identity-island.md`](m5.1-identity-island.md) — M5.1 identity island (**Done**)
 - [`docs/m5.2-decisions.md`](m5.2-decisions.md) — Décisions M5.2 (humain) ; [`docs/m5.2-implementation-plan.md`](m5.2-implementation-plan.md) — M5.2 sessions (**Done**)
 - [`docs/m5.3-decisions.md`](m5.3-decisions.md) — Décisions M5.3 (humain) ; [`docs/m5.3-implementation-plan.md`](m5.3-implementation-plan.md) — M5.3 tenant isolation (**Done**)
-- [`docs/m6.1-decisions.md`](m6.1-decisions.md) — Décisions M6.1 (humain) ; [`docs/m6.1-implementation-plan.md`](m6.1-implementation-plan.md) — M6.1 Learner + Goal ownership (**plan only** ; **not implemented**)
+- [`docs/m6.1-decisions.md`](m6.1-decisions.md) — Décisions M6.1 (humain) ; [`docs/m6.1-implementation-plan.md`](m6.1-implementation-plan.md) — M6.1 Learner + Goal ownership (**COMPLETE AND VALIDATED** ; M6.2 **NOT STARTED**)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -851,9 +851,9 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
 
 M4 est **clos**. Pas de M4.5. M5.1–M5.3 sont **exécutés** : identity island, sessions hachées, cookie `learnova.sid`, preuve `GET /api/v1/organizations/:organizationId/context`. Spine M4 toujours non possédé. Confirm/generate publics.
 
-Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md), [`docs/m6.1-decisions.md`](m6.1-decisions.md). ADR-013, ADR-014, ADR-015, **ADR-016 Accepted**. **M6 implementation has not started.**
+Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md), [`docs/m6.1-decisions.md`](m6.1-decisions.md). ADR-013, ADR-014, ADR-015, **ADR-016 Accepted**. **M6.1 is COMPLETE AND VALIDATED** (C1–C7 on `cursor/m6.1-learner-ownership`). Learner is organization-scoped; Goal is the ownership root; Path/Step/Evidence ownership is derived through Goal; sessions remain User-only; public confirm/generate remain public. **M6.2 has NOT STARTED.**
 
-**Prochain :** M6.1 — Learner + Goal ownership (plan only). Ne pas figer un tenant actif sur la session.
+**Prochain :** M6.2 (not started). Ne pas figer un tenant actif sur la session.
 
 ---
 
@@ -1121,7 +1121,7 @@ Matrice de compatibilité entre les 12 ADR validées :
 
 ### Conclusion
 
-**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`). **ADR-016** est additif (Learner scopé organisation + ownership Goal) et cohérent avec ADR-013 (User ≠ Learner) et ADR-015 (OrganizationContext request-scoped ; M6 owns learning-object tenancy). **M6 n’est pas implémenté.**
+**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`). **ADR-016** est additif (Learner scopé organisation + ownership Goal) et cohérent avec ADR-013 (User ≠ Learner) et ADR-015 (OrganizationContext request-scoped ; M6 owns learning-object tenancy). **M6.1 is implemented and validated; M6.2 has NOT STARTED.**
 
 ### Zones de vigilance
 
@@ -1210,7 +1210,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6 / M6.1 implementation NOT STARTED** ; M5 **In progress** (RBAC détaillé différé) ; prochain = **M6.1** (plan only). Pas de M4.5.
+4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6.1 COMPLETE AND VALIDATED** (C1–C7) ; M5 **In progress** (RBAC détaillé différé) ; prochain = **M6.2** (**NOT STARTED**). Pas de M4.5.
 
 ### Ce document ne remplace pas
 

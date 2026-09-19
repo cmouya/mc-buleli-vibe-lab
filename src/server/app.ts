@@ -3,7 +3,13 @@ import cookie from "@fastify/cookie"
 import rateLimit from "@fastify/rate-limit"
 import swagger from "@fastify/swagger"
 import { getPathGenerator } from "../adapters/ai/path-generator.js"
-import type { LoginDependencies, PathGenerator } from "../application/index.js"
+import type {
+  LearnerRepository,
+  LoginDependencies,
+  OwnedDerivedContentRepository,
+  OwnedGoalRepository,
+  PathGenerator,
+} from "../application/index.js"
 import { mapErrorToHttp } from "./errors.js"
 import { registerAuthRoutes } from "./routes/v1/auth.js"
 import { registerHealthRoutes } from "./routes/v1/health.js"
@@ -19,11 +25,26 @@ export interface BuildAppOptions {
    * outside this file (server must not import Drizzle).
    */
   auth: LoginDependencies
+  /** Required for organization-scoped LearnerContext. Not used by public confirm/generate. */
+  learners: LearnerRepository
+  /** Required for organization-scoped owned Goal HTTP. Not used by public confirm/generate. */
+  ownedGoals: OwnedGoalRepository
+  /** Required for organization-scoped Path/Step/Evidence reads. Not used by public confirm/generate. */
+  ownedDerived: OwnedDerivedContentRepository
 }
 
 export async function buildApp(opts: BuildAppOptions) {
   if (!opts.auth) {
     throw new Error("buildApp requires auth dependencies; auth routes are always registered")
+  }
+  if (!opts.learners) {
+    throw new Error("buildApp requires learners; LearnerContext routes are always registered")
+  }
+  if (!opts.ownedGoals) {
+    throw new Error("buildApp requires ownedGoals; owned Goal routes are always registered")
+  }
+  if (!opts.ownedDerived) {
+    throw new Error("buildApp requires ownedDerived; owned Path/Step/Evidence routes are always registered")
   }
   const app = Fastify({ logger: false })
   app.setErrorHandler(mapErrorToHttp)
@@ -47,7 +68,12 @@ export async function buildApp(opts: BuildAppOptions) {
   await registerGoalRoutes(app)
   await registerPathRoutes(app, pathGenerator)
   await registerAuthRoutes(app, opts.auth)
-  await registerOrganizationRoutes(app, opts.auth)
+  await registerOrganizationRoutes(app, {
+    ...opts.auth,
+    learners: opts.learners,
+    ownedGoals: opts.ownedGoals,
+    ownedDerived: opts.ownedDerived,
+  })
 
   app.get(
     "/api/v1/openapi.json",

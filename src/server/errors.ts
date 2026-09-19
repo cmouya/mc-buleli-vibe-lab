@@ -21,6 +21,9 @@ export function mapErrorToHttp(
     if (error.code === "ORG_FORBIDDEN") {
       return reply.status(403).send({ code: error.code, message: error.message })
     }
+    if (error.code === "GOAL_NOT_FOUND" || error.code === "RESOURCE_NOT_FOUND") {
+      return reply.status(404).send({ code: error.code, message: error.message })
+    }
     return reply.status(400).send({ code: error.code, message: error.message })
   }
 
