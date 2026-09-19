@@ -63,7 +63,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m5-decisions.md`](m5-decisions.md) — Décisions M5 enregistrées (audit §22)
 - [`docs/m5.1-identity-island.md`](m5.1-identity-island.md) — M5.1 identity island (**Done**)
 - [`docs/m5.2-decisions.md`](m5.2-decisions.md) — Décisions M5.2 (humain) ; [`docs/m5.2-implementation-plan.md`](m5.2-implementation-plan.md) — M5.2 sessions (**Done**)
-- [`docs/m5.3-decisions.md`](m5.3-decisions.md) — Décisions M5.3 (humain) ; [`docs/m5.3-implementation-plan.md`](m5.3-implementation-plan.md) — M5.3 tenant isolation (**plan only**)
+- [`docs/m5.3-decisions.md`](m5.3-decisions.md) — Décisions M5.3 (humain) ; [`docs/m5.3-implementation-plan.md`](m5.3-implementation-plan.md) — M5.3 tenant isolation (**Done**)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -552,7 +552,7 @@ Organization
 
 ### État actuel
 
-M5.1 identity island et M5.2 sessions HTTP sont **Done**. Confirm/generate restent publics. La preuve d’isolation tenant (OrganizationContext) est **M5.3** ([ADR-015](#adr-015--m53-request-scoped-organization-context) Accepted ; implémentation pas encore commencée).
+M5.1 identity island, M5.2 sessions HTTP et M5.3 preuve d’isolation tenant sont **Done**. Confirm/generate restent publics. OrganizationContext est request-scoped ([ADR-015](#adr-015--m53-request-scoped-organization-context)).
 
 ---
 
@@ -833,7 +833,7 @@ Source : [`docs/migration-map.md`](migration-map.md), [`docs/architecture.md`](a
 | **M2** | Application Services | Use cases orchestrant domaine + ports ; application tests | **Done** |
 | **M3** | Fastify API | REST `/api/v1/` ; OpenAPI ; API integration tests (auth production = M5) | **Done** |
 | **M4** | PostgreSQL + Drizzle | Infra + repos Goal/Path/Evidence ; migrations versionnées. Seed produit différé. | **Done** |
-| **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | **In progress** (M5.1–M5.2 Done) |
+| **M5** | Authentication + Multi-tenancy | Sessions, RBAC, tenant isolation en production | **In progress** (M5.1–M5.3 Done) |
 | **M6** | First complete Vertical Slice | Organization → Mastery end-to-end via API | Planned |
 | **M7** | React | UI React + TypeScript + Vite consommant l’API ; retrait progressif views legacy | Planned |
 
@@ -848,11 +848,11 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
 
 ### Slice M5.1 Identity island — Done
 
-M4 est **clos**. Pas de M4.5. M5.1 est **exécuté**. M5.2 est **exécuté** : sessions hachées, cookie `learnova.sid`, login/logout/GET session. Spine M4 toujours non possédé. Confirm/generate publics.
+M4 est **clos**. Pas de M4.5. M5.1–M5.3 sont **exécutés** : identity island, sessions hachées, cookie `learnova.sid`, preuve `GET /api/v1/organizations/:organizationId/context`. Spine M4 toujours non possédé. Confirm/generate publics.
 
-Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md). ADR-013, ADR-014, **ADR-015 Accepted** (preuve HTTP pas encore implémentée).
+Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md). ADR-013, ADR-014, ADR-015.
 
-**Prochain :** M5.3 — preuve d’isolation tenant (plan only). Ne pas figer un tenant actif sur la session.
+**Prochain :** M6 — ownership learning (pas M5.3). Ne pas figer un tenant actif sur la session.
 
 ---
 
@@ -1199,7 +1199,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Trajectoire : M0–M4 **Done** ; M5.1 **Done** ; M5.2 **Done** ; M5 **In progress** ; prochain = **M5.3** (preuve d’isolation tenant ; ADR-015 Accepted, code pas encore commencé). Pas de M4.5.
+4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; M5 **In progress** (RBAC détaillé différé) ; prochain = **M6**. Pas de M4.5.
 
 ### Ce document ne remplace pas
 

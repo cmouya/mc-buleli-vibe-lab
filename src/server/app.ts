@@ -9,6 +9,7 @@ import { registerAuthRoutes } from "./routes/v1/auth.js"
 import { registerHealthRoutes } from "./routes/v1/health.js"
 import { registerGoalRoutes } from "./routes/v1/goals.js"
 import { registerPathRoutes } from "./routes/v1/paths.js"
+import { registerOrganizationRoutes } from "./routes/v1/organizations.js"
 
 export interface BuildAppOptions {
   pathGenerator?: PathGenerator
@@ -46,6 +47,7 @@ export async function buildApp(opts: BuildAppOptions) {
   await registerGoalRoutes(app)
   await registerPathRoutes(app, pathGenerator)
   await registerAuthRoutes(app, opts.auth)
+  await registerOrganizationRoutes(app, opts.auth)
 
   app.get(
     "/api/v1/openapi.json",

@@ -18,6 +18,9 @@ export function mapErrorToHttp(
     if (error.code === "AUTH_INVALID_CREDENTIALS" || error.code === "AUTH_UNAUTHENTICATED") {
       return reply.status(401).send({ code: error.code, message: error.message })
     }
+    if (error.code === "ORG_FORBIDDEN") {
+      return reply.status(403).send({ code: error.code, message: error.message })
+    }
     return reply.status(400).send({ code: error.code, message: error.message })
   }
 

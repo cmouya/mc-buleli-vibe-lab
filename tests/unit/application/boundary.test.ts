@@ -17,6 +17,7 @@ describe("application — layer boundary", () => {
       "login.ts",
       "logout.ts",
       "resolve-session.ts",
+      "resolve-organization-context.ts",
       "generate-learning-path.ts",
       "index.ts",
     ]

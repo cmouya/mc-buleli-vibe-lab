@@ -216,4 +216,35 @@ describe("application — login logout resolveSession", () => {
     await logout(logged.sessionCookieToken, deps)
     await expect(resolveSession(logged.sessionCookieToken, deps)).rejects.toBeInstanceOf(DomainError)
   })
+
+  it("rejects an unknown token and an expired session as unauthenticated", async () => {
+    const identity = memoryIdentity()
+    await bootstrapTestIdentity(
+      {
+        organizationName: "Acme",
+        email: "ada@acme.test",
+        secretHash: "h:secret",
+        role: "member",
+      },
+      identity,
+    )
+    const deps = {
+      ...identity,
+      sessions: memorySessions(),
+      hasher,
+      digest,
+      tokens: { issue: () => "tok-ttl" },
+    }
+    await expect(resolveSession("garbage-token", deps)).rejects.toMatchObject({
+      code: "AUTH_UNAUTHENTICATED",
+    })
+    const logged = await login(
+      { identifier: "ada@acme.test", password: "secret" },
+      deps,
+      { now: "2026-09-13T00:00:00.000Z" },
+    )
+    await expect(
+      resolveSession(logged.sessionCookieToken, deps, { now: "2026-09-15T00:00:00.000Z" }),
+    ).rejects.toMatchObject({ code: "AUTH_UNAUTHENTICATED" })
+  })
 })

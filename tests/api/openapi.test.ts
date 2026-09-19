@@ -28,6 +28,7 @@ describe("API — GET /api/v1/openapi.json", () => {
     expect(spec.paths).toHaveProperty("/api/v1/auth/login")
     expect(spec.paths).toHaveProperty("/api/v1/auth/logout")
     expect(spec.paths).toHaveProperty("/api/v1/auth/session")
+    expect(spec.paths).toHaveProperty("/api/v1/organizations/{organizationId}/context")
     expect(spec.paths).not.toHaveProperty("/api/v1/openapi.json")
     await app.close()
   })
