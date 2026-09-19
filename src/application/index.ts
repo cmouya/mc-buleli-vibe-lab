@@ -4,6 +4,11 @@ export { persistOwnedGoal, getOwnedGoal } from "./persist-owned-goal.js"
 export type { OwnedGoalRepository, PersistOwnedGoalInput } from "./persist-owned-goal.js"
 export { persistOwnedPath, acceptOwnedPath } from "./persist-owned-path.js"
 export type { OwnedLearningPathRepository, PersistOwnedPathInput } from "./persist-owned-path.js"
+export { persistOwnedEvidence } from "./persist-owned-evidence.js"
+export type {
+  OwnedEvidenceRepository,
+  PersistOwnedEvidenceInput,
+} from "./persist-owned-evidence.js"
 export {
   getOwnedPath,
   getOwnedStep,

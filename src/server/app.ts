@@ -9,6 +9,7 @@ import type {
   OwnedDerivedContentRepository,
   OwnedGoalRepository,
   OwnedLearningPathRepository,
+  OwnedEvidenceRepository,
   PathGenerator,
 } from "../application/index.js"
 import { mapErrorToHttp } from "./errors.js"
@@ -34,6 +35,8 @@ export interface BuildAppOptions {
   ownedDerived: OwnedDerivedContentRepository
   /** Required for organization-scoped owned Path writes. Not used by public confirm/generate. */
   ownedPaths: OwnedLearningPathRepository
+  /** Required for organization-scoped owned Evidence writes. Not used by public confirm/generate. */
+  ownedEvidence: OwnedEvidenceRepository
 }
 
 export async function buildApp(opts: BuildAppOptions) {
@@ -51,6 +54,9 @@ export async function buildApp(opts: BuildAppOptions) {
   }
   if (!opts.ownedPaths) {
     throw new Error("buildApp requires ownedPaths; owned Path write routes are always registered")
+  }
+  if (!opts.ownedEvidence) {
+    throw new Error("buildApp requires ownedEvidence; owned Evidence write routes are always registered")
   }
   const app = Fastify({ logger: false })
   app.setErrorHandler(mapErrorToHttp)
@@ -80,6 +86,7 @@ export async function buildApp(opts: BuildAppOptions) {
     ownedGoals: opts.ownedGoals,
     ownedDerived: opts.ownedDerived,
     ownedPaths: opts.ownedPaths,
+    ownedEvidence: opts.ownedEvidence,
   })
 
   app.get(

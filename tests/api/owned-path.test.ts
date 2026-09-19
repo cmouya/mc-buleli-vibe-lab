@@ -24,7 +24,7 @@ import type {
 } from "../../src/modules/identity/index.js"
 import type { Goal } from "../../src/modules/goals/index.js"
 import { AUTH_COOKIE_NAME } from "../../src/server/auth-cookie.js"
-import { memoryOwnedGoals, memoryOwnedPaths, inertOwnedDerivedContent } from "./inert-auth.js"
+import { memoryOwnedGoals, memoryOwnedPaths, inertOwnedDerivedContent, inertOwnedEvidence } from "./inert-auth.js"
 
 const NOW = "2026-09-12T16:00:00.000Z"
 const proposal = {
@@ -297,6 +297,7 @@ describe("API — owned Path POST", () => {
       ownedGoals,
       ownedDerived: inertOwnedDerivedContent(),
       ownedPaths,
+      ownedEvidence: inertOwnedEvidence(),
     })
     const adaCookie = await loginCookie(app, "ada@acme.test")
     const bobCookie = await loginCookie(app, "bob@acme.test")
@@ -498,6 +499,7 @@ describe("API — owned Path POST", () => {
       ownedGoals: memoryOwnedGoals(),
       ownedDerived: inertOwnedDerivedContent(),
       ownedPaths: memoryOwnedPaths(),
+      ownedEvidence: inertOwnedEvidence(),
     })
     const response = await app.inject({
       method: "POST",

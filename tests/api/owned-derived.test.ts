@@ -23,7 +23,7 @@ import type {
   UserCredential,
 } from "../../src/modules/identity/index.js"
 import { AUTH_COOKIE_NAME } from "../../src/server/auth-cookie.js"
-import { memoryOwnedDerivedContent, memoryOwnedGoals, inertOwnedPaths } from "./inert-auth.js"
+import { memoryOwnedDerivedContent, memoryOwnedGoals, inertOwnedEvidence, inertOwnedPaths } from "./inert-auth.js"
 
 const payload = {
   statement: "Maîtriser Outlook",
@@ -223,7 +223,7 @@ describe("API — owned Path / Step / Evidence", () => {
         },
       },
     }
-    const app = await buildApp({ auth, learners, ownedGoals, ownedDerived, ownedPaths: inertOwnedPaths() })
+    const app = await buildApp({ auth, learners, ownedGoals, ownedDerived, ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence() })
     const adaCookie = await loginCookie(app, "ada@acme.test")
     const bobCookie = await loginCookie(app, "bob@acme.test")
     const eveCookie = await loginCookie(app, "eve@acme.test")

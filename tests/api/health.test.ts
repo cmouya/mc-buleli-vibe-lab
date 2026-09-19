@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
-import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedGoals, inertOwnedPaths } from "./inert-auth.js"
+import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedEvidence, inertOwnedGoals, inertOwnedPaths } from "./inert-auth.js"
 
 describe("API — health", () => {
   it("returns ok without listening on a port", async () => {
-    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence() })
     const response = await app.inject({
       method: "GET",
       url: "/api/v1/health",

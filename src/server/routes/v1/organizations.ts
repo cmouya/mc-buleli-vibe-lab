@@ -6,6 +6,7 @@ import {
   getOwnedStep,
   persistOwnedGoal,
   persistOwnedPath,
+  persistOwnedEvidence,
   resolveLearnerContext,
   resolveOrganizationContext,
   resolveSession,
@@ -14,6 +15,7 @@ import {
   type OwnedDerivedContentRepository,
   type OwnedGoalRepository,
   type OwnedLearningPathRepository,
+  type OwnedEvidenceRepository,
 } from "../../../application/index.js"
 import { AUTH_COOKIE_NAME } from "../../auth-cookie.js"
 import { DomainError } from "../../../modules/shared/index.js"
@@ -23,6 +25,7 @@ export type OrganizationRouteDependencies = LoginDependencies & {
   ownedGoals: OwnedGoalRepository
   ownedDerived: OwnedDerivedContentRepository
   ownedPaths: OwnedLearningPathRepository
+  ownedEvidence: OwnedEvidenceRepository
 }
 
 const ownedGoalBodySchema = {
@@ -62,6 +65,37 @@ const ownedPathBodySchema = {
     organizationId: { type: "string" },
     learnerId: { type: "string" },
     goalId: { type: "string" },
+  },
+} as const
+
+const ownedEvidenceBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["score", "maxScore", "passed", "answers"],
+  properties: {
+    score: { type: "number" },
+    maxScore: { type: "number" },
+    passed: { type: "boolean" },
+    answers: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: true,
+        required: ["questionIndex", "selectedIndex", "correct"],
+        properties: {
+          questionIndex: { type: "number" },
+          selectedIndex: { type: "number" },
+          correct: { type: "boolean" },
+        },
+      },
+    },
+    organizationId: { type: "string" },
+    learnerId: { type: "string" },
+    goalId: { type: "string" },
+    stepId: { type: "string" },
+    type: { type: "string" },
+    id: { type: "string" },
+    recordedAt: { type: "string" },
   },
 } as const
 
@@ -314,6 +348,56 @@ export async function registerOrganizationRoutes(
         throw RESOURCE_NOT_FOUND
       }
       return step
+    },
+  )
+
+  app.post(
+    "/api/v1/organizations/:organizationId/goals/:goalId/steps/:stepId/evidence",
+    {
+      schema: {
+        tags: ["organizations"],
+        summary: "Persist scored Evidence under an owned Step for the resolved LearnerContext",
+        params: {
+          type: "object",
+          additionalProperties: false,
+          required: ["organizationId", "goalId", "stepId"],
+          properties: {
+            organizationId: { type: "string" },
+            goalId: { type: "string" },
+            stepId: { type: "string" },
+          },
+        },
+        body: ownedEvidenceBodySchema,
+      },
+    },
+    async (request) => {
+      const auth = await resolveSession(request.cookies[AUTH_COOKIE_NAME], deps)
+      const { organizationId, goalId, stepId } = request.params as {
+        organizationId: string
+        goalId: string
+        stepId: string
+      }
+      const organization = resolveOrganizationContext(auth, organizationId)
+      const learner = await resolveLearnerContext(organization, deps.learners)
+      const body = request.body as {
+        score: number
+        maxScore: number
+        passed: boolean
+        answers: Array<{ questionIndex: number; selectedIndex: number; correct: boolean }>
+      }
+      return persistOwnedEvidence(
+        {
+          goalId,
+          stepId,
+          score: body.score,
+          maxScore: body.maxScore,
+          passed: body.passed,
+          answers: body.answers,
+        },
+        learner,
+        deps.ownedDerived,
+        deps.ownedEvidence,
+      )
     },
   )
 

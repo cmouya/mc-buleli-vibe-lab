@@ -8,6 +8,7 @@ export { createDrizzleLearningPathRepository } from "./learning-path-repository.
 export { createDrizzleOwnedLearningPathRepository } from "./owned-learning-path-repository.js"
 export { createDrizzleOwnedDerivedContentRepository } from "./owned-derived-content-repository.js"
 export { createDrizzleEvidenceRepository } from "./evidence-repository.js"
+export { createDrizzleOwnedEvidenceRepository } from "./owned-evidence-repository.js"
 export {
   createDrizzleOrganizationRepository,
   createDrizzleUserRepository,
