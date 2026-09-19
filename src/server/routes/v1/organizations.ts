@@ -5,6 +5,7 @@ import {
   getOwnedPath,
   getOwnedStep,
   persistOwnedGoal,
+  persistOwnedPath,
   resolveLearnerContext,
   resolveOrganizationContext,
   resolveSession,
@@ -12,6 +13,7 @@ import {
   type LoginDependencies,
   type OwnedDerivedContentRepository,
   type OwnedGoalRepository,
+  type OwnedLearningPathRepository,
 } from "../../../application/index.js"
 import { AUTH_COOKIE_NAME } from "../../auth-cookie.js"
 import { DomainError } from "../../../modules/shared/index.js"
@@ -20,6 +22,7 @@ export type OrganizationRouteDependencies = LoginDependencies & {
   learners: LearnerRepository
   ownedGoals: OwnedGoalRepository
   ownedDerived: OwnedDerivedContentRepository
+  ownedPaths: OwnedLearningPathRepository
 }
 
 const ownedGoalBodySchema = {
@@ -31,6 +34,34 @@ const ownedGoalBodySchema = {
     level: { type: "string", enum: ["debutant", "intermediaire", "avance"] },
     hoursPerWeek: { type: "number", exclusiveMinimum: 0 },
     intent: { type: "string", enum: ["professionnel", "personnel", "academique"] },
+  },
+} as const
+
+const ownedPathBodySchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["pathId", "pathTitle", "steps"],
+  properties: {
+    pathId: { type: "string" },
+    pathTitle: { type: "string", minLength: 1 },
+    summary: { type: "string" },
+    steps: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "object",
+        additionalProperties: true,
+        required: ["title"],
+        properties: {
+          id: { type: "string" },
+          title: { type: "string", minLength: 1 },
+          description: { type: "string" },
+        },
+      },
+    },
+    organizationId: { type: "string" },
+    learnerId: { type: "string" },
+    goalId: { type: "string" },
   },
 } as const
 
@@ -193,6 +224,61 @@ export async function registerOrganizationRoutes(
         throw RESOURCE_NOT_FOUND
       }
       return path
+    },
+  )
+
+  app.post(
+    "/api/v1/organizations/:organizationId/goals/:goalId/path",
+    {
+      schema: {
+        tags: ["organizations"],
+        summary: "Persist an accepted LearningPath under an owned Goal for the resolved LearnerContext",
+        params: {
+          type: "object",
+          additionalProperties: false,
+          required: ["organizationId", "goalId"],
+          properties: {
+            organizationId: { type: "string" },
+            goalId: { type: "string" },
+          },
+        },
+        body: ownedPathBodySchema,
+      },
+    },
+    async (request) => {
+      const auth = await resolveSession(request.cookies[AUTH_COOKIE_NAME], deps)
+      const { organizationId, goalId } = request.params as {
+        organizationId: string
+        goalId: string
+      }
+      const organization = resolveOrganizationContext(auth, organizationId)
+      const learner = await resolveLearnerContext(organization, deps.learners)
+      const body = request.body as {
+        pathId: string
+        pathTitle: string
+        summary?: string
+        steps: unknown[]
+        organizationId?: string
+        learnerId?: string
+        goalId?: string
+      }
+      const proposal = {
+        pathId: body.pathId,
+        pathTitle: body.pathTitle,
+        steps: body.steps,
+        ...(body.summary !== undefined ? { summary: body.summary } : {}),
+      }
+      return persistOwnedPath(
+        {
+          goalId,
+          proposal,
+          organizationId: body.organizationId,
+          learnerId: body.learnerId,
+        },
+        learner,
+        deps.ownedGoals,
+        deps.ownedPaths,
+      )
     },
   )
 

@@ -11,6 +11,7 @@ describe("application — layer boundary", () => {
       "confirm-goal.ts",
       "persist-goal.ts",
       "persist-owned-goal.ts",
+      "persist-owned-path.ts",
       "accept-learning-path.ts",
       "submit-assessment.ts",
       "persist-evidence.ts",

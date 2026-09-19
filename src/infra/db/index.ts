@@ -5,6 +5,7 @@ export { migrateDatabase } from "./migrate.js"
 export { createSqlClient, createDb } from "./client.js"
 export { createDrizzleGoalRepository, createDrizzleOwnedGoalRepository } from "./goal-repository.js"
 export { createDrizzleLearningPathRepository } from "./learning-path-repository.js"
+export { createDrizzleOwnedLearningPathRepository } from "./owned-learning-path-repository.js"
 export { createDrizzleOwnedDerivedContentRepository } from "./owned-derived-content-repository.js"
 export { createDrizzleEvidenceRepository } from "./evidence-repository.js"
 export {

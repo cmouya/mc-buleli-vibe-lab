@@ -65,7 +65,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m5.2-decisions.md`](m5.2-decisions.md) — Décisions M5.2 (humain) ; [`docs/m5.2-implementation-plan.md`](m5.2-implementation-plan.md) — M5.2 sessions (**Done**)
 - [`docs/m5.3-decisions.md`](m5.3-decisions.md) — Décisions M5.3 (humain) ; [`docs/m5.3-implementation-plan.md`](m5.3-implementation-plan.md) — M5.3 tenant isolation (**Done**)
 - [`docs/m6.1-decisions.md`](m6.1-decisions.md) — Décisions M6.1 (humain) ; [`docs/m6.1-implementation-plan.md`](m6.1-implementation-plan.md) — M6.1 Learner + Goal ownership (**COMPLETE AND VALIDATED**)
-- [`docs/m6.2-decisions.md`](m6.2-decisions.md) — Décisions M6.2 (humain) ; [`docs/m6.2-implementation-plan.md`](m6.2-implementation-plan.md) — M6.2 owned Path persist (**ADR-017 Accepted** ; **implementation NOT STARTED** ; next = C1)
+- [`docs/m6.2-decisions.md`](m6.2-decisions.md) — Décisions M6.2 (humain) ; [`docs/m6.2-implementation-plan.md`](m6.2-implementation-plan.md) — M6.2 owned Path persist (**ADR-017 Accepted** ; **COMPLETE AND VALIDATED**)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -852,9 +852,9 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
 
 M4 est **clos**. Pas de M4.5. M5.1–M5.3 sont **exécutés** : identity island, sessions hachées, cookie `learnova.sid`, preuve `GET /api/v1/organizations/:organizationId/context`. Spine M4 toujours non possédé. Confirm/generate publics.
 
-Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md), [`docs/m6.1-decisions.md`](m6.1-decisions.md), [`docs/m6.2-decisions.md`](m6.2-decisions.md). ADR-013, ADR-014, ADR-015, ADR-016, **ADR-017 Accepted**. **M6.1 is COMPLETE AND VALIDATED**. **M6.2 ADR/decision freeze is complete; M6.2 implementation has NOT STARTED.** Learner is organization-scoped; Goal is the ownership root; Path/Step/Evidence ownership is derived through Goal; sessions remain User-only; public confirm/generate remain public.
+Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md), [`docs/m6.1-decisions.md`](m6.1-decisions.md), [`docs/m6.2-decisions.md`](m6.2-decisions.md). ADR-013, ADR-014, ADR-015, ADR-016, **ADR-017 Accepted**. **M6.1 is COMPLETE AND VALIDATED**. **M6.2 is COMPLETE AND VALIDATED** (C1–C3; FINAL VALIDATION PASS). Tenant-safe accepted Path + nested Steps persist under an already-owned Goal: LearnerContext is server-resolved; owned Goal authorization precedes Path persist; DB re-proves `goalId` + `organizationId` + `learnerId`; Path + Steps are transactional; HTTP `POST /api/v1/organizations/:organizationId/goals/:goalId/path`; unknown/inaccessible/legacy fail closed without leaking. Learner is organization-scoped; Goal is the ownership root; Path/Step/Evidence ownership is derived through Goal; sessions remain User-only; public confirm/generate remain public; Evidence writes deferred; Golden Reference unchanged; no Path/Step tenant FKs; no UNIQUE(`goal_id`); no 0008.
 
-**Prochain :** M6.2 **C1** (owned Path application/port). Ne pas figer un tenant actif sur la session.
+**Prochain :** Next milestone: **NOT STARTED** — requires a separate architecture/readiness review. Ne pas figer un tenant actif sur la session.
 
 ---
 
@@ -1132,7 +1132,7 @@ Matrice de compatibilité entre les 12 ADR validées :
 
 ### Conclusion
 
-**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`). **ADR-016** est additif (Learner scopé organisation + ownership Goal) et cohérent avec ADR-013 (User ≠ Learner) et ADR-015 (OrganizationContext request-scoped ; M6 owns learning-object tenancy). **ADR-017** is additive (M6.2 tenant-safe Path persist through owned Goal); it does **not** rewrite ADR-013–016 Decision rows (User ≠ Learner, User-only sessions, OrganizationContext, LearnerContext, Goal as root, public confirm/generate). Keeping confirm/generate public in M6.2 is additive, not a Decision-row rewrite. **M6.1 is implemented and validated. M6.2 ADR freeze is complete; M6.2 implementation has NOT STARTED.**
+**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`). **ADR-016** est additif (Learner scopé organisation + ownership Goal) et cohérent avec ADR-013 (User ≠ Learner) et ADR-015 (OrganizationContext request-scoped ; M6 owns learning-object tenancy). **ADR-017** is additive (M6.2 tenant-safe Path persist through owned Goal); it does **not** rewrite ADR-013–016 Decision rows (User ≠ Learner, User-only sessions, OrganizationContext, LearnerContext, Goal as root, public confirm/generate). Keeping confirm/generate public in M6.2 is additive, not a Decision-row rewrite. **M6.1 is implemented and validated. M6.2 is COMPLETE AND VALIDATED.**
 
 ### Zones de vigilance
 
@@ -1221,7 +1221,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6.1 COMPLETE AND VALIDATED** (C1–C7) ; **ADR-017 Accepted** ; **M6.2 freeze complete, implementation NOT STARTED** ; M5 **In progress** (RBAC détaillé différé) ; prochain = **M6.2 C1**. Pas de M4.5.
+4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6.1 COMPLETE AND VALIDATED** (C1–C7) ; **ADR-017 Accepted** ; **M6.2 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS) ; M5 **In progress** (RBAC détaillé différé) ; Next milestone: **NOT STARTED** — requires a separate architecture/readiness review. Pas de M4.5.
 
 ### Ce document ne remplace pas
 

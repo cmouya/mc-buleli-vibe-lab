@@ -22,14 +22,19 @@ import type {
   OrganizationMembership,
   UserCredential,
 } from "../../src/modules/identity/index.js"
+import type { Goal } from "../../src/modules/goals/index.js"
 import { AUTH_COOKIE_NAME } from "../../src/server/auth-cookie.js"
-import { memoryOwnedDerivedContent, memoryOwnedGoals, inertOwnedDerivedContent, inertOwnedPaths } from "./inert-auth.js"
+import { memoryOwnedGoals, memoryOwnedPaths, inertOwnedDerivedContent } from "./inert-auth.js"
 
-const payload = {
-  statement: "Maîtriser Outlook",
-  level: "debutant",
-  hoursPerWeek: 5,
-  intent: "professionnel",
+const NOW = "2026-09-12T16:00:00.000Z"
+const proposal = {
+  pathId: "ia-pro",
+  pathTitle: "IA pour développer votre activité",
+  summary: "proposal",
+  steps: [
+    { id: "ia-1", title: "Fondamentaux", description: "Bases" },
+    { id: "ia-2", title: "ChatGPT", description: "" },
+  ],
 }
 
 function memoryIdentity(): IdentityRepositories {
@@ -155,12 +160,32 @@ async function loginCookie(app: Awaited<ReturnType<typeof buildApp>>, identifier
   return cookieFrom(response)
 }
 
-describe("API — owned Goal HTTP", () => {
-  it("creates and reads owned Goals through the trusted chain and fails closed without leaking", async () => {
+function confirmedOwned(
+  id: string,
+  organizationId: string,
+  learnerId: string,
+  statement: string,
+): Goal {
+  return {
+    id,
+    statement,
+    level: "debutant",
+    hoursPerWeek: 5,
+    intent: "professionnel",
+    status: "confirmed",
+    analyzedAt: NOW,
+    confirmedAt: NOW,
+    organizationId,
+    learnerId,
+  }
+}
+
+describe("API — owned Path POST", () => {
+  it("persists through the trusted chain and fails closed without leaking", async () => {
     const identity = memoryIdentity()
     const learners = memoryLearners()
     const ownedGoals = memoryOwnedGoals()
-    const ownedDerived = memoryOwnedDerivedContent(ownedGoals.rows)
+    const ownedPaths = memoryOwnedPaths()
     const ada = await bootstrapTestIdentity(
       { organizationName: "Org A", email: "ada@acme.test", secretHash: "h:secret", role: "member" },
       identity,
@@ -203,26 +228,56 @@ describe("API — owned Goal HTTP", () => {
       },
       identity.credentials,
     )
+    const adaLearnerA = await persistLearner(
+      { organizationId: ada.organization.id as string, userId: ada.user.id as string },
+      learners,
+    )
+    const adaLearnerB = await persistLearner(
+      { organizationId: bob.organization.id as string, userId: ada.user.id as string },
+      learners,
+    )
+    const bobLearnerB = await persistLearner(
+      { organizationId: bob.organization.id as string, userId: bob.user.id as string },
+      learners,
+    )
+    const eveLearnerA = await persistLearner(
+      { organizationId: ada.organization.id as string, userId: eve.user.id as string },
+      learners,
+    )
     await persistLearner(
       { organizationId: ada.organization.id as string, userId: learnerOnly.id as string },
       learners,
     )
-    await persistLearner(
-      { organizationId: ada.organization.id as string, userId: ada.user.id as string },
-      learners,
+
+    const goalAId = "11111111-1111-4111-8111-111111111111"
+    const goalBId = "22222222-2222-4222-8222-222222222222"
+    ownedGoals.rows.push(
+      confirmedOwned(goalAId, ada.organization.id as string, adaLearnerA.id as string, "Goal A"),
+      confirmedOwned(goalBId, bob.organization.id as string, adaLearnerB.id as string, "Goal B"),
+      confirmedOwned(
+        "33333333-3333-4333-8333-333333333333",
+        bob.organization.id as string,
+        bobLearnerB.id as string,
+        "Bob goal",
+      ),
+      confirmedOwned(
+        "44444444-4444-4444-8444-444444444444",
+        ada.organization.id as string,
+        eveLearnerA.id as string,
+        "Eve goal",
+      ),
+      {
+        id: "legacy-goal",
+        statement: "Legacy",
+        level: "debutant",
+        hoursPerWeek: 4,
+        intent: "personnel",
+        status: "confirmed",
+        analyzedAt: NOW,
+        confirmedAt: NOW,
+      },
     )
-    await persistLearner(
-      { organizationId: bob.organization.id as string, userId: ada.user.id as string },
-      learners,
-    )
-    await persistLearner(
-      { organizationId: bob.organization.id as string, userId: bob.user.id as string },
-      learners,
-    )
-    await persistLearner(
-      { organizationId: ada.organization.id as string, userId: eve.user.id as string },
-      learners,
-    )
+
     let n = 0
     const auth = {
       ...identity,
@@ -232,94 +287,68 @@ describe("API — owned Goal HTTP", () => {
       tokens: {
         issue() {
           n += 1
-          return `tok-owned-${n}`
+          return `tok-owned-path-${n}`
         },
       },
     }
-    const app = await buildApp({ auth, learners, ownedGoals, ownedDerived, ownedPaths: inertOwnedPaths() })
+    const app = await buildApp({
+      auth,
+      learners,
+      ownedGoals,
+      ownedDerived: inertOwnedDerivedContent(),
+      ownedPaths,
+    })
     const adaCookie = await loginCookie(app, "ada@acme.test")
     const bobCookie = await loginCookie(app, "bob@acme.test")
     const eveCookie = await loginCookie(app, "eve@acme.test")
     const noLearnerCookie = await loginCookie(app, "nolearner@acme.test")
     const learnerOnlyCookie = await loginCookie(app, "learneronly@acme.test")
 
-    const createdA = await app.inject({
+    const pathUrl = (organizationId: string, goalId: string) =>
+      `/api/v1/organizations/${organizationId}/goals/${goalId}/path`
+
+    const created = await app.inject({
       method: "POST",
-      url: `/api/v1/organizations/${ada.organization.id}/goals`,
+      url: pathUrl(ada.organization.id as string, goalAId),
       headers: { cookie: adaCookie },
-      payload,
+      payload: proposal,
     })
-    expect(createdA.statusCode).toBe(200)
-    expect(createdA.json()).toMatchObject({
-      statement: payload.statement,
+    expect(created.statusCode).toBe(200)
+    expect(created.json().goalId).toBe(goalAId)
+    expect(created.json().title).toBe(proposal.pathTitle)
+    expect(created.json().steps).toHaveLength(2)
+    expect(created.json().steps[0].title).toBe("Fondamentaux")
+    expect(ownedPaths.records).toHaveLength(1)
+    expect(ownedPaths.lastScope).toEqual({
       organizationId: ada.organization.id,
-      learnerId: expect.any(String),
+      learnerId: adaLearnerA.id,
     })
-    expect(createdA.json().learnerId).not.toBe(bob.user.id)
-    const goalAId = createdA.json().id as string
 
-    const forgedFields = await app.inject({
+    const unauth = await app.inject({
       method: "POST",
-      url: `/api/v1/organizations/${ada.organization.id}/goals`,
-      headers: { cookie: adaCookie },
-      payload: {
-        ...payload,
-        organizationId: bob.organization.id,
-        learnerId: "forged-learner",
-      },
+      url: pathUrl(ada.organization.id as string, goalAId),
+      payload: proposal,
     })
-    expect(forgedFields.statusCode).toBe(200)
-    expect(forgedFields.json().organizationId).toBe(ada.organization.id)
-    expect(forgedFields.json().learnerId).toBe(createdA.json().learnerId)
-    expect(forgedFields.json().learnerId).not.toBe("forged-learner")
-    expect(forgedFields.json().organizationId).not.toBe(bob.organization.id)
-
-    const createdB = await app.inject({
-      method: "POST",
-      url: `/api/v1/organizations/${bob.organization.id}/goals`,
-      headers: { cookie: adaCookie },
-      payload: { ...payload, statement: "Goal B" },
-    })
-    expect(createdB.statusCode).toBe(200)
-    expect(createdB.json().organizationId).toBe(bob.organization.id)
-    expect(createdB.json().id).not.toBe(goalAId)
-    const goalBId = createdB.json().id as string
-
-    const ownerGet = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/${goalAId}`,
-      headers: { cookie: adaCookie },
-    })
-    expect(ownerGet.statusCode).toBe(200)
-    expect(ownerGet.json().id).toBe(goalAId)
-
-    const unauthPost = await app.inject({
-      method: "POST",
-      url: `/api/v1/organizations/${ada.organization.id}/goals`,
-      payload,
-    })
-    const unauthGet = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/${goalAId}`,
-    })
-    expect(unauthPost.statusCode).toBe(401)
-    expect(unauthGet.statusCode).toBe(401)
+    expect(unauth.statusCode).toBe(401)
+    expect(unauth.json()).toMatchObject({ code: "AUTH_UNAUTHENTICATED" })
 
     const noMembership = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/${goalAId}`,
+      method: "POST",
+      url: pathUrl(ada.organization.id as string, goalAId),
       headers: { cookie: bobCookie },
+      payload: proposal,
     })
     const membershipNoLearner = await app.inject({
       method: "POST",
-      url: `/api/v1/organizations/${ada.organization.id}/goals`,
+      url: pathUrl(ada.organization.id as string, goalAId),
       headers: { cookie: noLearnerCookie },
-      payload,
+      payload: proposal,
     })
     const learnerNoMembership = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/${goalAId}`,
+      method: "POST",
+      url: pathUrl(ada.organization.id as string, goalAId),
       headers: { cookie: learnerOnlyCookie },
+      payload: proposal,
     })
     expect(noMembership.statusCode).toBe(403)
     expect(membershipNoLearner.statusCode).toBe(403)
@@ -328,33 +357,30 @@ describe("API — owned Goal HTTP", () => {
     expect(learnerNoMembership.json()).toEqual(noMembership.json())
     expect(noMembership.json()).toMatchObject({ code: "ORG_FORBIDDEN" })
 
+    const beforeDenied = ownedPaths.records.length
     const crossOrg = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${bob.organization.id}/goals/${goalAId}`,
+      method: "POST",
+      url: pathUrl(bob.organization.id as string, goalAId),
       headers: { cookie: bobCookie },
+      payload: proposal,
     })
     const wrongLearner = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/${goalAId}`,
+      method: "POST",
+      url: pathUrl(ada.organization.id as string, goalAId),
       headers: { cookie: eveCookie },
+      payload: proposal,
     })
     const unknown = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/00000000-0000-4000-8000-000000000000`,
+      method: "POST",
+      url: pathUrl(ada.organization.id as string, "00000000-0000-4000-8000-000000000000"),
       headers: { cookie: adaCookie },
-    })
-    ownedGoals.rows.push({
-      id: "legacy-goal",
-      statement: "Legacy",
-      level: "debutant",
-      hoursPerWeek: 4,
-      intent: "personnel",
-      status: "draft",
+      payload: proposal,
     })
     const legacy = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/legacy-goal`,
+      method: "POST",
+      url: pathUrl(ada.organization.id as string, "legacy-goal"),
       headers: { cookie: adaCookie },
+      payload: proposal,
     })
     expect(crossOrg.statusCode).toBe(404)
     expect(wrongLearner.statusCode).toBe(404)
@@ -366,35 +392,67 @@ describe("API — owned Goal HTTP", () => {
     expect(crossOrg.json()).toMatchObject({ code: "GOAL_NOT_FOUND", message: "Goal not found" })
     expect(JSON.stringify(crossOrg.json())).not.toMatch(/organizationId/)
     expect(JSON.stringify(crossOrg.json())).not.toMatch(/learnerId/)
-    expect(JSON.stringify(crossOrg.json())).not.toContain(ada.organization.id as string)
+    expect(ownedPaths.records).toHaveLength(beforeDenied)
+
+    const forged = await app.inject({
+      method: "POST",
+      url: pathUrl(ada.organization.id as string, goalAId),
+      headers: {
+        cookie: adaCookie,
+        "x-learner-id": eveLearnerA.id as string,
+        "x-organization-id": bob.organization.id as string,
+      },
+      payload: {
+        ...proposal,
+        organizationId: bob.organization.id,
+        learnerId: eveLearnerA.id,
+        goalId: goalBId,
+      },
+    })
+    expect(forged.statusCode).toBe(200)
+    expect(forged.json().goalId).toBe(goalAId)
+    expect(forged.json().goalId).not.toBe(goalBId)
+    expect(ownedPaths.lastScope).toEqual({
+      organizationId: ada.organization.id,
+      learnerId: adaLearnerA.id,
+    })
 
     const forgedQuery = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/${goalAId}?learnerId=forged&organizationId=${bob.organization.id}`,
-      headers: { cookie: eveCookie, "x-learner-id": createdA.json().learnerId },
+      method: "POST",
+      url: `${pathUrl(ada.organization.id as string, goalAId)}?learnerId=${eveLearnerA.id}&organizationId=${bob.organization.id}`,
+      headers: { cookie: adaCookie },
+      payload: proposal,
     })
-    expect(forgedQuery.statusCode).toBe(404)
-    expect(forgedQuery.json()).toEqual(unknown.json())
+    expect(forgedQuery.statusCode).toBe(200)
+    expect(forgedQuery.json().goalId).toBe(goalAId)
 
-    const aSeesOnlyA = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/${goalBId}`,
+    const aOnB = await app.inject({
+      method: "POST",
+      url: pathUrl(ada.organization.id as string, goalBId),
       headers: { cookie: adaCookie },
+      payload: proposal,
     })
-    const bSeesOnlyB = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${bob.organization.id}/goals/${goalAId}`,
+    const bOnA = await app.inject({
+      method: "POST",
+      url: pathUrl(bob.organization.id as string, goalAId),
       headers: { cookie: adaCookie },
+      payload: proposal,
     })
-    expect(aSeesOnlyA.statusCode).toBe(404)
-    expect(bSeesOnlyB.statusCode).toBe(404)
+    expect(aOnB.statusCode).toBe(404)
+    expect(bOnA.statusCode).toBe(404)
+    expect(aOnB.json()).toEqual(unknown.json())
     const bOwner = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${bob.organization.id}/goals/${goalBId}`,
+      method: "POST",
+      url: pathUrl(bob.organization.id as string, goalBId),
       headers: { cookie: adaCookie },
+      payload: proposal,
     })
     expect(bOwner.statusCode).toBe(200)
-    expect(bOwner.json().id).toBe(goalBId)
+    expect(bOwner.json().goalId).toBe(goalBId)
+    expect(ownedPaths.lastScope).toEqual({
+      organizationId: bob.organization.id,
+      learnerId: adaLearnerB.id,
+    })
 
     const publicConfirm = await app.inject({
       method: "POST",
@@ -407,11 +465,22 @@ describe("API — owned Goal HTTP", () => {
         analyzed: true,
       },
     })
+    const publicGenerate = await app.inject({
+      method: "POST",
+      url: "/api/v1/paths/generate",
+      payload: {
+        goal: "Maîtriser Outlook",
+        level: "debutant",
+        hoursPerWeek: 5,
+        intent: "professionnel",
+      },
+    })
     expect(publicConfirm.statusCode).toBe(200)
+    expect(publicGenerate.statusCode).toBe(200)
     await app.close()
   })
 
-  it("returns 401 for unknown cookie on owned Goal routes", async () => {
+  it("returns 401 for unknown cookie on owned Path POST", async () => {
     const identity = memoryIdentity()
     const ada = await bootstrapTestIdentity(
       { organizationName: "Org A", email: "ada@acme.test", secretHash: "h:secret", role: "member" },
@@ -428,12 +497,13 @@ describe("API — owned Goal HTTP", () => {
       learners: memoryLearners(),
       ownedGoals: memoryOwnedGoals(),
       ownedDerived: inertOwnedDerivedContent(),
-      ownedPaths: inertOwnedPaths(),
+      ownedPaths: memoryOwnedPaths(),
     })
     const response = await app.inject({
-      method: "GET",
-      url: `/api/v1/organizations/${ada.organization.id}/goals/anything`,
+      method: "POST",
+      url: `/api/v1/organizations/${ada.organization.id}/goals/anything/path`,
       headers: { cookie: `${AUTH_COOKIE_NAME}=not-a-session` },
+      payload: proposal,
     })
     expect(response.statusCode).toBe(401)
     expect(response.json()).toMatchObject({ code: "AUTH_UNAUTHENTICATED" })

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
-import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedGoals } from "./inert-auth.js"
+import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedGoals, inertOwnedPaths } from "./inert-auth.js"
 
 describe("API — GET /api/v1/openapi.json", () => {
   it("serves OpenAPI 3 describing health, confirm-goal, and generate-path", async () => {
@@ -8,7 +8,7 @@ describe("API — GET /api/v1/openapi.json", () => {
       auth: inertAuth(),
       learners: inertLearners(),
       ownedGoals: inertOwnedGoals(),
-      ownedDerived: inertOwnedDerivedContent(),
+      ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(),
       pathGenerator: {
         async generatePath() {
           return { pathId: "x", pathTitle: "x", steps: [] }
@@ -36,6 +36,12 @@ describe("API — GET /api/v1/openapi.json", () => {
     expect(spec.paths).toHaveProperty("/api/v1/organizations/{organizationId}/goals")
     expect(spec.paths).toHaveProperty("/api/v1/organizations/{organizationId}/goals/{goalId}")
     expect(spec.paths).toHaveProperty("/api/v1/organizations/{organizationId}/goals/{goalId}/path")
+    const ownedPath = spec.paths["/api/v1/organizations/{organizationId}/goals/{goalId}/path"] as {
+      get?: unknown
+      post?: unknown
+    }
+    expect(ownedPath).toHaveProperty("get")
+    expect(ownedPath).toHaveProperty("post")
     expect(spec.paths).toHaveProperty(
       "/api/v1/organizations/{organizationId}/goals/{goalId}/steps/{stepId}",
     )

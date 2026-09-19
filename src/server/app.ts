@@ -8,6 +8,7 @@ import type {
   LoginDependencies,
   OwnedDerivedContentRepository,
   OwnedGoalRepository,
+  OwnedLearningPathRepository,
   PathGenerator,
 } from "../application/index.js"
 import { mapErrorToHttp } from "./errors.js"
@@ -31,6 +32,8 @@ export interface BuildAppOptions {
   ownedGoals: OwnedGoalRepository
   /** Required for organization-scoped Path/Step/Evidence reads. Not used by public confirm/generate. */
   ownedDerived: OwnedDerivedContentRepository
+  /** Required for organization-scoped owned Path writes. Not used by public confirm/generate. */
+  ownedPaths: OwnedLearningPathRepository
 }
 
 export async function buildApp(opts: BuildAppOptions) {
@@ -45,6 +48,9 @@ export async function buildApp(opts: BuildAppOptions) {
   }
   if (!opts.ownedDerived) {
     throw new Error("buildApp requires ownedDerived; owned Path/Step/Evidence routes are always registered")
+  }
+  if (!opts.ownedPaths) {
+    throw new Error("buildApp requires ownedPaths; owned Path write routes are always registered")
   }
   const app = Fastify({ logger: false })
   app.setErrorHandler(mapErrorToHttp)
@@ -73,6 +79,7 @@ export async function buildApp(opts: BuildAppOptions) {
     learners: opts.learners,
     ownedGoals: opts.ownedGoals,
     ownedDerived: opts.ownedDerived,
+    ownedPaths: opts.ownedPaths,
   })
 
   app.get(

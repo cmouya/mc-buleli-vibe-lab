@@ -1,4 +1,4 @@
-import type { LearnerRepository, LoginDependencies, OwnedDerivedContentRepository, OwnedGoalRepository } from "../../src/application/index.js"
+import type { LearnerRepository, LoginDependencies, OwnedDerivedContentRepository, OwnedGoalRepository, OwnedLearningPathRepository } from "../../src/application/index.js"
 import type { Goal } from "../../src/modules/goals/index.js"
 import type { AcceptedLearningPath } from "../../src/modules/learning-path/index.js"
 import type { Evidence } from "../../src/modules/evidence/index.js"
@@ -130,6 +130,30 @@ export function inertOwnedDerivedContent(): OwnedDerivedContentRepository {
     },
     async getOwnedEvidenceById() {
       return null
+    },
+  }
+}
+
+export function inertOwnedPaths(): OwnedLearningPathRepository {
+  return {
+    async saveOwned() {
+      throw new Error("owned Path writes are not used in this test")
+    },
+  }
+}
+
+export function memoryOwnedPaths(): OwnedLearningPathRepository & {
+  records: AcceptedLearningPath[]
+  lastScope: { organizationId: string; learnerId: string } | null
+} {
+  const records: AcceptedLearningPath[] = []
+  return {
+    records,
+    lastScope: null,
+    async saveOwned(path, scope) {
+      this.lastScope = { organizationId: scope.organizationId, learnerId: scope.learnerId }
+      records.push(path)
+      return path
     },
   }
 }
