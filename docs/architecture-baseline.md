@@ -64,6 +64,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m5.1-identity-island.md`](m5.1-identity-island.md) — M5.1 identity island (**Done**)
 - [`docs/m5.2-decisions.md`](m5.2-decisions.md) — Décisions M5.2 (humain) ; [`docs/m5.2-implementation-plan.md`](m5.2-implementation-plan.md) — M5.2 sessions (**Done**)
 - [`docs/m5.3-decisions.md`](m5.3-decisions.md) — Décisions M5.3 (humain) ; [`docs/m5.3-implementation-plan.md`](m5.3-implementation-plan.md) — M5.3 tenant isolation (**Done**)
+- [`docs/m6.1-decisions.md`](m6.1-decisions.md) — Décisions M6.1 (humain) ; [`docs/m6.1-implementation-plan.md`](m6.1-implementation-plan.md) — M6.1 Learner + Goal ownership (**plan only** ; **not implemented**)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -850,9 +851,9 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
 
 M4 est **clos**. Pas de M4.5. M5.1–M5.3 sont **exécutés** : identity island, sessions hachées, cookie `learnova.sid`, preuve `GET /api/v1/organizations/:organizationId/context`. Spine M4 toujours non possédé. Confirm/generate publics.
 
-Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md). ADR-013, ADR-014, ADR-015.
+Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md), [`docs/m6.1-decisions.md`](m6.1-decisions.md). ADR-013, ADR-014, ADR-015, **ADR-016 Accepted**. **M6 implementation has not started.**
 
-**Prochain :** M6 — ownership learning (pas M5.3). Ne pas figer un tenant actif sur la session.
+**Prochain :** M6.1 — Learner + Goal ownership (plan only). Ne pas figer un tenant actif sur la session.
 
 ---
 
@@ -1085,6 +1086,16 @@ Règles opérationnelles pour toute contribution future :
 | **Alternatives considered** | `X-Organization-Id` request header ; `organizationId` in body ; `organizationId` query parameter ; server-selected single organization ; switch-organization endpoint persisted on session ; `sessions.organization_id` ; tests-only proof without an HTTP resource |
 | **Consequences** | M5.3 may implement one request-scoped OrganizationContext resolver and one proof route `GET /api/v1/organizations/:organizationId/context`. Existing AuthContext remains unchanged. Existing `organization_memberships` and `listByUserId` are sufficient. No DB repository or schema extension is required. M6 owns learning-object tenant ownership and later broader tenant-aware operations. A request header may be reconsidered later when multiple organization-scoped routes exist. |
 
+### ADR-016 — Organization-scoped Learner and Goal ownership
+
+| | |
+|---|---|
+| **Status** | Accepted |
+| **Decision** | **Learner** is a first-class **organization-scoped learning identity** linked to a **User**, not the User, not OrganizationMembership, not LearnerState, and not a membership role `learner`. Conceptual row: `id`, `organization_id`, `user_id`, `created_at`, with **UNIQUE `(organization_id, user_id)`**. A User may have a distinct Learner in each Organization; **learning state is isolated** between those Learners. A User may exist **without** a Learner. Learner-before-User / invitations are **deferred**. **LearnerContext** `{ learnerId, userId, organizationId }` is resolved **server-side** from authenticated User → **OrganizationContext** (ADR-015) → Learner lookup. Client `learnerId`, `organizationId`, or `role` never establishes authority. **Goal** is the **ownership root** of the persisted learning journey. Future owned Goal rows carry **`organization_id` + `learner_id`** for the **same** tenant. LearningPath / Step / Evidence ownership is **derived** through `goal_id` (path → goal; step → path → goal) in the first M6 slice — **do not** duplicate org/learner FKs on those tables in that slice. Existing **M4 Goal rows must not receive fabricated owners**; initial Goal ownership FKs are **nullable**; tenant-aware APIs **fail closed** for unowned rows and must not expose a legacy object merely because its id is known. Authorization chain: `learnova.sid` → `resolveSession` → AuthContext → requested organizationId → `resolveOrganizationContext` → OrganizationContext → `resolveLearnerContext` → LearnerContext → owned use case → repository constrained by tenant/learner. OrganizationContext is **necessary but not sufficient** for learning-object access. **AuthSession remains User-only** (ADR-014): no `sessions.organization_id`, no `sessions.learner_id`, no global current organization or learner. Cross-tenant and cross-learner access denied; unknown and unauthorized object ids must not leak existence (generic authorization denial). **Confirm/generate remain public** in the first M6 slice. Golden Reference UI, `localStorage`, and E2E stay unchanged; no GR login requirement and **no dual-write** in M6.1. **M6 / M6.1 code is not started by this ADR.** |
+| **Context** | User is the authentication identity and may belong to multiple Organizations. OrganizationMembership is affiliation/role only (ADR-013). ADR-013 established **User ≠ Learner** and deferred Learner plus learning-resource ownership to M6. M4 persisted Goal/Path/Step/Evidence **without** ownership. M5.3 established request-scoped OrganizationContext (ADR-015). M6 needs an explicit tenant-local learning identity and ownership boundary before any migration or persist HTTP. |
+| **Alternatives considered** | User == Learner ; global 1:1 Learner→User ; OrganizationMembership == Learner ; LearnerState == Learner identity ; `user_id`-only Goal ownership ; `organization_id`-only Goal ownership ; `sessions.organization_id` ; `sessions.learner_id` ; client-selected Learner authority ; immediate org/learner columns on Path/Step/Evidence ; fake backfill of M4 rows. **Deferred:** Learner-before-User ; invitations ; Program ; Cohort ; Mastery persistence ; full RBAC ; Path/Evidence persist HTTP ; Golden Reference integration ; SSO/IdP ; membership management UI. |
+| **Consequences** | A **future** M6.1 migration (not generated by this ADR) will add table `learners` (`organization_id` FK, `user_id` FK, UNIQUE `(organization_id, user_id)`), nullable `organization_id` and `learner_id` on `goals`, and integrity so Goal and Learner share the same Organization. Nullable Goal FKs are **transitional compatibility** for existing M4 data, **not** the desired model for newly tenant-owned Goals. Implementation follows [`docs/m6.1-implementation-plan.md`](m6.1-implementation-plan.md) only after this ADR. Confirm/generate stay public until a later ADR. ADR-002/005/013/014/015 Decision rows **unchanged**. |
+
 ---
 
 ## 21. ADR Coherence Matrix
@@ -1110,7 +1121,7 @@ Matrice de compatibilité entre les 12 ADR validées :
 
 ### Conclusion
 
-**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`).
+**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`). **ADR-016** est additif (Learner scopé organisation + ownership Goal) et cohérent avec ADR-013 (User ≠ Learner) et ADR-015 (OrganizationContext request-scoped ; M6 owns learning-object tenancy). **M6 n’est pas implémenté.**
 
 ### Zones de vigilance
 
@@ -1199,7 +1210,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; M5 **In progress** (RBAC détaillé différé) ; prochain = **M6**. Pas de M4.5.
+4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6 / M6.1 implementation NOT STARTED** ; M5 **In progress** (RBAC détaillé différé) ; prochain = **M6.1** (plan only). Pas de M4.5.
 
 ### Ce document ne remplace pas
 
