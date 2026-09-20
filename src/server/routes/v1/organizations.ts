@@ -7,6 +7,7 @@ import {
   persistOwnedGoal,
   persistOwnedPath,
   persistOwnedEvidence,
+  getOwnedPathProgress,
   resolveLearnerContext,
   resolveOrganizationContext,
   resolveSession,
@@ -16,6 +17,7 @@ import {
   type OwnedGoalRepository,
   type OwnedLearningPathRepository,
   type OwnedEvidenceRepository,
+  type OwnedProgressRepository,
 } from "../../../application/index.js"
 import { AUTH_COOKIE_NAME } from "../../auth-cookie.js"
 import { DomainError } from "../../../modules/shared/index.js"
@@ -26,6 +28,7 @@ export type OrganizationRouteDependencies = LoginDependencies & {
   ownedDerived: OwnedDerivedContentRepository
   ownedPaths: OwnedLearningPathRepository
   ownedEvidence: OwnedEvidenceRepository
+  ownedProgress: OwnedProgressRepository
 }
 
 const ownedGoalBodySchema = {
@@ -258,6 +261,47 @@ export async function registerOrganizationRoutes(
         throw RESOURCE_NOT_FOUND
       }
       return path
+    },
+  )
+
+  app.get(
+    "/api/v1/organizations/:organizationId/goals/:goalId/path/progress",
+    {
+      schema: {
+        tags: ["organizations"],
+        summary: "Read derived Path Progress for the owned Goal of the resolved LearnerContext",
+        params: {
+          type: "object",
+          additionalProperties: false,
+          required: ["organizationId", "goalId"],
+          properties: {
+            organizationId: { type: "string" },
+            goalId: { type: "string" },
+          },
+        },
+        response: {
+          200: {
+            type: "object",
+            additionalProperties: false,
+            required: ["totalSteps", "completedSteps", "progressPercent"],
+            properties: {
+              totalSteps: { type: "number" },
+              completedSteps: { type: "number" },
+              progressPercent: { type: "number" },
+            },
+          },
+        },
+      },
+    },
+    async (request) => {
+      const auth = await resolveSession(request.cookies[AUTH_COOKIE_NAME], deps)
+      const { organizationId, goalId } = request.params as {
+        organizationId: string
+        goalId: string
+      }
+      const organization = resolveOrganizationContext(auth, organizationId)
+      const learner = await resolveLearnerContext(organization, deps.learners)
+      return getOwnedPathProgress(goalId, learner, deps.ownedDerived, deps.ownedProgress)
     },
   )
 

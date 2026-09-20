@@ -1,4 +1,5 @@
-import type { LearnerRepository, LoginDependencies, OwnedDerivedContentRepository, OwnedEvidenceRepository, OwnedGoalRepository, OwnedLearningPathRepository } from "../../src/application/index.js"
+import type { LearnerRepository, LoginDependencies, OwnedDerivedContentRepository, OwnedEvidenceRepository, OwnedGoalRepository, OwnedLearningPathRepository, OwnedProgressRepository } from "../../src/application/index.js"
+import { DomainError } from "../../src/modules/shared/index.js"
 import type { Goal } from "../../src/modules/goals/index.js"
 import type { AcceptedLearningPath } from "../../src/modules/learning-path/index.js"
 import type { Evidence } from "../../src/modules/evidence/index.js"
@@ -146,6 +147,41 @@ export function inertOwnedEvidence(): OwnedEvidenceRepository {
   return {
     async saveOwned() {
       throw new Error("owned Evidence writes are not used in this test")
+    },
+  }
+}
+
+export function inertOwnedProgress(): OwnedProgressRepository {
+  return {
+    async listOwnedEvidenceForStep() {
+      throw new Error("owned Progress reads are not used in this test")
+    },
+  }
+}
+
+export function memoryOwnedProgress(
+  goals: Goal[],
+  paths: AcceptedLearningPath[],
+  records: Evidence[],
+): OwnedProgressRepository {
+  return {
+    async listOwnedEvidenceForStep(stepId, goalId, scope) {
+      const owned = goals.find(
+        (goal) =>
+          goal.id === goalId &&
+          goal.organizationId === scope.organizationId &&
+          goal.learnerId === scope.learnerId,
+      )
+      if (!owned) {
+        throw new DomainError("RESOURCE_NOT_FOUND", "Not found")
+      }
+      const path = paths.find(
+        (item) => item.goalId === goalId && item.steps.some((step) => step.id === stepId),
+      )
+      if (!path) {
+        throw new DomainError("RESOURCE_NOT_FOUND", "Not found")
+      }
+      return records.filter((item) => item.stepId === stepId)
     },
   }
 }

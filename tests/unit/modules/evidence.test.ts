@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   DomainError,
   assertEvidenceAllowsCompletion,
+  evidenceAllowsCompletion,
   recordQuizEvidence,
 } from "../../../src/modules/evidence/index.js"
 
@@ -73,6 +74,8 @@ describe("evidence domain", () => {
 
     expect(() => assertEvidenceAllowsCompletion(passed, "s1")).not.toThrow()
     expect(() => assertEvidenceAllowsCompletion(passed, "s2")).toThrow(DomainError)
+    expect(evidenceAllowsCompletion(passed, "s1")).toBe(true)
+    expect(evidenceAllowsCompletion(passed, "s2")).toBe(false)
   })
 
   it("rejects empty stepId and invalid scores", () => {

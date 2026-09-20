@@ -9,6 +9,12 @@ export type {
   OwnedEvidenceRepository,
   PersistOwnedEvidenceInput,
 } from "./persist-owned-evidence.js"
+export { getOwnedPathProgress, getOwnedStepCompletion } from "./get-owned-progress.js"
+export type {
+  OwnedPathProgress,
+  OwnedProgressRepository,
+  OwnedStepCompletion,
+} from "./get-owned-progress.js"
 export {
   getOwnedPath,
   getOwnedStep,

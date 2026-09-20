@@ -110,3 +110,18 @@ export function assertEvidenceAllowsCompletion(evidence: Evidence, stepId: strin
     )
   }
 }
+
+const I05_DENIAL = new Set(["EVIDENCE_EMPTY_STEP_ID", "EVIDENCE_STEP_MISMATCH", "EVIDENCE_NOT_PASSED"])
+
+/** Boolean I-05 check. Does not replace assertEvidenceAllowsCompletion. */
+export function evidenceAllowsCompletion(evidence: Evidence, stepId: string): boolean {
+  try {
+    assertEvidenceAllowsCompletion(evidence, stepId)
+    return true
+  } catch (error) {
+    if (error instanceof DomainError && I05_DENIAL.has(error.code)) {
+      return false
+    }
+    throw error
+  }
+}

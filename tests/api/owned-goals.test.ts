@@ -23,7 +23,7 @@ import type {
   UserCredential,
 } from "../../src/modules/identity/index.js"
 import { AUTH_COOKIE_NAME } from "../../src/server/auth-cookie.js"
-import { memoryOwnedDerivedContent, memoryOwnedGoals, inertOwnedDerivedContent, inertOwnedEvidence, inertOwnedPaths } from "./inert-auth.js"
+import { memoryOwnedDerivedContent, memoryOwnedGoals, inertOwnedDerivedContent, inertOwnedEvidence, inertOwnedPaths, inertOwnedProgress } from "./inert-auth.js"
 
 const payload = {
   statement: "Maîtriser Outlook",
@@ -236,7 +236,7 @@ describe("API — owned Goal HTTP", () => {
         },
       },
     }
-    const app = await buildApp({ auth, learners, ownedGoals, ownedDerived, ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence() })
+    const app = await buildApp({ auth, learners, ownedGoals, ownedDerived, ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
     const adaCookie = await loginCookie(app, "ada@acme.test")
     const bobCookie = await loginCookie(app, "bob@acme.test")
     const eveCookie = await loginCookie(app, "eve@acme.test")
@@ -428,7 +428,7 @@ describe("API — owned Goal HTTP", () => {
       learners: memoryLearners(),
       ownedGoals: memoryOwnedGoals(),
       ownedDerived: inertOwnedDerivedContent(),
-      ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(),
+      ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress(),
     })
     const response = await app.inject({
       method: "GET",

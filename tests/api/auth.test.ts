@@ -17,7 +17,7 @@ import type {
 } from "../../src/modules/identity/index.js"
 import { AUTH_COOKIE_NAME } from "../../src/server/auth-cookie.js"
 import { createArgon2idPasswordHasher } from "../../src/infra/crypto/password-hasher.js"
-import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedEvidence, inertOwnedGoals, inertOwnedPaths } from "./inert-auth.js"
+import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedEvidence, inertOwnedGoals, inertOwnedPaths, inertOwnedProgress } from "./inert-auth.js"
 
 function memoryIdentity(): IdentityRepositories {
   const orgs = new Map<string, Organization>()
@@ -148,7 +148,7 @@ function cookieFrom(response: { headers: { "set-cookie"?: string | string[] } })
 describe("API — auth session cookie", () => {
   it("logs in with HttpOnly learnova.sid and does not leak secrets", async () => {
     const auth = await seededAuth()
-    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence() })
+    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/auth/login",
@@ -171,7 +171,7 @@ describe("API — auth session cookie", () => {
 
   it("rejects invalid login with 401 and resolves then logout", async () => {
     const auth = await seededAuth()
-    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence() })
+    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
     const bad = await app.inject({
       method: "POST",
       url: "/api/v1/auth/login",
@@ -212,7 +212,7 @@ describe("API — auth session cookie", () => {
 
   it("rate-limits login after 10 attempts", async () => {
     const auth = await seededAuth()
-    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence() })
+    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
     let lastStatus = 0
     for (let i = 0; i < 11; i += 1) {
       const response = await app.inject({
@@ -246,7 +246,7 @@ describe("API — auth session cookie", () => {
         digest,
         tokens: { issue: () => "tok" },
       },
-      learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(),
+      learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress(),
     })
     const missing = await app.inject({
       method: "POST",
@@ -266,7 +266,7 @@ describe("API — auth session cookie", () => {
   })
 
   it("registers auth routes even when callers only need public M4 routes", async () => {
-    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
     const login = await app.inject({
       method: "POST",
       url: "/api/v1/auth/login",
@@ -278,7 +278,7 @@ describe("API — auth session cookie", () => {
   })
 
   it("keeps confirm and generate public", async () => {
-    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
     const confirm = await app.inject({
       method: "POST",
       url: "/api/v1/goals/confirm",
