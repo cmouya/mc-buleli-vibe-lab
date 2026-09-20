@@ -2,6 +2,27 @@ export { createSkill, isSkill } from "./skill.js"
 export type { Skill, CreateSkillInput } from "./skill.js"
 
 export {
+  createOrganizationSkill,
+  isOrganizationSkill,
+  assertSkillMatchesOrganization,
+} from "./organization-skill.js"
+export type { OrganizationSkill, CreateOrganizationSkillInput } from "./organization-skill.js"
+
+export { createGoalSkillRequirement, bindGoalSkillRequirement } from "./goal-skill-requirement.js"
+export type {
+  GoalSkillRequirement,
+  CreateGoalSkillRequirementInput,
+  BindGoalSkillRequirementInput,
+} from "./goal-skill-requirement.js"
+
+export { createStepSkillCoverage, bindStepSkillCoverage } from "./step-skill-coverage.js"
+export type {
+  StepSkillCoverage,
+  CreateStepSkillCoverageInput,
+  BindStepSkillCoverageInput,
+} from "./step-skill-coverage.js"
+
+export {
   MASTERY_LEVELS,
   isMasteryLevel,
   createLearnerSkill,

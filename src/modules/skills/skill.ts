@@ -1,6 +1,8 @@
 /**
  * Skill domain — generic capability, independent of any learner.
  * Skill ≠ LearnerSkill. Skill ≠ Goal.
+ * ADR-020 catalog identity is OrganizationSkill (organization-scoped).
+ * This factory remains the conceptual Phase 0 Skill without tenant.
  */
 
 import type { Skill } from "../../shared/types/domain.types.js"
