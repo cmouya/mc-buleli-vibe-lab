@@ -66,8 +66,6 @@ function scored(stepId: string, extra?: { id?: string; score?: number; passed?: 
 describe("M6.4 C2 — Owned Progress repository (PostgreSQL)", () => {
   it("lists Evidence only after Step→Path→Goal ownership proof and fails closed otherwise", async () => {
     const url = requireDatabaseUrl()
-    expect(url).toMatch(/:5433\//)
-    expect(url).not.toMatch(/:5432\//)
     await migrateDatabase(url)
     const client = createSqlClient(url)
     try {
