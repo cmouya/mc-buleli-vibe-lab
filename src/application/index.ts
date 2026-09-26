@@ -32,6 +32,11 @@ export {
 } from "./persist-identity.js"
 export { persistLearner } from "./persist-learner.js"
 export type { LearnerRepository, PersistLearnerInput } from "./persist-learner.js"
+export { persistOrganizationSkill, getOrganizationSkill } from "./persist-organization-skill.js"
+export type {
+  OrganizationSkillRepository,
+  PersistOrganizationSkillInput,
+} from "./persist-organization-skill.js"
 export { generateLearningPath } from "./generate-learning-path.js"
 export { acceptLearningPath } from "./accept-learning-path.js"
 export type {

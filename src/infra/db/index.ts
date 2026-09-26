@@ -33,3 +33,4 @@ export {
 } from "./identity-repository.js"
 export { createDrizzleSessionRepository } from "./session-repository.js"
 export { createDrizzleLearnerRepository } from "./learner-repository.js"
+export { createDrizzleOrganizationSkillRepository } from "./organization-skill-repository.js"

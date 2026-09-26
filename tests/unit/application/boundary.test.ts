@@ -19,6 +19,7 @@ describe("application — layer boundary", () => {
       "persist-evidence.ts",
       "persist-identity.ts",
       "persist-learner.ts",
+      "persist-organization-skill.ts",
       "login.ts",
       "logout.ts",
       "resolve-session.ts",
