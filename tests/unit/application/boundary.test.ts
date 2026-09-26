@@ -21,6 +21,7 @@ describe("application — layer boundary", () => {
       "persist-learner.ts",
       "persist-organization-skill.ts",
       "bind-owned-goal-skill.ts",
+      "bind-owned-step-skill.ts",
       "login.ts",
       "logout.ts",
       "resolve-session.ts",

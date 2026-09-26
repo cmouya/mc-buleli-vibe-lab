@@ -9,6 +9,7 @@ export {
 export type { OrganizationSkill, CreateOrganizationSkillInput } from "./organization-skill.js"
 export type { OrganizationSkillRepository } from "./organization-skill-repository.js"
 export type { GoalSkillRepository } from "./goal-skill-repository.js"
+export type { StepSkillRepository } from "./step-skill-repository.js"
 
 export { createGoalSkillRequirement, bindGoalSkillRequirement } from "./goal-skill-requirement.js"
 export type {
