@@ -34,3 +34,4 @@ export {
 export { createDrizzleSessionRepository } from "./session-repository.js"
 export { createDrizzleLearnerRepository } from "./learner-repository.js"
 export { createDrizzleOrganizationSkillRepository } from "./organization-skill-repository.js"
+export { createDrizzleGoalSkillRepository } from "./goal-skill-repository.js"
