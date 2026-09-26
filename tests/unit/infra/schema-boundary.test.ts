@@ -28,9 +28,9 @@ function tableBlock(source: string, exportName: string): string {
   return next === -1 ? source.slice(start) : source.slice(start, next)
 }
 
-describe("infra — M6.1 schema boundary", () => {
-  it("adds nullable Goal ownership without Path/Step/Evidence or session tenant columns", () => {
-    expect(SCHEMA_SLICE).toBe("m6.1-goal-ownership")
+describe("infra — C2.1 schema boundary", () => {
+  it("adds Skill catalog tables without Path/Step/Evidence tenant or Mastery columns", () => {
+    expect(SCHEMA_SLICE).toBe("c2.1-skill-identity-schema")
     const source = readFileSync(schemaPath, "utf8")
     expect(source).toMatch(/pgTable\(\s*"goals"/)
     expect(source).toMatch(/pgTable\(\s*"learning_paths"/)
@@ -42,6 +42,9 @@ describe("infra — M6.1 schema boundary", () => {
     expect(source).toMatch(/pgTable\(\s*"organization_memberships"/)
     expect(source).toMatch(/pgTable\(\s*"sessions"/)
     expect(source).toMatch(/pgTable\(\s*"learners"/)
+    expect(source).toMatch(/pgTable\(\s*"skills"/)
+    expect(source).toMatch(/pgTable\(\s*"goal_skills"/)
+    expect(source).toMatch(/pgTable\(\s*"step_skills"/)
     const goalsBlock = tableBlock(source, "goals")
     expect(goalsBlock).toMatch(/organization_id/)
     expect(goalsBlock).toMatch(/learner_id/)
@@ -54,6 +57,21 @@ describe("infra — M6.1 schema boundary", () => {
       expect(block, name).not.toMatch(/learner_id/)
       expect(block, name).not.toMatch(/organization_id/)
     }
+    const evidenceBlock = tableBlock(source, "evidence")
+    expect(evidenceBlock).not.toMatch(/skill_id/)
+    const skillsBlock = tableBlock(source, "skills")
+    expect(skillsBlock).toMatch(/organization_id/)
+    expect(skillsBlock).not.toMatch(/goal_id/)
+    expect(skillsBlock).not.toMatch(/step_id/)
+    expect(skillsBlock).not.toMatch(/learner_id/)
+    const goalSkillsBlock = tableBlock(source, "goalSkills")
+    expect(goalSkillsBlock).not.toMatch(/organization_id/)
+    expect(goalSkillsBlock).toMatch(/goal_id/)
+    expect(goalSkillsBlock).toMatch(/skill_id/)
+    const stepSkillsBlock = tableBlock(source, "stepSkills")
+    expect(stepSkillsBlock).not.toMatch(/organization_id/)
+    expect(stepSkillsBlock).toMatch(/step_id/)
+    expect(stepSkillsBlock).toMatch(/skill_id/)
     const sessionsBlock = tableBlock(source, "sessions")
     expect(sessionsBlock).not.toMatch(/organization_id/)
     expect(sessionsBlock).not.toMatch(/learner_id/)

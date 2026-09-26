@@ -1,4 +1,19 @@
-export { SCHEMA_SLICE, organizations, users, learners, goals, learningPaths, learningPathSteps, evidence, userCredentials, organizationMemberships, sessions } from "./schema.js"
+export {
+  SCHEMA_SLICE,
+  organizations,
+  users,
+  learners,
+  goals,
+  learningPaths,
+  learningPathSteps,
+  evidence,
+  userCredentials,
+  organizationMemberships,
+  sessions,
+  skills,
+  goalSkills,
+  stepSkills,
+} from "./schema.js"
 export { requireDatabaseUrl } from "./url.js"
 export { pingDatabase } from "./ping.js"
 export { migrateDatabase } from "./migrate.js"

@@ -57,6 +57,13 @@
       "when": 1789817644870,
       "tag": "0007_m6_1_goal_ownership",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790376134677,
+      "tag": "0008_powerful_retro_girl",
+      "breakpoints": true
     }
   ]
 }

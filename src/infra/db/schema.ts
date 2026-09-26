@@ -8,13 +8,14 @@ import {
   jsonb,
   numeric,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   unique,
   uuid,
 } from "drizzle-orm/pg-core"
 
-export const SCHEMA_SLICE = "m6.1-goal-ownership" as const
+export const SCHEMA_SLICE = "c2.1-skill-identity-schema" as const
 
 export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey(),
@@ -222,5 +223,53 @@ export const sessions = pgTable(
   (table) => [
     unique("sessions_token_hash").on(table.tokenHash),
     index("sessions_user_id_idx").on(table.userId),
+  ],
+)
+
+export const skills = pgTable(
+  "skills",
+  {
+    id: uuid("id").primaryKey(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    description: text("description"),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [index("skills_organization_id_idx").on(table.organizationId)],
+)
+
+export const goalSkills = pgTable(
+  "goal_skills",
+  {
+    goalId: uuid("goal_id")
+      .notNull()
+      .references(() => goals.id, { onDelete: "cascade" }),
+    skillId: uuid("skill_id")
+      .notNull()
+      .references(() => skills.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.goalId, table.skillId] }),
+    index("goal_skills_skill_id_idx").on(table.skillId),
+  ],
+)
+
+export const stepSkills = pgTable(
+  "step_skills",
+  {
+    stepId: uuid("step_id")
+      .notNull()
+      .references(() => learningPathSteps.id, { onDelete: "cascade" }),
+    skillId: uuid("skill_id")
+      .notNull()
+      .references(() => skills.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.stepId, table.skillId] }),
+    index("step_skills_skill_id_idx").on(table.skillId),
   ],
 )
