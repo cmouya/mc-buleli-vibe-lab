@@ -49,6 +49,12 @@ export type {
   StepSkillCoverage,
   StepSkillRepository,
 } from "./bind-owned-step-skill.js"
+export { bindOwnedEvidenceSkill } from "./bind-owned-evidence-skill.js"
+export type {
+  BindOwnedEvidenceSkillInput,
+  EvidenceSkillAttribution,
+  EvidenceSkillRepository,
+} from "./bind-owned-evidence-skill.js"
 export { generateLearningPath } from "./generate-learning-path.js"
 export { acceptLearningPath } from "./accept-learning-path.js"
 export type {

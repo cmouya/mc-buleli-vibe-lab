@@ -5,6 +5,7 @@ import {
   createDb,
   createSqlClient,
   evidence,
+  evidenceSkills,
   goalSkills,
   goals,
   learners,
@@ -148,6 +149,7 @@ describe("C2.1 — Skill Identity schema (PostgreSQL)", () => {
       const skillTwo = await skillRow(db, orgId, "B")
       const { stepId: stepOne } = await pathWithStep(db, goalOne)
       const { stepId: stepTwo } = await pathWithStep(db, goalTwo)
+      const evidenceJoinId = randomUUID()
 
       await db.insert(goalSkills).values([
         { goalId: goalOne, skillId: skillOne },
@@ -174,6 +176,27 @@ describe("C2.1 — Skill Identity schema (PostgreSQL)", () => {
       ).rejects.toThrow()
       await expect(
         db.insert(stepSkills).values({ stepId: stepOne, skillId: skillOne }),
+      ).rejects.toThrow()
+
+      await db.insert(evidence).values({
+        id: evidenceJoinId,
+        stepId: stepOne,
+        type: "quiz_attempt",
+        score: "1",
+        maxScore: "2",
+        passed: false,
+        answers: [],
+        recordedAt: "2026-09-25T00:00:00.000Z",
+      })
+      await db.insert(evidenceSkills).values([
+        { evidenceId: evidenceJoinId, skillId: skillOne },
+        { evidenceId: evidenceJoinId, skillId: skillTwo },
+      ])
+      expect(
+        await db.select().from(evidenceSkills).where(eq(evidenceSkills.evidenceId, evidenceJoinId)),
+      ).toHaveLength(2)
+      await expect(
+        db.insert(evidenceSkills).values({ evidenceId: evidenceJoinId, skillId: skillOne }),
       ).rejects.toThrow()
     } finally {
       await client.end({ timeout: 5 })
@@ -208,11 +231,50 @@ describe("C2.1 — Skill Identity schema (PostgreSQL)", () => {
         1,
       )
 
+      const goalForEvidence = await ownedGoal(db, orgId, learnerId)
+      const { stepId: stepForEvidence } = await pathWithStep(db, goalForEvidence)
+      const skillForEvidence = await skillRow(db, orgId, "Evidence-bound")
+      const evidenceCascadeId = randomUUID()
+      await db.insert(evidence).values({
+        id: evidenceCascadeId,
+        stepId: stepForEvidence,
+        type: "quiz_attempt",
+        score: "1",
+        maxScore: "2",
+        passed: false,
+        answers: [],
+        recordedAt: "2026-09-25T00:00:00.000Z",
+      })
+      await db.insert(evidenceSkills).values({
+        evidenceId: evidenceCascadeId,
+        skillId: skillForEvidence,
+      })
+      await db.delete(evidence).where(eq(evidence.id, evidenceCascadeId))
+      expect(
+        await db.select().from(evidenceSkills).where(eq(evidenceSkills.evidenceId, evidenceCascadeId)),
+      ).toEqual([])
+      expect(await db.select().from(skills).where(eq(skills.id, skillForEvidence))).toHaveLength(1)
+
       const goalKept = await ownedGoal(db, orgId, learnerId)
       const { stepId: stepKept } = await pathWithStep(db, goalKept)
       const skillDeleted = await skillRow(db, orgId, "To delete")
       await db.insert(goalSkills).values({ goalId: goalKept, skillId: skillDeleted })
       await db.insert(stepSkills).values({ stepId: stepKept, skillId: skillDeleted })
+      const evidenceKeptId = randomUUID()
+      await db.insert(evidence).values({
+        id: evidenceKeptId,
+        stepId: stepKept,
+        type: "quiz_attempt",
+        score: "1",
+        maxScore: "2",
+        passed: false,
+        answers: [],
+        recordedAt: "2026-09-25T00:00:00.000Z",
+      })
+      await db.insert(evidenceSkills).values({
+        evidenceId: evidenceKeptId,
+        skillId: skillDeleted,
+      })
       await db.delete(skills).where(eq(skills.id, skillDeleted))
       expect(await db.select().from(goalSkills).where(eq(goalSkills.skillId, skillDeleted))).toEqual(
         [],
@@ -220,6 +282,10 @@ describe("C2.1 — Skill Identity schema (PostgreSQL)", () => {
       expect(await db.select().from(stepSkills).where(eq(stepSkills.skillId, skillDeleted))).toEqual(
         [],
       )
+      expect(
+        await db.select().from(evidenceSkills).where(eq(evidenceSkills.skillId, skillDeleted)),
+      ).toEqual([])
+      expect(await db.select().from(evidence).where(eq(evidence.id, evidenceKeptId))).toHaveLength(1)
       expect(await db.select().from(goals).where(eq(goals.id, goalKept))).toHaveLength(1)
       expect(await db.select().from(learningPathSteps).where(eq(learningPathSteps.id, stepKept))).toHaveLength(
         1,
@@ -265,6 +331,9 @@ describe("C2.1 — Skill Identity schema (PostgreSQL)", () => {
         1,
       )
       expect(await db.select().from(evidence).where(eq(evidence.id, evidenceId))).toHaveLength(1)
+      expect(await db.select().from(evidenceSkills).where(eq(evidenceSkills.evidenceId, evidenceId))).toEqual(
+        [],
+      )
 
       const skillB = await skillRow(db, orgB, "Foreign skill")
       await db.insert(goalSkills).values({ goalId: goalA, skillId: skillB })
@@ -309,6 +378,63 @@ describe("C2.1 — Skill Identity schema (PostgreSQL)", () => {
         }),
       ).rejects.toThrow()
       expect(await db.select().from(goalSkills).where(eq(goalSkills.skillId, skillNone))).toEqual([])
+    } finally {
+      await client.end({ timeout: 5 })
+    }
+  })
+
+  it("evidence_skills is identity-only with composite PK and FKs", async () => {
+    const url = requireDatabaseUrl()
+    await migrateDatabase(url)
+    const client = createSqlClient(url)
+    try {
+      const columns = await client<Array<{ column_name: string }>>`
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'evidence_skills'
+        ORDER BY ordinal_position
+      `
+      expect(columns.map((row) => row.column_name).sort()).toEqual(["evidence_id", "skill_id"].sort())
+
+      const pk = await client<Array<{ column_name: string }>>`
+        SELECT kcu.column_name
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+          ON tc.constraint_name = kcu.constraint_name
+         AND tc.table_schema = kcu.table_schema
+        WHERE tc.table_schema = 'public'
+          AND tc.table_name = 'evidence_skills'
+          AND tc.constraint_type = 'PRIMARY KEY'
+        ORDER BY kcu.ordinal_position
+      `
+      expect(pk.map((row) => row.column_name)).toEqual(["evidence_id", "skill_id"])
+
+      const fks = await client<Array<{ column_name: string; foreign_table_name: string }>>`
+        SELECT kcu.column_name, ccu.table_name AS foreign_table_name
+        FROM information_schema.table_constraints tc
+        JOIN information_schema.key_column_usage kcu
+          ON tc.constraint_name = kcu.constraint_name
+         AND tc.table_schema = kcu.table_schema
+        JOIN information_schema.constraint_column_usage ccu
+          ON ccu.constraint_name = tc.constraint_name
+         AND ccu.table_schema = tc.table_schema
+        WHERE tc.table_schema = 'public'
+          AND tc.table_name = 'evidence_skills'
+          AND tc.constraint_type = 'FOREIGN KEY'
+        ORDER BY kcu.column_name
+      `
+      expect(fks).toEqual([
+        { column_name: "evidence_id", foreign_table_name: "evidence" },
+        { column_name: "skill_id", foreign_table_name: "skills" },
+      ])
+
+      const forbidden = await client<Array<{ tablename: string }>>`
+        SELECT tablename
+        FROM pg_tables
+        WHERE schemaname = 'public'
+          AND tablename IN ('learner_skills', 'mastery', 'skill_gaps')
+      `
+      expect(forbidden).toEqual([])
     } finally {
       await client.end({ timeout: 5 })
     }

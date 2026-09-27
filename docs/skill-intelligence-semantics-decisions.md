@@ -7,7 +7,8 @@
 **Date:** 2026-09-27
 **Implementation (this ADR freeze):** NOT STARTED by this ADR
 **Later Slice 1 Phase A (separately authorized):** Goal Skill `requiredLevel` **write** persistence — valid new binds `emerging` \| `proficient` \| `expert`; legacy `goal_skills.required_level` **NULL** remains transitional; different-level / legacy-NULL rebind **conflicts**; migration `0009_quick_jazinda` (generator-selected). Phase B NOT NULL **deferred**.
-**Migration head:** `0009_quick_jazinda`
+**Later Slice 2 (separately authorized):** Evidence↔Skill **explicit bind-only** M:N (`evidence_skills`; ⊆ persisted Step coverage; no backfill; no HTTP). Attribution ≠ Mastery.
+**Migration head:** `0010_elite_valkyrie`
 
 This file is the binding record for **ADR-021**. Human architecture review **approved** decisions D-021-01–D-021-19. This freeze is **documentation / semantics only**. It does **not** authorize production code, tests, schema, SQL, Drizzle, or migration `0009`.
 
@@ -197,7 +198,7 @@ Initial Estimate persistence; Skill HTTP/API; Skill list/search; Goal Skill read
 
 ## Future schema (NON-AUTHORIZED)
 
-If a **later** implementation plan is approved, likely implications include: additive `requiredLevel` on Goal Skill persistence (**Slice 1 Phase A now shipped:** nullable `goal_skills.required_level`, CHECK, no default); an Evidence↔Skill attribution table; **no** authoritative `learner_skills` table; Mastery derived in-process first. **Do not** treat Evidence↔Skill or Mastery tables as existing.
+If a **later** implementation plan is approved, likely implications include: additive `requiredLevel` on Goal Skill persistence (**Slice 1 Phase A now shipped:** nullable `goal_skills.required_level`, CHECK, no default); an Evidence↔Skill attribution table (**Slice 2 now shipped:** bind-only `evidence_skills`, ⊆ Step coverage, no backfill); **no** authoritative `learner_skills` table; Mastery derived in-process first. **Do not** treat Mastery tables as existing.
 
 ## Implementation Authorization
 
@@ -207,4 +208,4 @@ Smallest later slice (only after a separate plan): persist Goal Skill `requiredL
 
 ## Exit / Freeze State
 
-**ACCEPTED / FROZEN.** This ADR did **not** start implementation. **Slice 1 Phase A** (later authorized) persists Goal Skill `requiredLevel` for **new** writes. Phase B, Evidence attribution, Mastery, SkillGap wiring, Adaptive Path, and Skill HTTP remain **out**. Head `0009_quick_jazinda`.
+**ACCEPTED / FROZEN.** This ADR did **not** start implementation. **Slice 1 Phase A** (later authorized) persists Goal Skill `requiredLevel` for **new** writes. **Slice 2** (later authorized) persists explicit Evidence↔Skill attribution bind-only. Phase B, Mastery, SkillGap wiring, Adaptive Path, and Skill HTTP remain **out**. Head `0010_elite_valkyrie`.

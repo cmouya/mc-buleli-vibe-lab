@@ -13,9 +13,9 @@
 **Persistence architecture:** FROZEN (D-C2-01–D-C2-19; Option A)
 **Persistence implementation:** C2.1–C2.4 **COMPLETE AND VALIDATED**
 **C2.5 / Checkpoint F:** documentation and regression **closure** (this checkpoint)
-**Tables:** `skills`, `goal_skills`, `step_skills` exist (`SCHEMA_SLICE` `c2.1-skill-identity-schema`)
-**Migration head:** `0009_quick_jazinda` (Slice 1 Phase A `required_level`; C2 tables from `0008_powerful_retro_girl`)
-**Next product work:** **NOT AUTHORIZED** by C2.5. **ADR-021** semantics remain **FROZEN**. Slice 1 Phase A Goal Skill `requiredLevel` writes are **implemented** (nullable column; no HTTP). Phase B NOT NULL and later Skill Intelligence slices need a **separate plan**.
+**Tables:** `skills`, `goal_skills`, `step_skills` exist (`SCHEMA_SLICE` `c2.1-skill-identity-schema`). Slice 2 adds `evidence_skills` (bind-only).
+**Migration head:** `0010_elite_valkyrie` (Slice 2 `evidence_skills`; Slice 1 `0009_quick_jazinda`; C2 tables from `0008_powerful_retro_girl`)
+**Next product work:** **NOT AUTHORIZED** by C2.5. **ADR-021** semantics remain **FROZEN**. Slice 1 Phase A and Slice 2 bind-only attribution are **implemented** (no HTTP). Phase B NOT NULL, Mastery projection, and SkillGap wiring need a **separate plan**.
 
 ## Human checkpoints (mandatory)
 
@@ -94,7 +94,7 @@ C2 was **Skill Identity persistence infrastructure** after ADR-020 / C1:
 
 **Intentionally still deferred after C2 close:** organization Skill list/search; `getSkillsForGoal`; Step coverage reads; unbind; catalog update/delete; Skill HTTP/API; LearnerSkill persistence; LearnerState persistence; `Evidence.skillId` **singleton**; Mastery / I-04 **implementation**; SkillGap production implementation; Adaptive Path engine.
 
-**After ADR-021 / Slice 1 Phase A:** Goal Skill `requiredLevel` writes are implemented (nullable `required_level`; CHECK; conflict on different/legacy). Evidence↔Skill **M:N** attribution, Mastery **projection**, and SkillGap application remain **not implemented**.
+**After ADR-021 / Slice 1 / Slice 2:** Goal Skill `requiredLevel` writes are implemented (nullable `required_level`; CHECK; conflict on different/legacy). Evidence↔Skill **M:N** bind-only attribution is implemented (`evidence_skills`; ⊆ Step coverage; existing Evidence unattributed). Mastery **projection** and SkillGap application remain **not implemented**.
 
 ## Implementation guardrails
 

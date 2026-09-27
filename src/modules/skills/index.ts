@@ -10,6 +10,7 @@ export type { OrganizationSkill, CreateOrganizationSkillInput } from "./organiza
 export type { OrganizationSkillRepository } from "./organization-skill-repository.js"
 export type { GoalSkillRepository } from "./goal-skill-repository.js"
 export type { StepSkillRepository } from "./step-skill-repository.js"
+export type { EvidenceSkillRepository } from "./evidence-skill-repository.js"
 
 export {
   createGoalSkillRequirement,
@@ -31,6 +32,12 @@ export type {
   CreateStepSkillCoverageInput,
   BindStepSkillCoverageInput,
 } from "./step-skill-coverage.js"
+
+export { createEvidenceSkillAttribution } from "./evidence-skill-attribution.js"
+export type {
+  EvidenceSkillAttribution,
+  CreateEvidenceSkillAttributionInput,
+} from "./evidence-skill-attribution.js"
 
 export {
   MASTERY_LEVELS,

@@ -71,6 +71,13 @@
       "when": 1790519301103,
       "tag": "0009_quick_jazinda",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790546366750,
+      "tag": "0010_elite_valkyrie",
+      "breakpoints": true
     }
   ]
 }

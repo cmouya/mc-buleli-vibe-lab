@@ -22,6 +22,7 @@ import {
   createDrizzleUserRepository,
   createSqlClient,
   evidence,
+  evidenceSkills,
   goalSkills,
   goals,
   learningPaths,
@@ -162,6 +163,9 @@ describe("C2.4 — StepSkill repository (PostgreSQL)", () => {
       const legacyStep = legacyPath.steps[0]?.id as string
 
       const stepSkillsBefore = stepSkillKeys(await db.select().from(stepSkills))
+      const evidenceSkillsBefore = (await db.select().from(evidenceSkills)).map((row) =>
+        pairKey(row.evidenceId, row.skillId),
+      )
       const goalSkillsBefore = goalSkillKeys(await db.select().from(goalSkills))
       const goalsBefore = (await db.select().from(goals)).length
       const pathsBefore = (await db.select().from(learningPaths)).length
@@ -226,6 +230,9 @@ describe("C2.4 — StepSkill repository (PostgreSQL)", () => {
 
       expect(stepSkillKeys(await db.select().from(stepSkills))).toEqual(stepSkillsAfterSuccess)
       expect(goalSkillKeys(await db.select().from(goalSkills))).toEqual(goalSkillsBefore)
+      expect(
+        (await db.select().from(evidenceSkills)).map((row) => pairKey(row.evidenceId, row.skillId)),
+      ).toEqual(evidenceSkillsBefore)
       expect((await db.select().from(goals)).length).toBe(goalsBefore)
       expect((await db.select().from(learningPaths)).length).toBe(pathsBefore)
       expect((await db.select().from(learningPathSteps)).length).toBe(stepsBefore)

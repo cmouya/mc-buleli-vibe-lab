@@ -254,5 +254,8 @@ describe("application — persistOwnedEvidence", () => {
     expect(source).not.toMatch(/postgres/i)
     expect(source).not.toMatch(/from ["']\.\.\/infra\//)
     expect(source).not.toMatch(/from ["']\.\.\/server\//)
+    expect(source).not.toMatch(/bindOwnedEvidenceSkill/)
+    expect(source).not.toMatch(/evidence_skills/)
+    expect(source).not.toMatch(/evidenceSkills/)
   })
 })

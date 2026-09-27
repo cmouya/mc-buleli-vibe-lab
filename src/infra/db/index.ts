@@ -13,6 +13,7 @@ export {
   skills,
   goalSkills,
   stepSkills,
+  evidenceSkills,
 } from "./schema.js"
 export { requireDatabaseUrl } from "./url.js"
 export { pingDatabase } from "./ping.js"
@@ -36,3 +37,4 @@ export { createDrizzleLearnerRepository } from "./learner-repository.js"
 export { createDrizzleOrganizationSkillRepository } from "./organization-skill-repository.js"
 export { createDrizzleGoalSkillRepository } from "./goal-skill-repository.js"
 export { createDrizzleStepSkillRepository } from "./step-skill-repository.js"
+export { createDrizzleEvidenceSkillRepository } from "./evidence-skill-repository.js"

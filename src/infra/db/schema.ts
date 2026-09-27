@@ -278,3 +278,20 @@ export const stepSkills = pgTable(
     index("step_skills_skill_id_idx").on(table.skillId),
   ],
 )
+
+/** Explicit Evidence↔Skill attribution identity pair. Not Step coverage. */
+export const evidenceSkills = pgTable(
+  "evidence_skills",
+  {
+    evidenceId: uuid("evidence_id")
+      .notNull()
+      .references(() => evidence.id, { onDelete: "cascade" }),
+    skillId: uuid("skill_id")
+      .notNull()
+      .references(() => skills.id, { onDelete: "cascade" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.evidenceId, table.skillId] }),
+    index("evidence_skills_skill_id_idx").on(table.skillId),
+  ],
+)

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto"
 import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
 import { DomainError } from "../../src/modules/shared/index.js"
 import { confirmGoal, createGoal, markGoalAnalyzed } from "../../src/modules/goals/index.js"
@@ -23,6 +24,7 @@ import {
   createDrizzleOwnedLearningPathRepository,
   createDrizzleUserRepository,
   createSqlClient,
+  evidenceSkills,
   migrateDatabase,
   requireDatabaseUrl,
 } from "../../src/infra/db/index.js"
@@ -143,6 +145,9 @@ describe("M6.3 C2 — Owned Evidence repository (PostgreSQL)", () => {
       expect(savedA.answers).toEqual([{ questionIndex: 0, selectedIndex: 1, correct: true }])
       expect(savedA.recordedAt).toBe(NOW)
       expect(savedA.id).toBeDefined()
+      expect(
+        await db.select().from(evidenceSkills).where(eq(evidenceSkills.evidenceId, savedA.id as string)),
+      ).toEqual([])
 
       const savedB = await ownedEvidence.saveOwned(scored(stepB, { score: 2, passed: true }), scopeB, goalB.id as string)
       expect(savedB.stepId).toBe(stepB)
@@ -229,6 +234,9 @@ describe("M6.3 C2 — Owned Evidence repository (PostgreSQL)", () => {
       expect(fromLegacy.stepId).toBe(legacyStep)
       expect(fromLegacy.passed).toBe(false)
       expect(await legacyEvidence.getById(fromLegacy.id as string)).toEqual(fromLegacy)
+      expect(
+        await db.select().from(evidenceSkills).where(eq(evidenceSkills.evidenceId, fromLegacy.id as string)),
+      ).toEqual([])
     } finally {
       await client.end({ timeout: 5 })
     }

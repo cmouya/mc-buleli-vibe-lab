@@ -14,7 +14,8 @@
 **C2.5:** documentation/regression closure
 **ADR-021:** Skill Intelligence **semantics ACCEPTED / FROZEN** — [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md)
 **Slice 1 Phase A:** Goal Skill `requiredLevel` **write** persistence (`0009_quick_jazinda`; legacy NULL; Phase B deferred)
-**Next checkpoint:** **separate plan** for Phase B / Evidence attribution / Mastery. This freeze file does **not** authorize those slices, Skill HTTP, LearnerSkill tables, or Adaptive Path.
+**Slice 2:** Evidence↔Skill bind-only attribution (`0010_elite_valkyrie`; ⊆ Step coverage; no HTTP)
+**Next checkpoint:** **separate plan** for Phase B / Mastery projection / SkillGap. This freeze file does **not** authorize those slices, Skill HTTP, LearnerSkill tables, or Adaptive Path.
 
 ## Sequence (historical freeze plan — later executed under C2)
 

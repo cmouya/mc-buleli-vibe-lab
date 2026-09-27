@@ -6,6 +6,7 @@ import {
   bindStepSkillCoverage,
   createGoalSkillRequirement,
   createOrganizationSkill,
+  createEvidenceSkillAttribution,
   createStepSkillCoverage,
   isOrganizationSkill,
 } from "../../../src/modules/skills/index.js"
@@ -260,6 +261,42 @@ describe("skills domain — Step Skill Coverage", () => {
       stepId: "st1",
       skillId: "s1",
     })
+  })
+
+  it("createEvidenceSkillAttribution is an identity pair without coverage or proficiency fields", () => {
+    const pair = createEvidenceSkillAttribution({
+      evidenceId: " ev-1 ",
+      skillId: " sk-1 ",
+    })
+    expect(pair).toEqual({ evidenceId: "ev-1", skillId: "sk-1" })
+    expect(Object.keys(pair).sort()).toEqual(["evidenceId", "skillId"].sort())
+    expect(pair).not.toHaveProperty("stepId")
+    expect(pair).not.toHaveProperty("learnerId")
+    expect(pair).not.toHaveProperty("organizationId")
+    expect(pair).not.toHaveProperty("score")
+    expect(pair).not.toHaveProperty("passed")
+    expect(pair).not.toHaveProperty("requiredLevel")
+    expect(pair).not.toHaveProperty("masteryLevel")
+    expect(() => createEvidenceSkillAttribution({ evidenceId: " ", skillId: "sk-1" })).toThrow(
+      DomainError,
+    )
+    expect(() => createEvidenceSkillAttribution({ evidenceId: "ev-1", skillId: " " })).toThrow(
+      DomainError,
+    )
+    try {
+      createEvidenceSkillAttribution({ evidenceId: "", skillId: "sk-1" })
+    } catch (error) {
+      expect((error as DomainError).code).toBe("EVIDENCE_SKILL_EMPTY_EVIDENCE_ID")
+    }
+    try {
+      createEvidenceSkillAttribution({ evidenceId: "ev-1", skillId: "" })
+    } catch (error) {
+      expect((error as DomainError).code).toBe("EVIDENCE_SKILL_EMPTY_SKILL_ID")
+    }
+
+    const coverage = createStepSkillCoverage({ stepId: "step-1", skillId: "sk-1" })
+    expect(coverage).not.toEqual(pair)
+    expect(coverage).not.toHaveProperty("evidenceId")
   })
 })
 

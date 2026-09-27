@@ -266,14 +266,14 @@ Preuve tangible d’apprentissage produite par un assessment ou une activité.
 ### Relations
 
 - N Evidence → 1 Step (ownership : Evidence → Step → Path → Goal)
-- Evidence ↔ Skill **many-to-many** (**ADR-021 accepté, non implémenté**) ; Skills attribuées ⊆ couverture du Step
+- Evidence ↔ Skill **many-to-many** (**ADR-021** ; Slice 2 bind-only `evidence_skills`) ; Skills attribuées ⊆ couverture du Step
 - Evidence **informe** Mastery seulement via attribution + règles ; pas via coverage seule
 
 ### Règles métier
 
 - **Evidence before Completion** (I-05) : pas de Completion d’étape sans Evidence `passed = true` pour ce `stepId`.
 - Attribution ≠ Mastery. Evidence POST ne mute pas Mastery (ADR-018 / ADR-021).
-- **Actuellement implémenté :** Evidence persistée scopée Step (`quiz_attempt`) ; **pas** de table d’attribution, **pas** de `Evidence.skillId`.
+- **Actuellement implémenté :** Evidence persistée scopée Step (`quiz_attempt`) ; attribution explicite bind-only (`evidence_skills`) ; **pas** de `Evidence.skillId` ; **pas** de Mastery projection.
 - Prototype 0 : evidence **implicite** (localStorage) — n’est pas l’autorité serveur.
 
 ---

@@ -70,7 +70,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m6.4-decisions.md`](m6.4-decisions.md) — Décisions M6.4 (humain) ; [`docs/m6.4-implementation-plan.md`](m6.4-implementation-plan.md) — M6.4 derived owned Completion/Progress (**ADR-019 Accepted** ; **COMPLETE AND VALIDATED** ; C1–C3 ; FINAL VALIDATION PASS ; DOCUMENTATION CLOSURE COMPLETE ; 244 executable tests)
 - [`docs/skill-identity-decisions.md`](skill-identity-decisions.md) — Skill Identity architecture freeze (humain) ; [`docs/skill-identity-implementation-plan.md`](skill-identity-implementation-plan.md) — Skill Identity (**ADR-020 Accepted** ; **ARCHITECTURE FREEZE COMPLETE** ; C1 domain contracts published ; **C2.1–C2.4 persistence COMPLETE AND VALIDATED** ; C2.5 closure)
 - [`docs/skill-identity-persistence-decisions.md`](skill-identity-persistence-decisions.md) — Skill Identity **persistence architecture freeze** (humain ; **D-C2-01–D-C2-19** ; Option A) ; [`docs/skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md) — C2.1–C2.4 **DONE** ; C2.5 **closure** ; migration head **`0008_powerful_retro_girl`**
-- [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md) — Skill Intelligence **semantics freeze** (humain ; **ADR-021 Accepted / FROZEN** ; D-021-01–D-021-19). **Slice 1 Phase A** Goal Skill `requiredLevel` write persist (`0009_quick_jazinda`; legacy NULL; no HTTP). Evidence attribution / Mastery / SkillGap / Adaptive Path **not** implemented.
+- [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md) — Skill Intelligence **semantics freeze** (humain ; **ADR-021 Accepted / FROZEN** ; D-021-01–D-021-19). **Slice 1 Phase A** Goal Skill `requiredLevel` write persist (`0009_quick_jazinda`; legacy NULL; no HTTP). **Slice 2** Evidence↔Skill bind-only attribution (`0010_elite_valkyrie`; ⊆ Step coverage; no HTTP). Mastery / SkillGap / Adaptive Path **not** implemented.
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -362,7 +362,7 @@ Source : [`docs/product-principles.md`](product-principles.md) — principes 5 e
 | **Learning Path** | Itinéraire ordonné d’étapes menant à l’objectif |
 | **Activity** | Unité pédagogique consommable (micro-learning, exercice…) |
 | **Assessment** | Mécanisme d’évaluation lié à une activité |
-| **Evidence** | Preuve tangible **scopée Step**. Attribution Evidence↔Skill M:N **acceptée, non implémentée** (**ADR-021**) |
+| **Evidence** | Preuve tangible **scopée Step**. Attribution Evidence↔Skill M:N **bind-only** (`evidence_skills`; ⊆ Step coverage ; **≠** Mastery ; **ADR-021**) |
 | **Mastery** | Projection **recalculable** de la proficiency démontrée (**ADR-021** ; **I-04 non implémenté**) |
 
 ### Noyau Learning Intelligence
@@ -378,7 +378,7 @@ flowchart LR
   Evidence --> Mastery
 ```
 
-Cible vision. **ADR-020** gèle l’identité Skill (catalog organization-scoped ; Goal/Step **référencent** Skills). **ADR-021** gèle les **sémantiques** requiredLevel, attribution Evidence↔Skill, Mastery projection, SkillGap (unknown ≠ none) — **non implémentées**. LearnerState persisté, Adaptive Path et Mastery production restent **non implémentés**. Evidence reste scopée Step. Progress ≠ Mastery.
+Cible vision. **ADR-020** gèle l’identité Skill (catalog organization-scoped ; Goal/Step **référencent** Skills). **ADR-021** gèle les **sémantiques** requiredLevel, attribution Evidence↔Skill, Mastery projection, SkillGap (unknown ≠ none). **Implémenté :** Slice 1 `requiredLevel` writes ; Slice 2 attribution bind-only. Mastery production, SkillGap application et Adaptive Path restent **non implémentés**. Evidence reste scopée Step. Progress ≠ Mastery.
 
 ### Distinctions fondamentales
 
@@ -864,7 +864,7 @@ M4 est **clos**. Pas de M4.5. M5.1–M5.3 sont **exécutés** : identity island,
 
 Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md), [`docs/m6.1-decisions.md`](m6.1-decisions.md), [`docs/m6.2-decisions.md`](m6.2-decisions.md), [`docs/m6.3-decisions.md`](m6.3-decisions.md), [`docs/m6.4-decisions.md`](m6.4-decisions.md), [`docs/skill-identity-decisions.md`](skill-identity-decisions.md), [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md). ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, **ADR-020 Accepted**, **ADR-021 Accepted**. **M6.1 is COMPLETE AND VALIDATED**. **M6.2 is COMPLETE AND VALIDATED** (C1–C3; FINAL VALIDATION PASS). **M6.3 is COMPLETE AND VALIDATED** (C1 owned Evidence application/port; C2 tenant-safe Drizzle Evidence persistence; C3 owned Evidence POST; FINAL VALIDATION PASS; 228 executable tests). **M6.4 is COMPLETE AND VALIDATED** (C1 owned derived Completion/Progress application/port; C2 tenant-safe Drizzle Evidence-for-owned-Step query; C3 `GET /api/v1/organizations/:organizationId/goals/:goalId/path/progress`; FINAL VALIDATION PASS; DOCUMENTATION CLOSURE COMPLETE; 244 executable tests). **Skill Identity ARCHITECTURE FREEZE COMPLETE** (**ADR-020**); C1 domain contracts **published**; **C2.1–C2.4 persistence COMPLETE AND VALIDATED** (tables `skills` / `goal_skills` / `step_skills`; `0008_powerful_retro_girl`; C2.5 documentation/regression closure). Tenant-safe accepted Path + nested Steps persist under an already-owned Goal: LearnerContext is server-resolved; owned Goal authorization precedes Path persist; DB re-proves `goalId` + `organizationId` + `learnerId`; Path + Steps are transactional; HTTP `POST /api/v1/organizations/:organizationId/goals/:goalId/path`; unknown/inaccessible/legacy fail closed without leaking. Learner is organization-scoped; Goal is the ownership root; Path/Step/Evidence ownership is derived through Goal (Evidence → Step → Path → Goal); sessions remain User-only; public confirm/generate remain public; Golden Reference unchanged; no Path/Step/Evidence tenant FKs; no UNIQUE(`goal_id`); no 0008. M6.3 persists tenant-safe Evidence **write** through the same derived chain: `POST /api/v1/organizations/:organizationId/goals/:goalId/steps/:stepId/evidence`; `Evidence.stepId` comes from the authorized Step; `type` is server-controlled `quiz_attempt`; `id` and `recordedAt` are server-generated; C2 proves `stepId` + `goalId` + `organizationId` + `learnerId` before INSERT. **M6.4** freezes **derived** owned Step Completion and Path Progress: persisted owned Evidence → I-05 → derived Step Completion → derived Path Progress (`GET /api/v1/organizations/:organizationId/goals/:goalId/path/progress` after C1+C2). Progress ≠ Mastery. Evidence POST unchanged. No 0008. Golden Reference unchanged.
 
-**Prochain :** Slice 1 Phase A **implemented in working tree** (Goal Skill `requiredLevel` writes; `0009_quick_jazinda`; legacy NULL; Phase B deferred). Do not start Evidence↔Skill attribution, Mastery, SkillGap wiring, Adaptive Path, or Skill HTTP without a new plan. Ne pas figer un tenant actif sur la session.
+**Prochain :** Slice 2 Evidence↔Skill bind-only attribution **implemented in working tree** (`evidence_skills`; `0010_elite_valkyrie`; coverage ≠ attribution; no HTTP). Do not start Mastery projection, SkillGap wiring, Adaptive Path, Phase B required proficiency, or Skill HTTP without a new plan. Ne pas figer un tenant actif sur la session.
 
 ---
 
@@ -1167,7 +1167,7 @@ At this checkpoint:
 
 - **FROZEN SEMANTICS** — D-021-01–D-021-19. Decision row above is the **freeze-time** ADR (including “no `0009` **by this ADR**”).
 - **SLICE 1 PHASE A (later authorized)** — Goal Skill `requiredLevel` **writes**; nullable `goal_skills.required_level`; CHECK; no default; conflict on different/legacy NULL; generator migration `0009_quick_jazinda`. Phase B **deferred**.
-- **STILL OUT** — Evidence↔Skill attribution, Mastery engine, SkillGap application, Adaptive Path, Skill HTTP.
+- **SLICE 2 (later authorized)** — Evidence↔Skill **explicit bind-only** M:N (`evidence_skills`; PK `(evidence_id, skill_id)`); constrained to persisted Step coverage; existing Evidence remains unattributed; Evidence POST unchanged. **STILL OUT** — Mastery engine, SkillGap application, Adaptive Path, Skill HTTP, Phase B.
 
 ---
 
@@ -1226,7 +1226,7 @@ Les éléments suivants sont **volontairement non décidés**. Ils ne doivent pa
 | D-12 | Component library (Tailwind, shadcn…) | À définir ultérieurement |
 | D-13 | Hosting provider (Vercel, Railway, AWS…) | À définir ultérieurement |
 | D-14 | Matrice RBAC détaillée par ressource | À définir ultérieurement |
-| D-15 | Schéma SQL spine Goal/Path/Steps/Evidence | **Décidé en M4**. Identity island **ADR-013 / M5.1**. Sessions = M5.2. Progress = derived **M6.4 / ADR-019** (no completion schema). **Skill identity = ADR-020**. **Skill catalog persistence C2.1–C2.4 COMPLETE** — tables `skills` / `goal_skills` / `step_skills` ; **`0008_powerful_retro_girl`**. **Slice 1 Phase A:** nullable `goal_skills.required_level` ; head **`0009_quick_jazinda`**. Mastery persistence remains deferred. Phase B NOT NULL deferred. |
+| D-15 | Schéma SQL spine Goal/Path/Steps/Evidence | **Décidé en M4**. Identity island **ADR-013 / M5.1**. Sessions = M5.2. Progress = derived **M6.4 / ADR-019** (no completion schema). **Skill identity = ADR-020**. **Skill catalog persistence C2.1–C2.4 COMPLETE** — tables `skills` / `goal_skills` / `step_skills` ; **`0008_powerful_retro_girl`**. **Slice 1 Phase A:** nullable `goal_skills.required_level` ; **`0009_quick_jazinda`**. **Slice 2:** `evidence_skills` bind-only ; head **`0010_elite_valkyrie`**. Mastery persistence remains deferred. Phase B NOT NULL deferred. |
 | D-16 | Event bus technology (si nécessaire) | À définir ultérieurement |
 
 ---
@@ -1283,7 +1283,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6.1 COMPLETE AND VALIDATED** (C1–C7) ; **ADR-017 Accepted** ; **M6.2 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS) ; **ADR-018 Accepted** ; **M6.3 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS ; 228 executable tests) ; **ADR-019 Accepted** ; **M6.4 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS ; DOCUMENTATION CLOSURE COMPLETE ; 244 executable tests) ; **ADR-020 Accepted** ; Skill Identity **ARCHITECTURE FREEZE COMPLETE** ; C1 domain contracts **published** ; Skill Identity **C2.1–C2.4 persistence COMPLETE AND VALIDATED** (`0008_powerful_retro_girl` ; pre-C2.5 `545a3c7`) ; C2.5 **documentation/regression closure** ; **ADR-021 Accepted / FROZEN** (Skill Intelligence semantics) ; **Slice 1 Phase A** Goal Skill `requiredLevel` writes (`0009_quick_jazinda` ; Phase B deferred) ; M5 **In progress** (RBAC détaillé différé). Pas de M4.5.
+4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6.1 COMPLETE AND VALIDATED** (C1–C7) ; **ADR-017 Accepted** ; **M6.2 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS) ; **ADR-018 Accepted** ; **M6.3 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS ; 228 executable tests) ; **ADR-019 Accepted** ; **M6.4 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS ; DOCUMENTATION CLOSURE COMPLETE ; 244 executable tests) ; **ADR-020 Accepted** ; Skill Identity **ARCHITECTURE FREEZE COMPLETE** ; C1 domain contracts **published** ; Skill Identity **C2.1–C2.4 persistence COMPLETE AND VALIDATED** (`0008_powerful_retro_girl` ; pre-C2.5 `545a3c7`) ; C2.5 **documentation/regression closure** ; **ADR-021 Accepted / FROZEN** (Skill Intelligence semantics) ; **Slice 1 Phase A** Goal Skill `requiredLevel` writes (`0009_quick_jazinda` ; Phase B deferred) ; **Slice 2** Evidence↔Skill bind-only (`0010_elite_valkyrie`) ; M5 **In progress** (RBAC détaillé différé). Pas de M4.5.
 
 ### Ce document ne remplace pas
 
