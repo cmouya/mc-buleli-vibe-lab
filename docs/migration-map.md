@@ -146,3 +146,13 @@ Phase 4  Next.js routes + Tailwind + retire Vite (quand parity)
 2. **Extraire avant de déplacer** — logique pure TS testable d’abord.
 3. **Une route à la fois** vers Next.js.
 4. **Prototype Vite** reste runnable jusqu’à bascule explicite.
+
+---
+
+## Server schema migrations (Learnova PostgreSQL)
+
+This map is primarily Prototype 0 → modules. Server Drizzle migrations are independent.
+
+- **Current migration head:** `0008_powerful_retro_girl` (C2 Skill Identity tables).
+- **ADR-021** Skill Intelligence semantics freeze creates **no** migration and **does not** allocate `0009`.
+- Future `requiredLevel` / Evidence↔Skill schema requires a **separate human-approved implementation plan**. Do not reserve `0009` here.

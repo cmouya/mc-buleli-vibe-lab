@@ -1,6 +1,6 @@
 # Skill Identity — Implementation plan
 
-**Provenance:** PLAN PLACEHOLDER written after ADR-020 acceptance. Later C1 domain contracts and C2 persistence were **separately human-authorized**. This freeze file **does not** authorize post-C2 work.
+**Provenance:** PLAN PLACEHOLDER written after ADR-020 acceptance. Later C1 domain contracts and C2 persistence were **separately human-authorized**. This freeze file **does not** authorize Skill Intelligence **implementation** (see **ADR-021** for semantics).
 
 **Depends on:** [`docs/skill-identity-decisions.md`](skill-identity-decisions.md), [ADR-020](architecture-baseline.md#adr-020--organization-scoped-skill-identity).
 
@@ -12,7 +12,8 @@
 **C1 domain contracts:** published
 **C2 persistence:** C2.1–C2.4 **COMPLETE AND VALIDATED** (pre-C2.5 baseline `545a3c7187467f73f785581fc545a8a1b6f79916`; head `0008_powerful_retro_girl`)
 **C2.5:** documentation/regression closure
-**Next checkpoint:** **new ADR / design checkpoint** after C2 close. Do not start Skill HTTP, LearnerSkill, Mastery, SkillGap, or Adaptive Path from this file.
+**ADR-021:** Skill Intelligence **semantics ACCEPTED / FROZEN** — [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md)
+**Next checkpoint:** **separate implementation plan** after ADR-021. This freeze file does **not** authorize requiredLevel persist, Evidence attribution, Mastery, SkillGap wiring, Skill HTTP, LearnerSkill tables, or Adaptive Path.
 
 ## Sequence (historical freeze plan — later executed under C2)
 
@@ -34,4 +35,4 @@ Everything listed as OUT in [`docs/skill-identity-decisions.md`](skill-identity-
 
 ## Stop conditions
 
-Any **post-C2** production code, schema, HTTP, Mastery, SkillGap, Adaptive Path, LearnerState, or Golden Reference change started from this freeze without a **new** human implementation authorization.
+Any **post-C2** production code, tests, schema, HTTP, Mastery engine, SkillGap wiring, Adaptive Path, LearnerState, or Golden Reference change started from this freeze without a **new** human **implementation** authorization. **ADR-021 is semantics only.**

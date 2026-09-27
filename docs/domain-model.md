@@ -65,7 +65,7 @@ Destination d’apprentissage exprimée par l’apprenant. Point d’entrée du 
 ### Relations
 
 - 1 Goal → 1 LearningPath (généré)
-- 1 Goal → N Skills cibles (via path ou analyse)
+- 1 Goal → N Skills cibles via **GoalSkillRequirement** (many-to-many). **Architecture acceptée (ADR-021, non implémentée) :** chaque exigence porte un `requiredLevel` (`emerging` | `proficient` | `expert` ; pas `none`). **Actuellement implémenté (C2) :** paire `goalId` + `skillId` seulement.
 
 ### Règles métier
 
@@ -90,12 +90,12 @@ Unité de capacité observable, réutilisable dans un référentiel. Brique du S
 
 ### Relations
 
-- N Skills ↔ N PathSteps
-- 1 Skill → N CompetencyStates (par apprenant)
+- N Skills ↔ N PathSteps (**couverture** many-to-many ; ADR-020)
+- 1 Skill → N états apprenant (conceptuel). **LearnerSkill n’est pas l’autorité Mastery** (ADR-021).
 
 ### Règles métier
 
-- Une compétence est **acquise** uniquement via Evidence validée — pas par consommation de contenu seule.
+- Une compétence **démontrée** (Mastery) exige Evidence **attribuée** et règles déterministes — pas la seule consommation de contenu, ni le Completion d’étape (I-03 / I-04 / ADR-021). **I-04 n’est pas implémenté.**
 
 ---
 
@@ -103,26 +103,27 @@ Unité de capacité observable, réutilisable dans un référentiel. Brique du S
 
 ### Responsabilité
 
-**Competency** : référentiel (définition).  
-**CompetencyState** : état de maîtrise d’un apprenant pour une compétence donnée.
+**Competency** : référentiel (définition) — aligné **Skill** cataloguée.
+**CompetencyState / LearnerSkill** : sketch C1 d’état apprenant. **ADR-021 :** ce n’est **pas** l’autorité de proficiency démontrée ; le setter `masteryLevel` **ne doit pas** être traité comme Mastery production. Un DTO lecture (estimate / demonstrated / unknown) est **différé**.
 
-### Attributs principaux (CompetencyState)
+### Attributs principaux (CompetencyState — sketch, non autoritaire)
 
 - `skillId`
 - `learnerId`
-- `masteryLevel` — none | emerging | proficient | expert (échelle cible)
+- `masteryLevel` — none | emerging | proficient | expert (échelle ; **pas** Mastery production)
 - `evidenceIds[]`
 - `lastAssessedAt`
 
 ### Relations
 
-- Lié à `Mastery` (agrégat ou projection)
-- Alimenté par `Evidence`
+- Distinct de **Mastery** (projection recalculable, ADR-021, **non implémentée**)
+- Ne pas alimenter Mastery depuis un estimate ou depuis Progress
 
 ### Règles métier
 
-- **Progress ≠ Mastery** : compléter une étape avance le path ; le niveau de maîtrise dépend des preuves et critères.
+- **Progress ≠ Mastery** : compléter une étape avance le path ; le niveau de maîtrise dépend des preuves **attribuées** et de règles.
 - Prototype 0 : `skills[]` = liste de noms validés — **progression simplifiée**, pas mastery score.
+- **UNKNOWN ≠ none** (ADR-021).
 
 ---
 
@@ -159,7 +160,7 @@ Itinéraire personnalisé menant de l’état actuel de l’apprenant vers son o
 
 ### Responsabilité
 
-Étape atomique du parcours, associée à une compétence et une activité d’apprentissage.
+Étape atomique du parcours. Elle **couvre** une ou plusieurs Skills (many-to-many). Le label Prototype 0 `skill` n’est pas l’identité Skill serveur.
 
 ### Attributs principaux
 
@@ -167,14 +168,15 @@ Itinéraire personnalisé menant de l’état actuel de l’apprenant vers son o
 - `pathId`
 - `order` — position (1-based)
 - `title`, `description`
-- `skillId` / `skill` (label Prototype 0)
+- `skillId` / `skill` (label Prototype 0 / Golden Reference — **non canonique**)
 - `level`, `duration`
-- `status` — `todo` | `current` | `done`
+- `status` — `todo` | `current` | `done` (Prototype 0 ; production Completion is **derived**, M6.4)
 - `activityId` (lien vers content, futur)
 
 ### Relations
 
 - N PathSteps → 1 LearningPath
+- N PathSteps ↔ N Skills (**StepSkillCoverage** ; C2 **implémenté** en écriture)
 - 1 PathStep → 0..1 LearningActivity
 - 1 PathStep → 0..N Assessments / Evidence
 
@@ -263,13 +265,16 @@ Preuve tangible d’apprentissage produite par un assessment ou une activité.
 
 ### Relations
 
-- N Evidence → 1 Assessment
-- Evidence → alimente CompetencyState / Mastery
+- N Evidence → 1 Step (ownership : Evidence → Step → Path → Goal)
+- Evidence ↔ Skill **many-to-many** (**ADR-021 accepté, non implémenté**) ; Skills attribuées ⊆ couverture du Step
+- Evidence **informe** Mastery seulement via attribution + règles ; pas via coverage seule
 
 ### Règles métier
 
-- **Evidence before Completion** : pas de `PathStep.status = done` sans Evidence `passed = true`.
-- Prototype 0 : evidence **implicite** (pas persistée séparément) — dette à combler.
+- **Evidence before Completion** (I-05) : pas de Completion d’étape sans Evidence `passed = true` pour ce `stepId`.
+- Attribution ≠ Mastery. Evidence POST ne mute pas Mastery (ADR-018 / ADR-021).
+- **Actuellement implémenté :** Evidence persistée scopée Step (`quiz_attempt`) ; **pas** de table d’attribution, **pas** de `Evidence.skillId`.
+- Prototype 0 : evidence **implicite** (localStorage) — n’est pas l’autorité serveur.
 
 ---
 
@@ -277,27 +282,44 @@ Preuve tangible d’apprentissage produite par un assessment ou une activité.
 
 ### Responsabilité
 
-Niveau de maîtrise **évalué** d’une compétence pour un apprenant — distinct de la progression sur le path.
+Niveau de maîtrise **démontré** d’une compétence pour un apprenant — distinct de Progress et de Completion.
 
-### Attributs principaux
+**Architecture acceptée (ADR-021) :** Mastery est une **projection recalculable** depuis Evidence **attribuée** + règles déterministes. L’historique Evidence reste la source de vérité. Un cache futur n’est pas l’autorité. **I-04 n’est pas implémenté.**
+
+### Attributs principaux (conceptuels)
 
 - `skillId`
 - `learnerId`
 - `level` — none | emerging | proficient | expert
-- `confidence` — 0..1 (optionnel)
 - `basedOnEvidenceIds[]`
 - `evaluatedAt`
 
 ### Relations
 
-- Agrège plusieurs Evidence
-- Différent de `getProgressPercent()`
+- Agrège Evidence **attribuée** (pas toutes les Evidence du Step par inférence)
+- Différent de `progressPercent`
 
 ### Règles métier
 
-- Ne pas inférer mastery depuis `%` du parcours.
-- Peut exiger plusieurs preuves ou réévaluations (vision).
+- Ne pas inférer mastery depuis `%` du parcours, depuis Step coverage, ni depuis un Initial Estimate.
+- **UNKNOWN ≠ none.**
+- L’IA ne détermine pas Mastery (I-08).
 - Prototype 0 : **non implémenté** — `skills[]` = proxy simpliste.
+
+---
+
+## SkillGap
+
+### Responsabilité
+
+Écart entre **Required Proficiency** (Goal Skill + `requiredLevel`) et **Current Proficiency** (Mastery démontrée **connue**, sinon **unknown**).
+
+**Actuellement :** fonction domaine `calculateSkillGap` (ordinaux injectés) — **pas** le SkillGap production (ne code pas UNKNOWN). **Câblage application différé** (ADR-021).
+
+### Forme sémantique acceptée
+
+- `status` — `unknown` | `open` | `closed`
+- `gapSize` ordinal optionnel si calculable (pas un pourcentage)
 
 ---
 

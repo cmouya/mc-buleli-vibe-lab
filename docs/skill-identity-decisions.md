@@ -6,17 +6,19 @@
 **ADR-020:** Accepted
 **Implementation (this ADR freeze):** did **not** start Skill code (historical)
 **C1 / C2 (later authorized):** C1 domain + C2.1–C2.4 persistence **COMPLETE AND VALIDATED**; C2.5 is documentation/regression closure
-**Skill Identity:** ARCHITECTURE FREEZE COMPLETE; persistence **CLOSED pending C2.5 human commit**
+**Skill Identity:** ARCHITECTURE FREEZE COMPLETE; C2 persistence **CLOSED**
 **Pre-C2.5 baseline:** `545a3c7187467f73f785581fc545a8a1b6f79916`
+**C2 close:** `0d6f1d688bc0ff44ca116e825cd95d292177af3d`
 **Migration head:** `0008_powerful_retro_girl`
+**Later semantics:** **ADR-021 Accepted / FROZEN** — [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md). S-08/S-12/S-14 compatibility is recorded **there**. Do **not** rewrite S-01–S-21 below.
 
-This file records the human-approved Skill Identity architecture after the post-M6.4 discovery review. S-01–S-21 below are the **historical freeze**. They are **not** rewritten because C2 later shipped. This file does **not** authorize Mastery, SkillGap, Adaptive Path, LearnerState, Skill HTTP, or Golden Reference changes.
+This file records the human-approved Skill Identity architecture after the post-M6.4 discovery review. S-01–S-21 below are the **historical freeze**. They are **not** rewritten because C2 later shipped, nor because ADR-021 later superseded/refined S-08, S-12, and S-14. This file does **not** authorize Skill Intelligence **implementation**.
 
 **ADR-020** is **Accepted** in [`docs/architecture-baseline.md`](architecture-baseline.md) §20 ([ADR-020](architecture-baseline.md#adr-020--organization-scoped-skill-identity)). Do not edit ADR-002, ADR-005, ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, or ADR-019 Decision rows.
 
 **M6.4 remains COMPLETE AND VALIDATED** at published SHA `27df119588b511d6783b90dec057773369d0fd27` (244 executable tests). This freeze does not reopen M6.4.
 
-**Next implementation checkpoint:** **NOT AUTHORIZED** by this ADR freeze. C1/C2 were authorized separately. After C2 close, a **new ADR / design checkpoint** is required before any post-C2 Skill Intelligence work.
+**Next implementation checkpoint:** **NOT AUTHORIZED** by this ADR freeze. C1/C2 were authorized separately. **ADR-021** is the post-C2 **semantic** freeze. Production slices still require a **separate implementation plan**.
 
 ## Context
 
@@ -155,6 +157,8 @@ Mastery computation; Mastery persistence; LearnerSkill persistence; SkillGap com
 
 **Historical:** This ADR freeze did **not** start Skill code.
 
-**Current (C2.5):** C1 domain contracts and C2.1–C2.4 persistence were authorized later and are **COMPLETE**. C2.5 closes C2 with documentation/regression only. List/unbind, Skill HTTP (S-17), LearnerSkill/Mastery (S-14), Evidence.skillId (S-12), SkillGap, Adaptive Path, and LearnerState remain **OUT**.
+**Current (C2.5):** C1 domain contracts and C2.1–C2.4 persistence were authorized later and are **COMPLETE**. C2.5 closes C2 with documentation/regression only.
+
+**After ADR-021 (semantics only):** requiredLevel, Evidence↔Skill M:N attribution, and Mastery-as-projection are **accepted conceptually** and **not implemented**. Historical Explicit OUT above remains the **ADR-020 freeze-time** list. See [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md). List/unbind, Skill HTTP (S-17), Adaptive Path, LearnerState, and LearnerSkill **authority** remain **OUT**.
 
 See [`docs/skill-identity-implementation-plan.md`](skill-identity-implementation-plan.md) and [`docs/skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md).

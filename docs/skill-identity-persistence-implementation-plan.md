@@ -15,7 +15,7 @@
 **C2.5 / Checkpoint F:** documentation and regression **closure** (this checkpoint)
 **Tables:** `skills`, `goal_skills`, `step_skills` exist (`SCHEMA_SLICE` `c2.1-skill-identity-schema`)
 **Migration head:** `0008_powerful_retro_girl` (no `0009`)
-**Next product work:** **NOT AUTHORIZED** — requires a **new ADR / design checkpoint** after C2 close. C2.5 does not select that slice.
+**Next product work:** **NOT AUTHORIZED** by C2.5. **ADR-021** Skill Intelligence semantics are **FROZEN** ([`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md)). Production still requires a **separate human-approved implementation plan**. No `0009`.
 
 ## Human checkpoints (mandatory)
 
@@ -92,9 +92,9 @@ C2 was **Skill Identity persistence infrastructure** after ADR-020 / C1:
 | C2.4 | `bindOwnedStepSkill` | owned Step via Path→Goal; idempotent `step_skills` |
 | C2.5 | docs + regression closure | no schema; no `0009` |
 
-**Intentionally still deferred after C2 close:** organization Skill list/search; `getSkillsForGoal`; Step coverage reads; unbind; catalog update/delete; Skill HTTP/API; LearnerSkill persistence; LearnerState persistence; `Evidence.skillId`; Mastery / I-04; SkillGap production implementation; Adaptive Path engine.
+**Intentionally still deferred after C2 close:** organization Skill list/search; `getSkillsForGoal`; Step coverage reads; unbind; catalog update/delete; Skill HTTP/API; LearnerSkill persistence; LearnerState persistence; `Evidence.skillId` **singleton**; Mastery / I-04 **implementation**; SkillGap production implementation; Adaptive Path engine.
 
-Post-C2 product direction requires a **new ADR / design checkpoint**. C2.5 does not choose that slice.
+**After ADR-021:** requiredLevel, Evidence↔Skill **M:N** attribution (not `Evidence.skillId`), and Mastery **projection** are **semantically accepted** and still **not implemented**. See [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md). C2.5 did **not** choose a product slice; **ADR-021** is the post-C2 semantic freeze. Production still needs a **separate implementation plan**.
 
 ## Implementation guardrails
 
@@ -148,4 +148,4 @@ Public Skill CRUD HTTP; Skill search/catalog UI; prerequisites; versioning; plat
 
 ## Stop conditions
 
-Any **post-C2** schema, adapter, HTTP, Mastery, SkillGap, Adaptive Path, or Golden Reference change started from this file without a **new** human-authorized design checkpoint. C2.1–C2.4 remain **FROZEN**.
+Any **post-C2** schema, adapter, HTTP, Mastery engine, SkillGap wiring, Adaptive Path, or Golden Reference change started from this C2 ledger without a **separate** human-authorized **implementation** plan. **ADR-021 does not authorize code.** C2.1–C2.4 remain **FROZEN**.

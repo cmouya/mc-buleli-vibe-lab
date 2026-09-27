@@ -70,6 +70,7 @@ Ce document constitue la **baseline architecturale officielle** de Learnova pour
 - [`docs/m6.4-decisions.md`](m6.4-decisions.md) — Décisions M6.4 (humain) ; [`docs/m6.4-implementation-plan.md`](m6.4-implementation-plan.md) — M6.4 derived owned Completion/Progress (**ADR-019 Accepted** ; **COMPLETE AND VALIDATED** ; C1–C3 ; FINAL VALIDATION PASS ; DOCUMENTATION CLOSURE COMPLETE ; 244 executable tests)
 - [`docs/skill-identity-decisions.md`](skill-identity-decisions.md) — Skill Identity architecture freeze (humain) ; [`docs/skill-identity-implementation-plan.md`](skill-identity-implementation-plan.md) — Skill Identity (**ADR-020 Accepted** ; **ARCHITECTURE FREEZE COMPLETE** ; C1 domain contracts published ; **C2.1–C2.4 persistence COMPLETE AND VALIDATED** ; C2.5 closure)
 - [`docs/skill-identity-persistence-decisions.md`](skill-identity-persistence-decisions.md) — Skill Identity **persistence architecture freeze** (humain ; **D-C2-01–D-C2-19** ; Option A) ; [`docs/skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md) — C2.1–C2.4 **DONE** ; C2.5 **closure** ; migration head **`0008_powerful_retro_girl`**
+- [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md) — Skill Intelligence **semantics freeze** (humain ; **ADR-021 Accepted / FROZEN** ; D-021-01–D-021-19 ; **implementation NOT STARTED** ; no `0009`)
 - Phase 1.5 — Référentiel stratégique et fonctionnel (personas, MVP, exigences)
 
 ### Distinction fondamentale
@@ -201,6 +202,8 @@ Source : [`README.md`](../README.md), [`src/main.js`](../src/main.js)
 Source : [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
 
 ### Limites connues (après M4)
+
+> Snapshot **M4-era**. Later: M5–M6.4, C2 Skill tables, **ADR-021** semantics (not implemented). Do not treat this table as the live capability map.
 
 | Limite | Impact |
 |--------|--------|
@@ -353,14 +356,14 @@ Source : [`docs/product-principles.md`](product-principles.md) — principes 5 e
 | **Goal** | Destination d’apprentissage exprimée par l’apprenant |
 | **Diagnostic** | Intake structuré produisant un profil baseline et des lacunes |
 | **Skill** | Compétence référentielle réutilisable ; identité **organization-scoped** (**ADR-020**). Skill Graph / prérequis = vision, non gelés |
-| **LearnerSkill** | État d’un apprenant vis-à-vis d’une Skill (niveau, preuves) |
-| **Skill Gap** | Écart entre niveau cible et niveau actuel sur une Skill |
+| **LearnerSkill** | Concept / sketch C1 — **pas** l’autorité Mastery (**ADR-021**). DTO lecture (estimate / demonstrated / unknown) **différé** |
+| **Skill Gap** | Écart **required vs demonstrated connu**, ou statut **unknown** (**ADR-021** ; **non implémenté**) |
 | **Learner State** | État de session / parcours actif de l’apprenant |
 | **Learning Path** | Itinéraire ordonné d’étapes menant à l’objectif |
 | **Activity** | Unité pédagogique consommable (micro-learning, exercice…) |
 | **Assessment** | Mécanisme d’évaluation lié à une activité |
-| **Evidence** | Preuve tangible produite par un assessment |
-| **Mastery** | Niveau de maîtrise **évalué** d’une compétence |
+| **Evidence** | Preuve tangible **scopée Step**. Attribution Evidence↔Skill M:N **acceptée, non implémentée** (**ADR-021**) |
+| **Mastery** | Projection **recalculable** de la proficiency démontrée (**ADR-021** ; **I-04 non implémenté**) |
 
 ### Noyau Learning Intelligence
 
@@ -375,16 +378,17 @@ flowchart LR
   Evidence --> Mastery
 ```
 
-Cible vision. **ADR-020** gèle seulement l’identité Skill (catalog organization-scoped ; Goal/Step **référencent** Skills). LearnerState persisté, Adaptive Path et Mastery restent **non implémentés**. Evidence reste scopée Step. Progress ≠ Mastery.
+Cible vision. **ADR-020** gèle l’identité Skill (catalog organization-scoped ; Goal/Step **référencent** Skills). **ADR-021** gèle les **sémantiques** requiredLevel, attribution Evidence↔Skill, Mastery projection, SkillGap (unknown ≠ none) — **non implémentées**. LearnerState persisté, Adaptive Path et Mastery production restent **non implémentés**. Evidence reste scopée Step. Progress ≠ Mastery.
 
 ### Distinctions fondamentales
 
 | Distinction | Signification |
 |-------------|---------------|
 | **Learner ≠ Learner State** | Learner = identité stable ; Learner State = snapshot session/parcours courant |
-| **Skill ≠ LearnerSkill** | Skill = identité cataloguée (org-scoped, ADR-020) ; LearnerSkill = état individuel + preuves (**non persisté**) |
+| **Skill ≠ LearnerSkill** | Skill = identité cataloguée (org-scoped, ADR-020) ; LearnerSkill = sketch non autoritaire (**ADR-021** ; **non persisté**) |
 | **Goal ≠ Skill** | Goal = destination ; Skills = décomposition en capacités observables |
-| **Progress ≠ Mastery** | Progress = avancement sur l’itinéraire (% étapes) ; Mastery = niveau évalué fondé sur Evidence |
+| **Progress ≠ Mastery** | Progress = avancement sur l’itinéraire (% étapes) ; Mastery = projection Evidence attribuée (**ADR-021** ; I-03) |
+| **UNKNOWN ≠ none** | UNKNOWN = proficiency démontrée pas encore établie ; `none` = niveau déterminé sur l’échelle (**ADR-021**) |
 | **Assessment ≠ Evidence** | Assessment = mécanisme ; Evidence = artefact produit par une tentative |
 
 ### Relations organisationnelles (cible)
@@ -458,7 +462,7 @@ Les **11 invariants** suivants (I-01 à I-11) sont **non négociables**. Toute i
 | I-01 | **Goal before Content** | Aucune activité sans objectif confirmé et compétence cible |
 | I-02 | **Goal ≠ Skill** | Un objectif est une destination ; les skills en sont la décomposition |
 | I-03 | **Progress ≠ Mastery** | La progression sur le path ne détermine pas le niveau de maîtrise |
-| I-04 | **Evidence before Mastery** | Pas de mastery sans evidence validée |
+| I-04 | **Evidence before Mastery** | Pas de mastery sans evidence validée. **ADR-021** gèle la sémantique (projection + attribution) ; **I-04 reste non implémenté** |
 | I-05 | **Evidence before Completion** | Pas de `step.status = done` sans evidence `passed = true` |
 | I-06 | **Learner State evolves** | L’état apprenant mute via events domaine, pas par mutation UI directe |
 | I-07 | **Adaptive Path** | Le parcours s’adapte aux gaps et preuves — pas figé arbitrairement |
@@ -517,7 +521,7 @@ ai/
 | Validation | Validators domaine avant toute mutation d’état |
 | Audit | Log prompts/inputs/outputs côté serveur |
 | Non-determinisme | Golden tests utilisent Mock ; AI eval tests avec fixtures et bandes de tolérance |
-| Interdiction | L’IA ne appelle jamais `completeStep()` ni ne modifie Mastery directement |
+| Interdiction | L’IA n’appelle jamais `completeStep()`, ne détermine pas Mastery, et ne crée pas d’Evidence ni d’attribution Evidence↔Skill comme autorité (ADR-021 / I-08) |
 
 ### État actuel
 
@@ -858,9 +862,9 @@ M0 → M1 → M2 → M3 → M4 → M5 → M6 → M7
 
 M4 est **clos**. Pas de M4.5. M5.1–M5.3 sont **exécutés** : identity island, sessions hachées, cookie `learnova.sid`, preuve `GET /api/v1/organizations/:organizationId/context`. Spine M4 toujours non possédé. Confirm/generate publics.
 
-Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md), [`docs/m6.1-decisions.md`](m6.1-decisions.md), [`docs/m6.2-decisions.md`](m6.2-decisions.md), [`docs/m6.3-decisions.md`](m6.3-decisions.md), [`docs/m6.4-decisions.md`](m6.4-decisions.md), [`docs/skill-identity-decisions.md`](skill-identity-decisions.md). ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, **ADR-020 Accepted**. **M6.1 is COMPLETE AND VALIDATED**. **M6.2 is COMPLETE AND VALIDATED** (C1–C3; FINAL VALIDATION PASS). **M6.3 is COMPLETE AND VALIDATED** (C1 owned Evidence application/port; C2 tenant-safe Drizzle Evidence persistence; C3 owned Evidence POST; FINAL VALIDATION PASS; 228 executable tests). **M6.4 is COMPLETE AND VALIDATED** (C1 owned derived Completion/Progress application/port; C2 tenant-safe Drizzle Evidence-for-owned-Step query; C3 `GET /api/v1/organizations/:organizationId/goals/:goalId/path/progress`; FINAL VALIDATION PASS; DOCUMENTATION CLOSURE COMPLETE; 244 executable tests). **Skill Identity ARCHITECTURE FREEZE COMPLETE** (**ADR-020**); C1 domain contracts **published**; **C2.1–C2.4 persistence COMPLETE AND VALIDATED** (tables `skills` / `goal_skills` / `step_skills`; `0008_powerful_retro_girl`; C2.5 documentation/regression closure). Tenant-safe accepted Path + nested Steps persist under an already-owned Goal: LearnerContext is server-resolved; owned Goal authorization precedes Path persist; DB re-proves `goalId` + `organizationId` + `learnerId`; Path + Steps are transactional; HTTP `POST /api/v1/organizations/:organizationId/goals/:goalId/path`; unknown/inaccessible/legacy fail closed without leaking. Learner is organization-scoped; Goal is the ownership root; Path/Step/Evidence ownership is derived through Goal (Evidence → Step → Path → Goal); sessions remain User-only; public confirm/generate remain public; Golden Reference unchanged; no Path/Step/Evidence tenant FKs; no UNIQUE(`goal_id`); no 0008. M6.3 persists tenant-safe Evidence **write** through the same derived chain: `POST /api/v1/organizations/:organizationId/goals/:goalId/steps/:stepId/evidence`; `Evidence.stepId` comes from the authorized Step; `type` is server-controlled `quiz_attempt`; `id` and `recordedAt` are server-generated; C2 proves `stepId` + `goalId` + `organizationId` + `learnerId` before INSERT. **M6.4** freezes **derived** owned Step Completion and Path Progress: persisted owned Evidence → I-05 → derived Step Completion → derived Path Progress (`GET /api/v1/organizations/:organizationId/goals/:goalId/path/progress` after C1+C2). Progress ≠ Mastery. Evidence POST unchanged. No 0008. Golden Reference unchanged.
+Décisions : [`docs/m5-decisions.md`](m5-decisions.md), [`docs/m5.2-decisions.md`](m5.2-decisions.md), [`docs/m5.3-decisions.md`](m5.3-decisions.md), [`docs/m6.1-decisions.md`](m6.1-decisions.md), [`docs/m6.2-decisions.md`](m6.2-decisions.md), [`docs/m6.3-decisions.md`](m6.3-decisions.md), [`docs/m6.4-decisions.md`](m6.4-decisions.md), [`docs/skill-identity-decisions.md`](skill-identity-decisions.md), [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md). ADR-013, ADR-014, ADR-015, ADR-016, ADR-017, ADR-018, ADR-019, **ADR-020 Accepted**, **ADR-021 Accepted**. **M6.1 is COMPLETE AND VALIDATED**. **M6.2 is COMPLETE AND VALIDATED** (C1–C3; FINAL VALIDATION PASS). **M6.3 is COMPLETE AND VALIDATED** (C1 owned Evidence application/port; C2 tenant-safe Drizzle Evidence persistence; C3 owned Evidence POST; FINAL VALIDATION PASS; 228 executable tests). **M6.4 is COMPLETE AND VALIDATED** (C1 owned derived Completion/Progress application/port; C2 tenant-safe Drizzle Evidence-for-owned-Step query; C3 `GET /api/v1/organizations/:organizationId/goals/:goalId/path/progress`; FINAL VALIDATION PASS; DOCUMENTATION CLOSURE COMPLETE; 244 executable tests). **Skill Identity ARCHITECTURE FREEZE COMPLETE** (**ADR-020**); C1 domain contracts **published**; **C2.1–C2.4 persistence COMPLETE AND VALIDATED** (tables `skills` / `goal_skills` / `step_skills`; `0008_powerful_retro_girl`; C2.5 documentation/regression closure). Tenant-safe accepted Path + nested Steps persist under an already-owned Goal: LearnerContext is server-resolved; owned Goal authorization precedes Path persist; DB re-proves `goalId` + `organizationId` + `learnerId`; Path + Steps are transactional; HTTP `POST /api/v1/organizations/:organizationId/goals/:goalId/path`; unknown/inaccessible/legacy fail closed without leaking. Learner is organization-scoped; Goal is the ownership root; Path/Step/Evidence ownership is derived through Goal (Evidence → Step → Path → Goal); sessions remain User-only; public confirm/generate remain public; Golden Reference unchanged; no Path/Step/Evidence tenant FKs; no UNIQUE(`goal_id`); no 0008. M6.3 persists tenant-safe Evidence **write** through the same derived chain: `POST /api/v1/organizations/:organizationId/goals/:goalId/steps/:stepId/evidence`; `Evidence.stepId` comes from the authorized Step; `type` is server-controlled `quiz_attempt`; `id` and `recordedAt` are server-generated; C2 proves `stepId` + `goalId` + `organizationId` + `learnerId` before INSERT. **M6.4** freezes **derived** owned Step Completion and Path Progress: persisted owned Evidence → I-05 → derived Step Completion → derived Path Progress (`GET /api/v1/organizations/:organizationId/goals/:goalId/path/progress` after C1+C2). Progress ≠ Mastery. Evidence POST unchanged. No 0008. Golden Reference unchanged.
 
-**Prochain :** Skill Identity **C2 persistence CLOSED pending C2.5 human commit** (`0008_powerful_retro_girl`; C2.1–C2.4 frozen). Next **product** work requires a **new ADR / design checkpoint**. Do not start Mastery, SkillGap, Adaptive Path, Skill HTTP, or LearnerSkill from C2.5. Ne pas figer un tenant actif sur la session.
+**Prochain :** **ADR-021 Skill Intelligence semantics ACCEPTED / FROZEN** (documentation only; [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md)). C2 persistence remains **CLOSED** (`0008_powerful_retro_girl`; C2.1–C2.4 frozen; no `0009`). Next **production** work requires a **separate human-approved implementation plan**. Do not start requiredLevel persist, Evidence↔Skill attribution, Mastery, SkillGap wiring, Adaptive Path, Skill HTTP, or LearnerSkill tables from this ADR. Ne pas figer un tenant actif sur la session.
 
 ---
 
@@ -1149,6 +1153,21 @@ At this checkpoint:
 - **IMPLEMENTED PERSISTENCE (C2.1–C2.4)** — tables `skills`, `goal_skills`, `step_skills`; migration `0008_powerful_retro_girl`; `SCHEMA_SLICE` `c2.1-skill-identity-schema`; catalog persist/get; tenant-safe idempotent Goal↔Skill and Step↔Skill binds. Pre-C2.5 baseline `545a3c7187467f73f785581fc545a8a1b6f79916`.
 - **C2.5** — documentation/regression closure only. No `0009`. No Skill HTTP. No list/unbind. No LearnerSkill / Mastery / SkillGap / Adaptive Path.
 
+### ADR-021 — Skill Intelligence semantics
+
+| | |
+|---|---|
+| **Status** | Accepted / FROZEN |
+| **Decision** | **Skill Intelligence semantics freeze.** Goal Skill requirements include **`requiredLevel`** on the existing Goal↔Skill many-to-many (`MasteryLevel`; **`none` invalid as required**). **UNKNOWN ≠ `none`**. Current Proficiency for SkillGap is the **demonstrated Mastery projection** or **UNKNOWN**; Initial Estimate is separate and **deferred**. Evidence remains **Step-scoped** (Step → Path → Goal). Evidence↔Skill attribution is conceptual **M:N**, **⊆ Step coverage**, **explicit** (not inferred from coverage); attribution **≠** Mastery; **no** singleton `Evidence.skillId`. Authoritative Mastery is a **recomputable projection** from attributed Evidence + deterministic rules (optional cache is not source of truth). **AI is not Mastery authority** (I-08). Progress ≠ Mastery; I-05 ≠ I-04; coverage ≠ Mastery. LearnerSkill is **not** demonstrated-proficiency authority; do not persist C1 `masteryLevel` as Mastery. SkillGap: required vs **known** demonstrated (`unknown` \| `open` \| `closed`; ordinal `gapSize` not a %). Tenant: no client org/learner/skillId authority. Golden Reference labels are not Skill/Mastery authority (S-18). **No Adaptive Path. No Skill HTTP (S-17). No production implementation, no migration, no `0009` by this ADR.** Binding record: [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md) (D-021-01–D-021-19). **S-08 SUPERSEDED**; **S-12 REFINED / partially SUPERSEDED**; **S-14 REFINED**; S-17 **UNCHANGED**; S-18 **PRESERVED**. ADR-020 historical Decision row **unchanged**. |
+| **Context** | C2 closed Skill Identity persistence (`0d6f1d6`; head `0008_powerful_retro_girl`). Identity and binds exist; SkillGap/Mastery cannot be honest without required levels, Evidence attribution, and UNKNOWN vs `none`. |
+| **Alternatives considered** | Binary Goal Skill (R4) ; Program-level requirement (R3) ; infer requirements from Path ; singleton `Evidence.skillId` ; coverage-as-attribution ; Assessment/criterion now ; authoritative `learner_skills` ; persisted Mastery as source of truth ; AI as Mastery authority |
+| **Consequences** | Semantics frozen. C2 tables and Evidence POST **unchanged**. Later schema (requiredLevel, evidence↔skill) requires a **separate implementation plan**. Adaptive Path, Skill HTTP, estimate persistence, and Mastery engine remain deferred. ADR-013–020 Decision rows **not rewritten**. |
+
+At this checkpoint:
+
+- **FROZEN SEMANTICS** — D-021-01–D-021-19. Implementation **NOT STARTED**.
+- **MIGRATION** — head `0008_powerful_retro_girl`. **No `0009`.**
+
 ---
 
 ## 21. ADR Coherence Matrix
@@ -1174,7 +1193,7 @@ Matrice de compatibilité entre les 12 ADR validées :
 
 ### Conclusion
 
-**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`). **ADR-016** est additif (Learner scopé organisation + ownership Goal) et cohérent avec ADR-013 (User ≠ Learner) et ADR-015 (OrganizationContext request-scoped ; M6 owns learning-object tenancy). **ADR-017** is additive (M6.2 tenant-safe Path persist through owned Goal); it does **not** rewrite ADR-013–016 Decision rows (User ≠ Learner, User-only sessions, OrganizationContext, LearnerContext, Goal as root, public confirm/generate). Keeping confirm/generate public in M6.2 is additive, not a Decision-row rewrite. **ADR-018** is additive (M6.3 tenant-safe Evidence persist through Goal-derived ownership); it **extends** ADR-016’s derived ownership model and ADR-017’s owned-write pattern; it does **not** rewrite ADR-013–017 Decision rows. **ADR-019** is additive (M6.4 derived owned Completion/Progress from persisted Evidence under I-05); it does **not** rewrite ADR-013–018 Decision rows (User ≠ Learner, User-only sessions, OrganizationContext, LearnerContext, Goal as root, Evidence persist-only, public confirm/generate). **ADR-020** is additive (organization-scoped Skill identity; Goal/Step **reference** Skills; Evidence remains Step-scoped); it does **not** rewrite ADR-013–019 Decision rows (Goal remains Path/Step/Evidence ownership root; M6.4 derived Progress unchanged; Skill catalog was OUT of M6.4). **M6.1 is implemented and validated. M6.2 is COMPLETE AND VALIDATED. M6.3 is COMPLETE AND VALIDATED. M6.4 is COMPLETE AND VALIDATED. Skill Identity ARCHITECTURE FREEZE COMPLETE; IMPLEMENTATION NOT STARTED.**
+**Aucun conflit architectural direct** n’a été identifié entre les 12 ADR historiques. **ADR-013** est additif (île d’identité M5.1). **ADR-014** est additif (sessions M5.2, jeton haché) et cohérent avec ADR-002 (PostgreSQL) et ADR-005 (sessions serveur + cookies HTTP-only **inchangés**). **ADR-015** est additif (OrganizationContext request-scoped, M5.3) et cohérent avec ADR-014 (session = User only ; pas d’`organization_id` sur `sessions`). **ADR-016** est additif (Learner scopé organisation + ownership Goal) et cohérent avec ADR-013 (User ≠ Learner) et ADR-015 (OrganizationContext request-scoped ; M6 owns learning-object tenancy). **ADR-017** is additive (M6.2 tenant-safe Path persist through owned Goal); it does **not** rewrite ADR-013–016 Decision rows (User ≠ Learner, User-only sessions, OrganizationContext, LearnerContext, Goal as root, public confirm/generate). Keeping confirm/generate public in M6.2 is additive, not a Decision-row rewrite. **ADR-018** is additive (M6.3 tenant-safe Evidence persist through Goal-derived ownership); it **extends** ADR-016’s derived ownership model and ADR-017’s owned-write pattern; it does **not** rewrite ADR-013–017 Decision rows. **ADR-019** is additive (M6.4 derived owned Completion/Progress from persisted Evidence under I-05); it does **not** rewrite ADR-013–018 Decision rows (User ≠ Learner, User-only sessions, OrganizationContext, LearnerContext, Goal as root, Evidence persist-only, public confirm/generate). **ADR-020** is additive (organization-scoped Skill identity; Goal/Step **reference** Skills; Evidence remains Step-scoped); it does **not** rewrite ADR-013–019 Decision rows (Goal remains Path/Step/Evidence ownership root; M6.4 derived Progress unchanged; Skill catalog was OUT of M6.4). **ADR-021** is additive (Skill Intelligence **semantics**; requiredLevel; Evidence↔Skill attribution; Mastery projection; SkillGap unknown/open/closed); it **supersedes S-08** and **refines S-12 / S-14** in a **new** Decision, and does **not** rewrite the ADR-020 historical Decision row. **M6.1 is implemented and validated. M6.2 is COMPLETE AND VALIDATED. M6.3 is COMPLETE AND VALIDATED. M6.4 is COMPLETE AND VALIDATED. Skill Identity C2 persistence COMPLETE AND VALIDATED. ADR-021 SEMANTICS FROZEN; IMPLEMENTATION NOT STARTED.**
 
 ### Zones de vigilance
 
@@ -1206,7 +1225,7 @@ Les éléments suivants sont **volontairement non décidés**. Ils ne doivent pa
 | D-12 | Component library (Tailwind, shadcn…) | À définir ultérieurement |
 | D-13 | Hosting provider (Vercel, Railway, AWS…) | À définir ultérieurement |
 | D-14 | Matrice RBAC détaillée par ressource | À définir ultérieurement |
-| D-15 | Schéma SQL spine Goal/Path/Steps/Evidence | **Décidé en M4**. Identity island **ADR-013 / M5.1**. Sessions = M5.2. Progress = derived **M6.4 / ADR-019** (no completion schema). **Skill identity = ADR-020**. **Skill catalog persistence C2.1–C2.4 COMPLETE** ([`skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md) ; D-C2-01–D-C2-19) — tables `skills` / `goal_skills` / `step_skills` ; head **`0008_powerful_retro_girl`**. Mastery persistence remains deferred. |
+| D-15 | Schéma SQL spine Goal/Path/Steps/Evidence | **Décidé en M4**. Identity island **ADR-013 / M5.1**. Sessions = M5.2. Progress = derived **M6.4 / ADR-019** (no completion schema). **Skill identity = ADR-020**. **Skill catalog persistence C2.1–C2.4 COMPLETE** ([`skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md) ; D-C2-01–D-C2-19) — tables `skills` / `goal_skills` / `step_skills` ; head **`0008_powerful_retro_girl`**. **ADR-021** Skill Intelligence **semantics FROZEN** (requiredLevel / Evidence↔Skill / Mastery projection **not** in schema). Mastery persistence remains deferred. No `0009`. |
 | D-16 | Event bus technology (si nécessaire) | À définir ultérieurement |
 
 ---
@@ -1263,7 +1282,7 @@ Status: BASELINE READY FOR HUMAN VALIDATION
 1. **Validation humaine** de ce document par le product owner / architecte
 2. Une fois validé → statut passe à **FROZEN**
 3. Toute modification post-FROZEN suit le processus section 23
-4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6.1 COMPLETE AND VALIDATED** (C1–C7) ; **ADR-017 Accepted** ; **M6.2 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS) ; **ADR-018 Accepted** ; **M6.3 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS ; 228 executable tests) ; **ADR-019 Accepted** ; **M6.4 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS ; DOCUMENTATION CLOSURE COMPLETE ; 244 executable tests) ; **ADR-020 Accepted** ; Skill Identity **ARCHITECTURE FREEZE COMPLETE** ; C1 domain contracts **published** ; Skill Identity **C2.1–C2.4 persistence COMPLETE AND VALIDATED** (`0008_powerful_retro_girl` ; pre-C2.5 `545a3c7`) ; C2.5 **documentation/regression closure** ; M5 **In progress** (RBAC détaillé différé). Pas de M4.5. Post-C2 product work requires a **new ADR**.
+4. Trajectoire : M0–M4 **Done** ; M5.1–M5.3 **Done** ; **ADR-016 Accepted** ; **M6.1 COMPLETE AND VALIDATED** (C1–C7) ; **ADR-017 Accepted** ; **M6.2 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS) ; **ADR-018 Accepted** ; **M6.3 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS ; 228 executable tests) ; **ADR-019 Accepted** ; **M6.4 COMPLETE AND VALIDATED** (C1–C3 ; FINAL VALIDATION PASS ; DOCUMENTATION CLOSURE COMPLETE ; 244 executable tests) ; **ADR-020 Accepted** ; Skill Identity **ARCHITECTURE FREEZE COMPLETE** ; C1 domain contracts **published** ; Skill Identity **C2.1–C2.4 persistence COMPLETE AND VALIDATED** (`0008_powerful_retro_girl` ; pre-C2.5 `545a3c7`) ; C2.5 **documentation/regression closure** ; **ADR-021 Accepted / FROZEN** (Skill Intelligence semantics ; implementation **NOT STARTED** ; no `0009`) ; M5 **In progress** (RBAC détaillé différé). Pas de M4.5. Post-ADR-021 **code** requires a **separate implementation plan**.
 
 ### Ce document ne remplace pas
 

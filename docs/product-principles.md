@@ -32,13 +32,13 @@ Les **compétences** structurent le parcours. Les « cours » ou activités sont
 
 ### Implication produit
 
-- Le GPS affiche des **étapes de compétence**, pas des modules génériques.
+- Le GPS affiche des **étapes liées à une ou plusieurs compétences**, pas des modules génériques.
 - Le dashboard parle de compétences acquises / en cours, pas de cours complétés.
-- La validation porte sur une compétence cible par étape.
+- La validation d’étape (Completion) n’équivaut pas à la maîtrise de toutes les compétences couvertes (Progress ≠ Mastery ; une Step peut couvrir **une ou plusieurs** Skills).
 
 ### Implication technique
 
-- Entités `Skill`, `Competency`, `PathStep.skillId` explicites.
+- Entités `Skill` et couverture Step↔Skill **many-to-many** (ADR-020 S-10). Le label Golden Reference `PathStep.skill` n’est pas l’identité Skill serveur.
 - Évolution vers un **Skill Graph** (prérequis, relations).
 - Contenu indexé par compétence, pas seulement par cours.
 
