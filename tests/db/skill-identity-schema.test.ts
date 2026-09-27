@@ -275,4 +275,42 @@ describe("C2.1 — Skill Identity schema (PostgreSQL)", () => {
       await client.end({ timeout: 5 })
     }
   })
+
+  it("Phase A required_level is nullable without default and CHECK rejects none", async () => {
+    const url = requireDatabaseUrl()
+    await migrateDatabase(url)
+    const client = createSqlClient(url)
+    try {
+      const db = createDb(client)
+      const orgId = await org(db, "Org required_level")
+      const userId = await user(db)
+      const learnerId = await learner(db, orgId, userId)
+      const goalId = await ownedGoal(db, orgId, learnerId)
+      const skillId = await skillRow(db, orgId, "Legacy pair")
+
+      await db.insert(goalSkills).values({ goalId, skillId })
+      const rows = await db.select().from(goalSkills).where(eq(goalSkills.goalId, goalId))
+      expect(rows).toHaveLength(1)
+      expect(rows[0]?.requiredLevel).toBeNull()
+
+      const skillNone = await skillRow(db, orgId, "Reject none")
+      await expect(
+        db.insert(goalSkills).values({
+          goalId,
+          skillId: skillNone,
+          requiredLevel: "none",
+        }),
+      ).rejects.toThrow()
+      await expect(
+        db.insert(goalSkills).values({
+          goalId,
+          skillId: skillNone,
+          requiredLevel: "unknown",
+        }),
+      ).rejects.toThrow()
+      expect(await db.select().from(goalSkills).where(eq(goalSkills.skillId, skillNone))).toEqual([])
+    } finally {
+      await client.end({ timeout: 5 })
+    }
+  })
 })

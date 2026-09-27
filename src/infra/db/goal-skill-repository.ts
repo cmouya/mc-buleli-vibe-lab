@@ -2,11 +2,20 @@ import { and, eq } from "drizzle-orm"
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js"
 import { DomainError } from "../../modules/shared/index.js"
 import type { GoalSkillRepository } from "../../modules/skills/index.js"
-import { bindGoalSkillRequirement, type OrganizationSkill } from "../../modules/skills/index.js"
+import {
+  assertRequiredProficiency,
+  bindGoalSkillRequirement,
+  createGoalSkillRequirement,
+  type OrganizationSkill,
+} from "../../modules/skills/index.js"
 import { goalSkills, goals, skills } from "./schema.js"
 import * as schema from "./schema.js"
 
 const NOT_FOUND = new DomainError("GOAL_NOT_FOUND", "Goal not found")
+const LEVEL_CONFLICT = new DomainError(
+  "GOAL_SKILL_LEVEL_CONFLICT",
+  "Goal Skill required proficiency conflict",
+)
 
 function toOrganizationSkill(row: typeof skills.$inferSelect): OrganizationSkill {
   const skill: OrganizationSkill = {
@@ -24,7 +33,7 @@ export function createDrizzleGoalSkillRepository(
   db: PostgresJsDatabase<typeof schema>,
 ): GoalSkillRepository {
   return {
-    async bindOwned(goalId, skillId, scope) {
+    async bindOwned(goalId, skillId, requiredLevel, scope) {
       return db.transaction(async (tx) => {
         const owned = await tx
           .select({ id: goals.id })
@@ -52,6 +61,7 @@ export function createDrizzleGoalSkillRepository(
           goalId: owned[0].id,
           skill: toOrganizationSkill(skillRows[0]),
           goalOrganizationId: scope.organizationId,
+          requiredLevel,
         })
 
         await tx
@@ -59,12 +69,34 @@ export function createDrizzleGoalSkillRepository(
           .values({
             goalId: requirement.goalId,
             skillId: requirement.skillId,
+            requiredLevel: requirement.requiredLevel,
           })
           .onConflictDoNothing({
             target: [goalSkills.goalId, goalSkills.skillId],
           })
 
-        return requirement
+        const persisted = await tx
+          .select()
+          .from(goalSkills)
+          .where(
+            and(
+              eq(goalSkills.goalId, requirement.goalId),
+              eq(goalSkills.skillId, requirement.skillId),
+            ),
+          )
+        const row = persisted[0]
+        if (!row) {
+          throw NOT_FOUND
+        }
+        if (row.requiredLevel !== requirement.requiredLevel) {
+          throw LEVEL_CONFLICT
+        }
+
+        return createGoalSkillRequirement({
+          goalId: row.goalId,
+          skillId: row.skillId,
+          requiredLevel: assertRequiredProficiency(row.requiredLevel),
+        })
       })
     },
   }

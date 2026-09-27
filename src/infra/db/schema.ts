@@ -251,10 +251,15 @@ export const goalSkills = pgTable(
     skillId: uuid("skill_id")
       .notNull()
       .references(() => skills.id, { onDelete: "cascade" }),
+    requiredLevel: text("required_level"),
   },
   (table) => [
     primaryKey({ columns: [table.goalId, table.skillId] }),
     index("goal_skills_skill_id_idx").on(table.skillId),
+    check(
+      "goal_skills_required_level_check",
+      sql`${table.requiredLevel} IS NULL OR ${table.requiredLevel} IN ('emerging', 'proficient', 'expert')`,
+    ),
   ],
 )
 

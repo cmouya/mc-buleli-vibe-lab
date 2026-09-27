@@ -5,8 +5,9 @@
 **Architecture freeze:** COMPLETE
 **ADR-021:** Accepted / FROZEN
 **Date:** 2026-09-27
-**Implementation:** NOT STARTED by this ADR
-**Migration:** none allocated (head remains `0008_powerful_retro_girl`; no `0009`)
+**Implementation (this ADR freeze):** NOT STARTED by this ADR
+**Later Slice 1 Phase A (separately authorized):** Goal Skill `requiredLevel` **write** persistence — valid new binds `emerging` \| `proficient` \| `expert`; legacy `goal_skills.required_level` **NULL** remains transitional; different-level / legacy-NULL rebind **conflicts**; migration `0009_quick_jazinda` (generator-selected). Phase B NOT NULL **deferred**.
+**Migration head:** `0009_quick_jazinda`
 
 This file is the binding record for **ADR-021**. Human architecture review **approved** decisions D-021-01–D-021-19. This freeze is **documentation / semantics only**. It does **not** authorize production code, tests, schema, SQL, Drizzle, or migration `0009`.
 
@@ -18,7 +19,7 @@ This file is the binding record for **ADR-021**. Human architecture review **app
 
 **Depends on:** [`docs/skill-identity-decisions.md`](skill-identity-decisions.md) (ADR-020), C2 persistence ledger [`docs/skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md).
 
-**Next implementation checkpoint:** **NOT AUTHORIZED** by this file. A **separate human-approved implementation plan** is required before any post-ADR-021 production slice.
+**Next implementation checkpoint:** this ADR freeze still does **not** authorize further slices. **Slice 1 Phase A** was authorized separately. Next remaining: Phase B NOT NULL, Evidence attribution, Mastery, SkillGap wiring — each needs its own plan.
 
 ## Context
 
@@ -65,7 +66,7 @@ Numbered decisions D-021-01–D-021-19 below are **accepted**.
 
 **`none` is not a valid `requiredLevel`.** If a Skill is not required, do not bind it with `requiredLevel = none`.
 
-**Currently implemented:** C2 stores Goal + Skill only. **`requiredLevel` is accepted, not implemented.**
+**Currently implemented (Slice 1 Phase A):** new owned binds persist `requiredLevel`. C2 rows without a level remain `required_level` **NULL** (not `none`). Domain `GoalSkillRequirement` never contains NULL.
 
 ## Proficiency Scale
 
@@ -196,7 +197,7 @@ Initial Estimate persistence; Skill HTTP/API; Skill list/search; Goal Skill read
 
 ## Future schema (NON-AUTHORIZED)
 
-If a **later** implementation plan is approved, likely implications include: additive `requiredLevel` on Goal Skill persistence; an Evidence↔Skill attribution table; **no** authoritative `learner_skills` table; Mastery derived in-process first. **Do not** treat these as existing tables. **Do not** allocate `0009` here.
+If a **later** implementation plan is approved, likely implications include: additive `requiredLevel` on Goal Skill persistence (**Slice 1 Phase A now shipped:** nullable `goal_skills.required_level`, CHECK, no default); an Evidence↔Skill attribution table; **no** authoritative `learner_skills` table; Mastery derived in-process first. **Do not** treat Evidence↔Skill or Mastery tables as existing.
 
 ## Implementation Authorization
 
@@ -206,4 +207,4 @@ Smallest later slice (only after a separate plan): persist Goal Skill `requiredL
 
 ## Exit / Freeze State
 
-**ACCEPTED / FROZEN.** C2 production behavior is **unchanged**. `0008_powerful_retro_girl` remains migration head. `0009` is **absent**.
+**ACCEPTED / FROZEN.** This ADR did **not** start implementation. **Slice 1 Phase A** (later authorized) persists Goal Skill `requiredLevel` for **new** writes. Phase B, Evidence attribution, Mastery, SkillGap wiring, Adaptive Path, and Skill HTTP remain **out**. Head `0009_quick_jazinda`.

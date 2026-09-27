@@ -11,11 +11,18 @@ export type { OrganizationSkillRepository } from "./organization-skill-repositor
 export type { GoalSkillRepository } from "./goal-skill-repository.js"
 export type { StepSkillRepository } from "./step-skill-repository.js"
 
-export { createGoalSkillRequirement, bindGoalSkillRequirement } from "./goal-skill-requirement.js"
+export {
+  createGoalSkillRequirement,
+  bindGoalSkillRequirement,
+  isRequiredProficiency,
+  assertRequiredProficiency,
+  REQUIRED_PROFICIENCY_LEVELS,
+} from "./goal-skill-requirement.js"
 export type {
   GoalSkillRequirement,
   CreateGoalSkillRequirementInput,
   BindGoalSkillRequirementInput,
+  RequiredProficiency,
 } from "./goal-skill-requirement.js"
 
 export { createStepSkillCoverage, bindStepSkillCoverage } from "./step-skill-coverage.js"

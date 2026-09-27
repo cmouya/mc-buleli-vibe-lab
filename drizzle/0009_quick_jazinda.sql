@@ -1,0 +1,2 @@
+ALTER TABLE "goal_skills" ADD COLUMN "required_level" text;--> statement-breakpoint
+ALTER TABLE "goal_skills" ADD CONSTRAINT "goal_skills_required_level_check" CHECK ("goal_skills"."required_level" IS NULL OR "goal_skills"."required_level" IN ('emerging', 'proficient', 'expert'));

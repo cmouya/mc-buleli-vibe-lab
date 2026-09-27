@@ -14,8 +14,8 @@
 **Persistence implementation:** C2.1–C2.4 **COMPLETE AND VALIDATED**
 **C2.5 / Checkpoint F:** documentation and regression **closure** (this checkpoint)
 **Tables:** `skills`, `goal_skills`, `step_skills` exist (`SCHEMA_SLICE` `c2.1-skill-identity-schema`)
-**Migration head:** `0008_powerful_retro_girl` (no `0009`)
-**Next product work:** **NOT AUTHORIZED** by C2.5. **ADR-021** Skill Intelligence semantics are **FROZEN** ([`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md)). Production still requires a **separate human-approved implementation plan**. No `0009`.
+**Migration head:** `0009_quick_jazinda` (Slice 1 Phase A `required_level`; C2 tables from `0008_powerful_retro_girl`)
+**Next product work:** **NOT AUTHORIZED** by C2.5. **ADR-021** semantics remain **FROZEN**. Slice 1 Phase A Goal Skill `requiredLevel` writes are **implemented** (nullable column; no HTTP). Phase B NOT NULL and later Skill Intelligence slices need a **separate plan**.
 
 ## Human checkpoints (mandatory)
 
@@ -94,7 +94,7 @@ C2 was **Skill Identity persistence infrastructure** after ADR-020 / C1:
 
 **Intentionally still deferred after C2 close:** organization Skill list/search; `getSkillsForGoal`; Step coverage reads; unbind; catalog update/delete; Skill HTTP/API; LearnerSkill persistence; LearnerState persistence; `Evidence.skillId` **singleton**; Mastery / I-04 **implementation**; SkillGap production implementation; Adaptive Path engine.
 
-**After ADR-021:** requiredLevel, Evidence↔Skill **M:N** attribution (not `Evidence.skillId`), and Mastery **projection** are **semantically accepted** and still **not implemented**. See [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md). C2.5 did **not** choose a product slice; **ADR-021** is the post-C2 semantic freeze. Production still needs a **separate implementation plan**.
+**After ADR-021 / Slice 1 Phase A:** Goal Skill `requiredLevel` writes are implemented (nullable `required_level`; CHECK; conflict on different/legacy). Evidence↔Skill **M:N** attribution, Mastery **projection**, and SkillGap application remain **not implemented**.
 
 ## Implementation guardrails
 

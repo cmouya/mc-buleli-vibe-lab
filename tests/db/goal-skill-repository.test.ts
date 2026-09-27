@@ -114,24 +114,30 @@ describe("C2.3 — GoalSkill repository (PostgreSQL)", () => {
         {
           goalId: goalA.id as string,
           skillId: skillA1.id,
+          requiredLevel: "proficient",
           organizationId: "forged-org",
           learnerId: "forged-learner",
         },
         contextA,
         binds,
       )
-      expect(first).toEqual({ goalId: goalA.id, skillId: skillA1.id })
+      expect(first).toEqual({
+        goalId: goalA.id,
+        skillId: skillA1.id,
+        requiredLevel: "proficient",
+      })
       const again = await bindOwnedGoalSkill(
-        { goalId: goalA.id as string, skillId: skillA1.id },
+        { goalId: goalA.id as string, skillId: skillA1.id, requiredLevel: "proficient" },
         contextA,
         binds,
       )
       expect(again).toEqual(first)
       const goalARows = await db.select().from(goalSkills).where(eq(goalSkills.goalId, goalA.id as string))
       expect(goalARows).toHaveLength(1)
+      expect(goalARows[0]?.requiredLevel).toBe("proficient")
 
       await bindOwnedGoalSkill(
-        { goalId: goalA.id as string, skillId: skillA2.id },
+        { goalId: goalA.id as string, skillId: skillA2.id, requiredLevel: "emerging" },
         contextA,
         binds,
       )
@@ -139,7 +145,7 @@ describe("C2.3 — GoalSkill repository (PostgreSQL)", () => {
         (await db.select().from(goalSkills).where(eq(goalSkills.goalId, goalA.id as string))).length,
       ).toBe(2)
       await bindOwnedGoalSkill(
-        { goalId: goalA2.id as string, skillId: skillA1.id },
+        { goalId: goalA2.id as string, skillId: skillA1.id, requiredLevel: "expert" },
         contextA,
         binds,
       )
@@ -150,28 +156,28 @@ describe("C2.3 — GoalSkill repository (PostgreSQL)", () => {
       const beforeFail = (await db.select().from(goalSkills)).length
       await expect(
         bindOwnedGoalSkill(
-          { goalId: goalA.id as string, skillId: skillB.id },
+          { goalId: goalA.id as string, skillId: skillB.id, requiredLevel: "proficient" },
           contextA,
           binds,
         ),
       ).rejects.toMatchObject({ code: "GOAL_NOT_FOUND" })
       await expect(
         bindOwnedGoalSkill(
-          { goalId: goalA.id as string, skillId: skillA1.id },
+          { goalId: goalA.id as string, skillId: skillA1.id, requiredLevel: "proficient" },
           contextB,
           binds,
         ),
       ).rejects.toMatchObject({ code: "GOAL_NOT_FOUND" })
       await expect(
         bindOwnedGoalSkill(
-          { goalId: goalA.id as string, skillId: skillA1.id },
+          { goalId: goalA.id as string, skillId: skillA1.id, requiredLevel: "proficient" },
           contextA2,
           binds,
         ),
       ).rejects.toMatchObject({ code: "GOAL_NOT_FOUND" })
       await expect(
         bindOwnedGoalSkill(
-          { goalId: goalA.id as string, skillId: randomUUID() },
+          { goalId: goalA.id as string, skillId: randomUUID(), requiredLevel: "proficient" },
           contextA,
           binds,
         ),
@@ -182,7 +188,7 @@ describe("C2.3 — GoalSkill repository (PostgreSQL)", () => {
       )
       await expect(
         bindOwnedGoalSkill(
-          { goalId: legacy.id as string, skillId: skillA1.id },
+          { goalId: legacy.id as string, skillId: skillA1.id, requiredLevel: "proficient" },
           contextA,
           binds,
         ),
@@ -205,6 +211,189 @@ describe("C2.3 — GoalSkill repository (PostgreSQL)", () => {
         }),
       ).rejects.toThrow()
       expect((await db.select().from(goalSkills)).length).toBe(beforeFail)
+    } finally {
+      await client.end({ timeout: 5 })
+    }
+  })
+
+  it("persists requiredLevel, idempotent same-level rebind, and conflicts on different or legacy NULL", async () => {
+    const url = requireDatabaseUrl()
+    await migrateDatabase(url)
+    const client = createSqlClient(url)
+    try {
+      const db = createDb(client)
+      const orgs = createDrizzleOrganizationRepository(db)
+      const users = createDrizzleUserRepository(db)
+      const learners = createDrizzleLearnerRepository(db)
+      const ownedGoals = createDrizzleOwnedGoalRepository(db)
+      const catalog = createDrizzleOrganizationSkillRepository(db)
+      const binds = createDrizzleGoalSkillRepository(db)
+
+      const orgA = await orgs.save(createOrganization({ name: "Org levels", id: randomUUID() }, { now: NOW }))
+      const user = await users.save(createUser({ id: randomUUID() }, { now: NOW }))
+      const learnerA = await learners.save(
+        createLearner({
+          id: randomUUID(),
+          organizationId: orgA.id as string,
+          userId: user.id as string,
+        }),
+      )
+      const contextA: LearnerContext = {
+        learnerId: learnerA.id as string,
+        userId: user.id as string,
+        organizationId: orgA.id as string,
+      }
+      const goalA = await persistOwnedGoal({ ...fields, id: randomUUID() }, contextA, ownedGoals)
+      const skillEmerging = await persistOrganizationSkill(
+        { id: randomUUID(), name: "Emerging skill" },
+        orgA.id as string,
+        catalog,
+      )
+      const skillProficient = await persistOrganizationSkill(
+        { id: randomUUID(), name: "Proficient skill" },
+        orgA.id as string,
+        catalog,
+      )
+      const skillExpert = await persistOrganizationSkill(
+        { id: randomUUID(), name: "Expert skill" },
+        orgA.id as string,
+        catalog,
+      )
+      const skillConflict = await persistOrganizationSkill(
+        { id: randomUUID(), name: "Conflict skill" },
+        orgA.id as string,
+        catalog,
+      )
+      const skillLegacy = await persistOrganizationSkill(
+        { id: randomUUID(), name: "Legacy skill" },
+        orgA.id as string,
+        catalog,
+      )
+
+      const stepSkillsBefore = (await db.select().from(stepSkills)).map(
+        (row) => `${row.stepId}:${row.skillId}`,
+      ).sort()
+
+      const emerging = await bindOwnedGoalSkill(
+        { goalId: goalA.id as string, skillId: skillEmerging.id, requiredLevel: "emerging" },
+        contextA,
+        binds,
+      )
+      expect(emerging.requiredLevel).toBe("emerging")
+      expect(
+        (
+          await db
+            .select()
+            .from(goalSkills)
+            .where(eq(goalSkills.skillId, skillEmerging.id))
+        )[0]?.requiredLevel,
+      ).toBe("emerging")
+
+      const proficient = await bindOwnedGoalSkill(
+        { goalId: goalA.id as string, skillId: skillProficient.id, requiredLevel: "proficient" },
+        contextA,
+        binds,
+      )
+      expect(proficient).toEqual({
+        goalId: goalA.id,
+        skillId: skillProficient.id,
+        requiredLevel: "proficient",
+      })
+
+      const expert = await bindOwnedGoalSkill(
+        { goalId: goalA.id as string, skillId: skillExpert.id, requiredLevel: "expert" },
+        contextA,
+        binds,
+      )
+      expect(expert.requiredLevel).toBe("expert")
+
+      const same = await bindOwnedGoalSkill(
+        { goalId: goalA.id as string, skillId: skillProficient.id, requiredLevel: "proficient" },
+        contextA,
+        binds,
+      )
+      expect(same).toEqual(proficient)
+      expect(
+        (await db.select().from(goalSkills).where(eq(goalSkills.skillId, skillProficient.id))).length,
+      ).toBe(1)
+
+      await bindOwnedGoalSkill(
+        { goalId: goalA.id as string, skillId: skillConflict.id, requiredLevel: "emerging" },
+        contextA,
+        binds,
+      )
+      await expect(
+        bindOwnedGoalSkill(
+          { goalId: goalA.id as string, skillId: skillConflict.id, requiredLevel: "expert" },
+          contextA,
+          binds,
+        ),
+      ).rejects.toMatchObject({ code: "GOAL_SKILL_LEVEL_CONFLICT" })
+      expect(
+        (
+          await db
+            .select()
+            .from(goalSkills)
+            .where(eq(goalSkills.skillId, skillConflict.id))
+        )[0]?.requiredLevel,
+      ).toBe("emerging")
+
+      await db.insert(goalSkills).values({
+        goalId: goalA.id as string,
+        skillId: skillLegacy.id,
+      })
+      expect(
+        (
+          await db
+            .select()
+            .from(goalSkills)
+            .where(eq(goalSkills.skillId, skillLegacy.id))
+        )[0]?.requiredLevel,
+      ).toBeNull()
+      await expect(
+        bindOwnedGoalSkill(
+          { goalId: goalA.id as string, skillId: skillLegacy.id, requiredLevel: "proficient" },
+          contextA,
+          binds,
+        ),
+      ).rejects.toMatchObject({ code: "GOAL_SKILL_LEVEL_CONFLICT" })
+      expect(
+        (
+          await db
+            .select()
+            .from(goalSkills)
+            .where(eq(goalSkills.skillId, skillLegacy.id))
+        )[0]?.requiredLevel,
+      ).toBeNull()
+
+      const skillCheck = await persistOrganizationSkill(
+        { id: randomUUID(), name: "Check skill" },
+        orgA.id as string,
+        catalog,
+      )
+
+      await expect(
+        db.insert(goalSkills).values({
+          goalId: goalA.id as string,
+          skillId: skillCheck.id,
+          requiredLevel: "none",
+        }),
+      ).rejects.toThrow()
+      await expect(
+        db.insert(goalSkills).values({
+          goalId: goalA.id as string,
+          skillId: skillCheck.id,
+          requiredLevel: "unknown",
+        }),
+      ).rejects.toThrow()
+      expect(
+        (await db.select().from(goalSkills).where(eq(goalSkills.skillId, skillCheck.id))).length,
+      ).toBe(0)
+
+      const stepSkillsAfter = (await db.select().from(stepSkills)).map(
+        (row) => `${row.stepId}:${row.skillId}`,
+      ).sort()
+      expect(stepSkillsAfter).toEqual(stepSkillsBefore)
     } finally {
       await client.end({ timeout: 5 })
     }

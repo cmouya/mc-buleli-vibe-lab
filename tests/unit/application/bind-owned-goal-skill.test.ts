@@ -8,6 +8,7 @@ import type { GoalOwnerScope } from "../../../src/modules/goals/index.js"
 import type {
   GoalSkillRepository,
   GoalSkillRequirement,
+  RequiredProficiency,
 } from "../../../src/modules/skills/index.js"
 
 function contextA(): LearnerContext {
@@ -15,14 +16,24 @@ function contextA(): LearnerContext {
 }
 
 function memoryBinds(): GoalSkillRepository & {
-  calls: Array<{ goalId: string; skillId: string; scope: GoalOwnerScope }>
+  calls: Array<{
+    goalId: string
+    skillId: string
+    requiredLevel: RequiredProficiency
+    scope: GoalOwnerScope
+  }>
 } {
-  const calls: Array<{ goalId: string; skillId: string; scope: GoalOwnerScope }> = []
+  const calls: Array<{
+    goalId: string
+    skillId: string
+    requiredLevel: RequiredProficiency
+    scope: GoalOwnerScope
+  }> = []
   return {
     calls,
-    async bindOwned(goalId, skillId, scope) {
-      calls.push({ goalId, skillId, scope })
-      const pair: GoalSkillRequirement = { goalId, skillId }
+    async bindOwned(goalId, skillId, requiredLevel, scope) {
+      calls.push({ goalId, skillId, requiredLevel, scope })
+      const pair: GoalSkillRequirement = { goalId, skillId, requiredLevel }
       return pair
     },
   }
@@ -35,20 +46,34 @@ describe("application — bindOwnedGoalSkill", () => {
       {
         goalId: "goal-1",
         skillId: "skill-1",
+        requiredLevel: "proficient",
         organizationId: "org-forged",
         learnerId: "lrn-forged",
       },
       contextA(),
       repository,
     )
-    expect(result).toEqual({ goalId: "goal-1", skillId: "skill-1" })
+    expect(result).toEqual({ goalId: "goal-1", skillId: "skill-1", requiredLevel: "proficient" })
     expect(repository.calls).toHaveLength(1)
+    expect(repository.calls[0]?.requiredLevel).toBe("proficient")
     expect(repository.calls[0]?.scope).toEqual({
       organizationId: "org-a",
       learnerId: "lrn-a",
     })
     expect(repository.calls[0]?.scope.organizationId).not.toBe("org-forged")
     expect(repository.calls[0]?.scope.learnerId).not.toBe("lrn-forged")
+  })
+
+  it("rejects invalid requiredLevel before persistence", async () => {
+    const repository = memoryBinds()
+    await expect(
+      bindOwnedGoalSkill(
+        { goalId: "goal-1", skillId: "skill-1", requiredLevel: "none" },
+        contextA(),
+        repository,
+      ),
+    ).rejects.toMatchObject({ code: "GOAL_SKILL_INVALID_REQUIRED_LEVEL" })
+    expect(repository.calls).toHaveLength(0)
   })
 
   it("keeps bindOwnedGoalSkill free of infrastructure and server stacks", () => {

@@ -14,7 +14,7 @@ This file froze the **human-approved** persistence architecture for ADR-020 Skil
 
 **C1 published:** `feat: add Skill Identity domain contracts` (`506f05a7f4db0fa905eaa87631201396de8d58d6`). Domain contracts exist.
 
-**C2 shipped:** durable `skills`, `goal_skills`, and `step_skills` rows exist. Catalog persist/get and Goal/Step binds exist. List/unbind/HTTP/LearnerSkill **authority**/Mastery **engine** remain **out**. **ADR-021** later froze Skill Intelligence **semantics** (requiredLevel, Evidence↔Skill attribution, Mastery projection) — **not implemented**; see [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md).
+**C2 shipped:** durable `skills`, `goal_skills`, and `step_skills` rows exist. Catalog persist/get and Goal/Step binds exist. **Slice 1 Phase A** adds nullable `required_level` on new Goal Skill writes. List/unbind/HTTP/LearnerSkill **authority**/Mastery **engine** remain **out**. See [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md).
 
 ## Guardrails (mandatory)
 

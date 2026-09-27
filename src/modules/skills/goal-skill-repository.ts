@@ -1,5 +1,5 @@
 import type { GoalOwnerScope } from "../goals/owned-goal-repository.js"
-import type { GoalSkillRequirement } from "./goal-skill-requirement.js"
+import type { GoalSkillRequirement, RequiredProficiency } from "./goal-skill-requirement.js"
 
 export type { GoalOwnerScope }
 
@@ -8,6 +8,7 @@ export interface GoalSkillRepository {
   bindOwned(
     goalId: string,
     skillId: string,
+    requiredLevel: RequiredProficiency,
     scope: GoalOwnerScope,
   ): Promise<GoalSkillRequirement>
 }

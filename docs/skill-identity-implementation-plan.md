@@ -13,7 +13,8 @@
 **C2 persistence:** C2.1–C2.4 **COMPLETE AND VALIDATED** (pre-C2.5 baseline `545a3c7187467f73f785581fc545a8a1b6f79916`; head `0008_powerful_retro_girl`)
 **C2.5:** documentation/regression closure
 **ADR-021:** Skill Intelligence **semantics ACCEPTED / FROZEN** — [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md)
-**Next checkpoint:** **separate implementation plan** after ADR-021. This freeze file does **not** authorize requiredLevel persist, Evidence attribution, Mastery, SkillGap wiring, Skill HTTP, LearnerSkill tables, or Adaptive Path.
+**Slice 1 Phase A:** Goal Skill `requiredLevel` **write** persistence (`0009_quick_jazinda`; legacy NULL; Phase B deferred)
+**Next checkpoint:** **separate plan** for Phase B / Evidence attribution / Mastery. This freeze file does **not** authorize those slices, Skill HTTP, LearnerSkill tables, or Adaptive Path.
 
 ## Sequence (historical freeze plan — later executed under C2)
 

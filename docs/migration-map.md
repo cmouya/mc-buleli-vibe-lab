@@ -153,6 +153,7 @@ Phase 4  Next.js routes + Tailwind + retire Vite (quand parity)
 
 This map is primarily Prototype 0 → modules. Server Drizzle migrations are independent.
 
-- **Current migration head:** `0008_powerful_retro_girl` (C2 Skill Identity tables).
-- **ADR-021** Skill Intelligence semantics freeze creates **no** migration and **does not** allocate `0009`.
-- Future `requiredLevel` / Evidence↔Skill schema requires a **separate human-approved implementation plan**. Do not reserve `0009` here.
+- **Current migration head:** `0009_quick_jazinda` (Slice 1 Phase A: nullable `goal_skills.required_level`; no default; CHECK excludes `none`).
+- Historical C2 Skill Identity tables: `0008_powerful_retro_girl`.
+- **ADR-021** freeze allocated **no** migration. `0009_quick_jazinda` was **generator-selected** after a separate implementation authorization.
+- Phase B (`NOT NULL` / legacy resolution) and Evidence↔Skill schema remain **unauthorized**.

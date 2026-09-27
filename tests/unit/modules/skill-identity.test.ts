@@ -104,16 +104,19 @@ describe("skills domain — Goal Skill Requirement", () => {
       goalId: "g1",
       skill: s1,
       goalOrganizationId: orgA,
+      requiredLevel: "proficient",
     })
     const g1s2 = bindGoalSkillRequirement({
       goalId: "g1",
       skill: s2,
       goalOrganizationId: orgA,
+      requiredLevel: "emerging",
     })
     const g2s1 = bindGoalSkillRequirement({
       goalId: "g2",
       skill: s1,
       goalOrganizationId: orgA,
+      requiredLevel: "expert",
     })
 
     const goalRequirements = [g1s1, g1s2]
@@ -121,8 +124,7 @@ describe("skills domain — Goal Skill Requirement", () => {
 
     expect(goalRequirements.map((row) => row.skillId).sort()).toEqual(["s1", "s2"])
     expect(skillUsages.map((row) => row.goalId).sort()).toEqual(["g1", "g2"])
-    expect(g1s1).toEqual({ goalId: "g1", skillId: "s1" })
-    expect(g1s1).not.toHaveProperty("requiredLevel")
+    expect(g1s1).toEqual({ goalId: "g1", skillId: "s1", requiredLevel: "proficient" })
     expect(g1s1).not.toHaveProperty("targetLevel")
     expect(g1s1).not.toHaveProperty("masteryLevel")
     expect(g1s1).not.toHaveProperty("organizationId")
@@ -140,6 +142,7 @@ describe("skills domain — Goal Skill Requirement", () => {
         goalId: "g1",
         skill: foreign,
         goalOrganizationId: orgA,
+        requiredLevel: "proficient",
       }),
     ).toThrow(DomainError)
 
@@ -148,6 +151,7 @@ describe("skills domain — Goal Skill Requirement", () => {
         goalId: "g1",
         skill: foreign,
         goalOrganizationId: orgA,
+        requiredLevel: "proficient",
       })
     } catch (error) {
       expect(error).toBeInstanceOf(DomainError)
@@ -156,12 +160,39 @@ describe("skills domain — Goal Skill Requirement", () => {
     }
   })
 
-  it("createGoalSkillRequirement stores ids only", () => {
-    expect(createGoalSkillRequirement({ goalId: " g1 ", skillId: " s1 " })).toEqual({
+  it("createGoalSkillRequirement stores ids and requiredLevel", () => {
+    expect(
+      createGoalSkillRequirement({ goalId: " g1 ", skillId: " s1 ", requiredLevel: "emerging" }),
+    ).toEqual({
       goalId: "g1",
       skillId: "s1",
+      requiredLevel: "emerging",
     })
-    expect(() => createGoalSkillRequirement({ goalId: " ", skillId: "s1" })).toThrow(DomainError)
+    expect(() =>
+      createGoalSkillRequirement({ goalId: " ", skillId: "s1", requiredLevel: "emerging" }),
+    ).toThrow(DomainError)
+  })
+
+  it("accepts emerging, proficient, and expert and rejects invalid requiredLevel", () => {
+    expect(createGoalSkillRequirement({ goalId: "g1", skillId: "s1", requiredLevel: "emerging" }).requiredLevel).toBe(
+      "emerging",
+    )
+    expect(
+      createGoalSkillRequirement({ goalId: "g1", skillId: "s1", requiredLevel: "proficient" }).requiredLevel,
+    ).toBe("proficient")
+    expect(createGoalSkillRequirement({ goalId: "g1", skillId: "s1", requiredLevel: "expert" }).requiredLevel).toBe(
+      "expert",
+    )
+
+    for (const invalid of ["none", "unknown", "mastered", "", " ", null, undefined, 2]) {
+      try {
+        createGoalSkillRequirement({ goalId: "g1", skillId: "s1", requiredLevel: invalid })
+        throw new Error(`expected rejection for ${String(invalid)}`)
+      } catch (error) {
+        expect(error).toBeInstanceOf(DomainError)
+        expect((error as DomainError).code).toBe("GOAL_SKILL_INVALID_REQUIRED_LEVEL")
+      }
+    }
   })
 })
 

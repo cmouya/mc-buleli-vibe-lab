@@ -65,7 +65,7 @@ Destination d’apprentissage exprimée par l’apprenant. Point d’entrée du 
 ### Relations
 
 - 1 Goal → 1 LearningPath (généré)
-- 1 Goal → N Skills cibles via **GoalSkillRequirement** (many-to-many). **Architecture acceptée (ADR-021, non implémentée) :** chaque exigence porte un `requiredLevel` (`emerging` | `proficient` | `expert` ; pas `none`). **Actuellement implémenté (C2) :** paire `goalId` + `skillId` seulement.
+- 1 Goal → N Skills cibles via **GoalSkillRequirement** (many-to-many). **Slice 1 Phase A implemented:** new binds persist `requiredLevel` (`emerging` | `proficient` | `expert` ; pas `none`). Legacy DB rows may still have `required_level` **NULL** (≠ `none`).
 
 ### Règles métier
 
