@@ -1,25 +1,27 @@
-# Skill Identity — Implementation plan (not authorized)
+# Skill Identity — Implementation plan
 
-**Provenance:** PLAN PLACEHOLDER ONLY. Written after ADR-020 acceptance so the repository has a freeze record in the same documentation pattern as M6.x. **This file does not authorize implementation.**
+**Provenance:** PLAN PLACEHOLDER written after ADR-020 acceptance. Later C1 domain contracts and C2 persistence were **separately human-authorized**. This freeze file **does not** authorize post-C2 work.
 
 **Depends on:** [`docs/skill-identity-decisions.md`](skill-identity-decisions.md), [ADR-020](architecture-baseline.md#adr-020--organization-scoped-skill-identity).
 
-**Architecture-freeze baseline:** published main `27df119588b511d6783b90dec057773369d0fd27` (**M6.4 COMPLETE AND VALIDATED**; 244 executable tests). Migration head remains `0007_m6_1_goal_ownership`. No migration number is allocated by ADR-020.
+**Architecture-freeze baseline (historical):** published main `27df119588b511d6783b90dec057773369d0fd27` (**M6.4 COMPLETE AND VALIDATED**; 244 executable tests). At ADR-020 freeze time, migration head remained `0007_m6_1_goal_ownership`. No migration number was allocated **by ADR-020**.
 
 ## Status
 
 **Architecture Freeze:** COMPLETE
-**Implementation:** NOT STARTED
-**Next checkpoint:** separately authorized Skill Identity implementation planning (domain contracts before database before HTTP). Do not start that checkpoint from this file.
+**C1 domain contracts:** published
+**C2 persistence:** C2.1–C2.4 **COMPLETE AND VALIDATED** (pre-C2.5 baseline `545a3c7187467f73f785581fc545a8a1b6f79916`; head `0008_powerful_retro_girl`)
+**C2.5:** documentation/regression closure
+**Next checkpoint:** **new ADR / design checkpoint** after C2 close. Do not start Skill HTTP, LearnerSkill, Mastery, SkillGap, or Adaptive Path from this file.
 
-## Sequence (future, not started)
+## Sequence (historical freeze plan — later executed under C2)
 
 1. ADR-020 **Accepted** (this documentation freeze).
 2. Human documentation review of the freeze.
-3. Separate human authorization of an implementation plan.
-4. Only then: domain semantics/contracts → (if authorized) persistence review → no HTTP in the first slice (S-17).
+3. Separate human authorization of an implementation plan (**done**).
+4. Domain semantics/contracts (**C1 done**) → persistence (**C2.1–C2.4 done**) → no HTTP in the first slice (S-17 **still in force**).
 
-## In scope for a future implementation plan (not this freeze)
+## In scope for C1/C2 (later executed; not this freeze file)
 
 - Organization-scoped Skill identity
 - Goal↔Skill many-to-many requirements without target levels
@@ -32,4 +34,4 @@ Everything listed as OUT in [`docs/skill-identity-decisions.md`](skill-identity-
 
 ## Stop conditions
 
-Any production code, tests, schema, migration, HTTP, Mastery, SkillGap, Adaptive Path, LearnerState, or Golden Reference change started from this freeze without a new human implementation authorization.
+Any **post-C2** production code, schema, HTTP, Mastery, SkillGap, Adaptive Path, LearnerState, or Golden Reference change started from this freeze without a **new** human implementation authorization.

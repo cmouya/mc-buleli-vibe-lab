@@ -2,16 +2,19 @@
 
 ## Status
 
-**Persistence architecture freeze:** COMPLETE
-**Persistence implementation:** NOT STARTED
-**C2.1–C2.5:** NOT AUTHORIZED
-**Migration number:** UNALLOCATED (head remains `0007_m6_1_goal_ownership`)
+**Persistence architecture freeze:** COMPLETE (historical D-C2-01–D-C2-19 unchanged below)
+**Persistence implementation:** C2.1–C2.4 **COMPLETE AND VALIDATED**
+**C2.5 / Checkpoint F:** documentation and regression **closure**
+**Migration head:** `0008_powerful_retro_girl` (`SCHEMA_SLICE` `c2.1-skill-identity-schema`; no `0009`)
+**Pre-C2.5 baseline:** `545a3c7187467f73f785581fc545a8a1b6f79916`
 
-This file freezes the **human-approved** persistence architecture for ADR-020 Skill Identity. It is **not** executable. It does **not** create tables, modify Drizzle schema, generate SQL, or allocate migration 0008.
+This file froze the **human-approved** persistence architecture for ADR-020 Skill Identity. The freeze text below remains the **decision record**. Implementation was authorized in later C2.1–C2.4 slices and is **not** rewritten into those Decision rows.
 
-**Depends on:** [`docs/skill-identity-decisions.md`](skill-identity-decisions.md) (ADR-020 S-01–S-21). Do not rewrite that ADR.
+**Depends on:** [`docs/skill-identity-decisions.md`](skill-identity-decisions.md) (ADR-020 S-01–S-21). Do not rewrite that ADR's Decision/S-rows.
 
-**C1 published:** `feat: add Skill Identity domain contracts` (`506f05a7f4db0fa905eaa87631201396de8d58d6`). Domain contracts exist. Durable Skill rows **do not**.
+**C1 published:** `feat: add Skill Identity domain contracts` (`506f05a7f4db0fa905eaa87631201396de8d58d6`). Domain contracts exist.
+
+**C2 shipped:** durable `skills`, `goal_skills`, and `step_skills` rows exist. Catalog persist/get and Goal/Step binds exist. List/unbind/HTTP/LearnerSkill/Mastery remain **out**.
 
 ## Guardrails (mandatory)
 
@@ -179,10 +182,10 @@ C2 creates **identity infrastructure only**. After persistence exists, Learnova 
 
 Still **OUT:** per-Skill Evidence attribution; LearnerSkill persistence; Mastery state/thresholds; SkillGap; Adaptive Path; I-04 implementation.
 
-## Future migration concept (NOT AUTHORIZED)
+## Future migration concept (HISTORICAL — freeze-time)
 
-A later additive migration **may** create `skills`, then `goal_skills`, then `step_skills`. Existing Goals / Paths / Steps / Evidence need **no backfill**. Zero Skill bindings remain valid.
+At freeze time, a later additive migration **might** create `skills`, then `goal_skills`, then `step_skills`. Existing Goals / Paths / Steps / Evidence needed **no backfill**. Zero Skill bindings remain valid.
 
-**Do not** create the migration, generate SQL, allocate 0008, or edit `drizzle/meta/_journal.json` / `schema.ts` from this freeze.
+**C2.5 current state:** that additive migration **was later allocated as** `0008_powerful_retro_girl` under C2.1. Do **not** generate `0009` from C2.5. Do **not** treat this freeze paragraph as a current “tables do not exist” statement.
 
 See [`docs/skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md).
