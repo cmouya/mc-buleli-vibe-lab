@@ -16,7 +16,8 @@
 **Slice 1 Phase A:** Goal Skill `requiredLevel` **write** persistence (`0009_quick_jazinda`; legacy NULL; Phase B deferred)
 **Slice 2:** Evidence↔Skill bind-only attribution (`0010_elite_valkyrie`; ⊆ Step coverage; no HTTP)
 **ADR-022:** Mastery Projection **semantic constraints ACCEPTED / FROZEN** — [`mastery-projection-constraints-decisions.md`](mastery-projection-constraints-decisions.md). **No** Mastery code.
-**Next checkpoint:** **separate implementation plan** for trusted scoring / mapping / aggregation before any Mastery engine. This freeze file does **not** authorize Mastery code, Skill HTTP, LearnerSkill tables, Phase B, or Adaptive Path.
+**ADR-023:** Trusted Quiz Scoring **authority ACCEPTED / FROZEN** — [`trusted-quiz-scoring-decisions.md`](trusted-quiz-scoring-decisions.md). **No** trusted-scoring code, **no** migration.
+**Next checkpoint:** **separate implementation plan** for trusted scoring only (D-023-10). This freeze file does **not** authorize that code, score→`MasteryLevel` mapping, aggregation, Mastery code, Skill HTTP, LearnerSkill tables, Phase B, or Adaptive Path.
 
 ## Sequence (historical freeze plan — later executed under C2)
 

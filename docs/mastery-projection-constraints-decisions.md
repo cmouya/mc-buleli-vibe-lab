@@ -18,6 +18,8 @@
 
 **ADR-021** remains the historical Skill Intelligence freeze. Do **not** rewrite ADR-021 Decision rows D-021-01–D-021-19. This file is a **post-ADR-021 refinement**.
 
+**Later ADR-023 (separately authorized):** Trusted Quiz Scoring **authority and provenance** freeze — [`trusted-quiz-scoring-decisions.md`](trusted-quiz-scoring-decisions.md). **No** trusted-scoring implementation. Current HTTP Evidence remains `client_declared`. ADR-022 decision rows are **not** rewritten.
+
 **Binding ADR table:** [`docs/architecture-baseline.md`](architecture-baseline.md) §20 ([ADR-022](architecture-baseline.md#adr-022--mastery-projection-semantic-constraints)).
 
 **Depends on:** [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md) (ADR-021), Slice 1 required proficiency persistence, Slice 2 `evidence_skills`.
@@ -281,4 +283,4 @@ Expert-from-complementary Evidence; Question→Skill scoring; peak persist; Mast
 
 ## Exit / Freeze State
 
-**ACCEPTED / FROZEN.** This ADR did **not** start implementation. Head `0010_elite_valkyrie`. Next Mastery **code** requires a separate implementation specification satisfying §22.
+**ACCEPTED / FROZEN.** This ADR did **not** start implementation. Head `0010_elite_valkyrie`. **ADR-023** (later authorized, docs-only) freezes scoring authority; trusted-scoring **code** remains out. Next Mastery **code** requires a separate implementation specification satisfying §22.

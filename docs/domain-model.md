@@ -273,7 +273,7 @@ Preuve tangible d’apprentissage produite par un assessment ou une activité.
 
 - **Evidence before Completion** (I-05) : pas de Completion d’étape sans Evidence `passed = true` pour ce `stepId`.
 - Attribution ≠ Mastery. Evidence POST ne mute pas Mastery (ADR-018 / ADR-021).
-- **Currently implemented:** Evidence persistée scopée Step (`quiz_attempt`) ; attribution explicite bind-only (`evidence_skills`) ; **pas** de `Evidence.skillId` ; **pas** de Mastery projection. Evidence POST HTTP : `score` / `passed` / `answers.correct` **client-déclarés** — **non autoritaires** pour Mastery jusqu’à un scoring de confiance (**ADR-022 C4**).
+- **Currently implemented:** Evidence persistée scopée Step (`quiz_attempt`) ; attribution explicite bind-only (`evidence_skills`) ; **pas** de `Evidence.skillId` ; **pas** de Mastery projection. Evidence POST HTTP : `score` / `passed` / `answers.correct` **client-déclarés** — **non autoritaires** pour Mastery jusqu’à un scoring de confiance (**ADR-022 C4**). **ADR-023** gèle la future autorité : sélections client, recalcul serveur, clé serveur (pas Golden Reference), provenance `client_declared` / `server_recalculated`, pas de backfill, transition keyed-step. **Non implémenté.** `passed` reste I-05 et n’est pas `MasteryLevel`.
 - Prototype 0 : evidence **implicite** (localStorage) — n’est pas l’autorité serveur.
 
 ---
