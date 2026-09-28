@@ -10,6 +10,7 @@
 This ADR freezes who may compute quiz `score`, `maxScore`, `passed`, and `answers.correct`; where the answer key lives; how trust provenance is classified; and how the current Evidence POST transitions when a key exists. It **does not authorize** trusted-scoring code, tests, schema, SQL, Drizzle, a migration, HTTP changes, Mastery projection, score→`MasteryLevel` mapping, aggregation, sufficiency, regression, a rule version, Question→Skill, SkillGap, Adaptive Path, Phase B, or Skill HTTP.
 
 **Implementation (this ADR freeze):** NOT STARTED / NOT AUTHORIZED
+**Implementation plan (authored, not executed):** [`trusted-quiz-scoring-implementation-plan.md`](trusted-quiz-scoring-implementation-plan.md). Slice 1 is **not** started. This pointer does **not** rewrite D-023-01–D-023-10.
 **Migration allocated by this ADR:** none. Head remains `0010_elite_valkyrie`.
 
 **Baseline:** published main `fd558b8e681d80b47a72a4666e23c74f5c279c01` (`docs: freeze ADR-022 mastery projection constraints`). ADR-022 remains **ACCEPTED / FROZEN**.
@@ -190,4 +191,4 @@ Activity pass-rule shape (minimum correct count versus ratio), to be chosen in t
 
 ## Exit / Freeze State
 
-**ACCEPTED / FROZEN.** This ADR did **not** start implementation. Head `0010_elite_valkyrie`. Next trusted-scoring **code** requires a separate implementation plan satisfying D-023-10. Mastery **code** remains unauthorized.
+**ACCEPTED / FROZEN.** This ADR did **not** start implementation. Head `0010_elite_valkyrie`. The D-023-10 implementation plan is **authored** and **not executed**. Trusted-scoring **code** remains unauthorized until a human starts Slice 1. Mastery **code** remains unauthorized.

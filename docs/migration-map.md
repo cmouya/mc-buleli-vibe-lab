@@ -157,5 +157,5 @@ This map is primarily Prototype 0 → modules. Server Drizzle migrations are ind
 - Historical C2 Skill Identity tables: `0008_powerful_retro_girl`. Slice 1 Phase A: `0009_quick_jazinda`.
 - **ADR-021** freeze allocated **no** migration. `0009_quick_jazinda` and `0010_elite_valkyrie` were **generator-selected** after separate implementation authorizations.
 - **ADR-022** freeze allocated **no** migration. Head remains `0010_elite_valkyrie`.
-- **ADR-023** freeze allocated **no** migration. Quiz-key and Evidence provenance are concepts only. Trusted-scoring schema is **not** authorized. Head remains `0010_elite_valkyrie`.
+- **ADR-023** freeze allocated **no** migration. Quiz-key and Evidence provenance are concepts only. The implementation plan ([`trusted-quiz-scoring-implementation-plan.md`](trusted-quiz-scoring-implementation-plan.md)) also allocates **no** migration number. Trusted-scoring schema is **not** generated. Head remains `0010_elite_valkyrie`.
 - Phase B (`NOT NULL` / legacy resolution) remains **unauthorized**.

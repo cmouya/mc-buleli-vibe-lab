@@ -22,7 +22,7 @@ This file is the binding record for **ADR-021**. Human architecture review **app
 
 **Depends on:** [`docs/skill-identity-decisions.md`](skill-identity-decisions.md) (ADR-020), C2 persistence ledger [`docs/skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md).
 
-**Next implementation checkpoint:** this ADR freeze still does **not** authorize further slices. **Slice 1 Phase A** and **Slice 2** were authorized separately. **ADR-022** freezes Mastery Projection **constraints** (docs-only). **ADR-023** freezes Trusted Quiz Scoring **authority** (docs-only). Trusted-scoring **code**, Mastery **code**, Phase B, SkillGap wiring, and Adaptive Path each still need their own **implementation** plan.
+**Next implementation checkpoint:** this ADR freeze still does **not** authorize further slices. **Slice 1 Phase A** and **Slice 2** were authorized separately. **ADR-022** freezes Mastery Projection **constraints** (docs-only). **ADR-023** freezes Trusted Quiz Scoring **authority** (docs-only). Its implementation plan is **authored** and **not executed** ([`trusted-quiz-scoring-implementation-plan.md`](trusted-quiz-scoring-implementation-plan.md)). Trusted-scoring **code**, Mastery **code**, Phase B, SkillGap wiring, and Adaptive Path are **not started**.
 
 ## Context
 
