@@ -4,14 +4,14 @@
  * Framework-independent; no localStorage.
  */
 
-import type { Evidence, EvidenceAnswer } from "../../shared/types/domain.types.js"
+import type { Evidence, EvidenceAnswer, ScoringProvenance } from "../../shared/types/domain.types.js"
 import {
   DomainError,
   resolveNow,
   type DomainClockOptions,
 } from "../shared/domain-error.js"
 
-export type { Evidence, EvidenceAnswer, DomainClockOptions }
+export type { Evidence, EvidenceAnswer, ScoringProvenance, DomainClockOptions }
 export { DomainError }
 
 export interface RecordQuizEvidenceInput {

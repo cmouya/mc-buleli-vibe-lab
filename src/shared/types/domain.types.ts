@@ -145,6 +145,9 @@ export interface EvidenceAnswer {
   correct: boolean
 }
 
+/** How score fields were produced. Absence is client_declared, never trusted. */
+export type ScoringProvenance = "client_declared" | "server_recalculated"
+
 /**
  * Evidence — preuve d'apprentissage (Evidence before Completion)
  */
@@ -159,6 +162,8 @@ export interface Evidence {
   passed: boolean
   answers: EvidenceAnswer[]
   recordedAt: string
+  /** Omitted in memory means client_declared. Not client authority. */
+  scoringProvenance?: ScoringProvenance
 }
 
 /**

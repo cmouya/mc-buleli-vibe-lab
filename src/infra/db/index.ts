@@ -7,6 +7,7 @@ export {
   learningPaths,
   learningPathSteps,
   evidence,
+  stepQuizDefinitions,
   userCredentials,
   organizationMemberships,
   sessions,
@@ -25,6 +26,7 @@ export { createDrizzleOwnedLearningPathRepository } from "./owned-learning-path-
 export { createDrizzleOwnedDerivedContentRepository } from "./owned-derived-content-repository.js"
 export { createDrizzleEvidenceRepository } from "./evidence-repository.js"
 export { createDrizzleOwnedEvidenceRepository } from "./owned-evidence-repository.js"
+export { createDrizzleOwnedStepQuizRepository } from "./owned-step-quiz-repository.js"
 export { createDrizzleOwnedProgressRepository } from "./owned-progress-repository.js"
 export {
   createDrizzleOrganizationRepository,

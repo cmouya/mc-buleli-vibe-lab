@@ -6,6 +6,7 @@ import type {
   AcceptedPathStep,
   OwnedDerivedContentRepository,
 } from "../../modules/learning-path/index.js"
+import { scoringProvenanceFromPersisted } from "../../modules/evidence/scoring-provenance.js"
 import { evidence, goals, learningPaths, learningPathSteps } from "./schema.js"
 import * as schema from "./schema.js"
 
@@ -91,6 +92,7 @@ function toEvidence(row: typeof evidence.$inferSelect): Evidence {
     passed: row.passed,
     answers: asAnswers(row.answers),
     recordedAt: toIso(row.recordedAt),
+    scoringProvenance: scoringProvenanceFromPersisted(row.scoringProvenance),
   }
 }
 

@@ -3,6 +3,12 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js"
 import { DomainError } from "../../modules/shared/index.js"
 import type { Evidence, EvidenceAnswer, EvidenceType } from "../../shared/types/domain.types.js"
 import type { OwnedEvidenceRepository } from "../../modules/evidence/index.js"
+import type { GoalOwnerScope } from "../../modules/evidence/owned-evidence-repository.js"
+import {
+  CLIENT_DECLARED_PROVENANCE,
+  SERVER_RECALCULATED_PROVENANCE,
+  scoringProvenanceFromPersisted,
+} from "../../modules/evidence/scoring-provenance.js"
 import { evidence, goals, learningPaths, learningPathSteps } from "./schema.js"
 import * as schema from "./schema.js"
 
@@ -43,7 +49,56 @@ function toEvidence(row: typeof evidence.$inferSelect): Evidence {
     passed: row.passed,
     answers: asAnswers(row.answers),
     recordedAt: toIso(row.recordedAt),
+    scoringProvenance: scoringProvenanceFromPersisted(row.scoringProvenance),
   }
+}
+
+async function insertOwnedEvidence(
+  tx: Parameters<Parameters<PostgresJsDatabase<typeof schema>["transaction"]>[0]>[0],
+  item: Evidence,
+  scope: GoalOwnerScope,
+  goalId: string,
+  scoringProvenance: typeof CLIENT_DECLARED_PROVENANCE | typeof SERVER_RECALCULATED_PROVENANCE,
+): Promise<Evidence> {
+  const evidenceId = item.id
+  if (!evidenceId) {
+    throw new Error("Evidence.id is required before save")
+  }
+  const owned = await tx
+    .select({ stepId: learningPathSteps.id })
+    .from(learningPathSteps)
+    .innerJoin(learningPaths, eq(learningPathSteps.pathId, learningPaths.id))
+    .innerJoin(goals, eq(learningPaths.goalId, goals.id))
+    .where(
+      and(
+        eq(learningPathSteps.id, item.stepId),
+        eq(learningPaths.goalId, goalId),
+        eq(goals.id, goalId),
+        eq(goals.organizationId, scope.organizationId),
+        eq(goals.learnerId, scope.learnerId),
+      ),
+    )
+  const authorizedStepId = owned[0]?.stepId
+  if (!authorizedStepId) {
+    throw NOT_FOUND
+  }
+
+  await tx.insert(evidence).values({
+    id: evidenceId,
+    stepId: authorizedStepId,
+    type: item.type,
+    score: String(item.score),
+    maxScore: String(item.maxScore),
+    passed: item.passed,
+    answers: item.answers,
+    scoringProvenance,
+    recordedAt: item.recordedAt,
+  })
+  const saved = await tx.select().from(evidence).where(eq(evidence.id, evidenceId))
+  if (!saved[0]) {
+    throw new Error("Owned evidence save did not persist")
+  }
+  return toEvidence(saved[0])
 }
 
 export function createDrizzleOwnedEvidenceRepository(
@@ -51,46 +106,15 @@ export function createDrizzleOwnedEvidenceRepository(
 ): OwnedEvidenceRepository {
   return {
     async saveOwned(item, scope, goalId) {
-      const evidenceId = item.id
-      if (!evidenceId) {
-        throw new Error("Evidence.id is required before save")
-      }
-      return db.transaction(async (tx) => {
-        const owned = await tx
-          .select({ stepId: learningPathSteps.id })
-          .from(learningPathSteps)
-          .innerJoin(learningPaths, eq(learningPathSteps.pathId, learningPaths.id))
-          .innerJoin(goals, eq(learningPaths.goalId, goals.id))
-          .where(
-            and(
-              eq(learningPathSteps.id, item.stepId),
-              eq(learningPaths.goalId, goalId),
-              eq(goals.id, goalId),
-              eq(goals.organizationId, scope.organizationId),
-              eq(goals.learnerId, scope.learnerId),
-            ),
-          )
-        const authorizedStepId = owned[0]?.stepId
-        if (!authorizedStepId) {
-          throw NOT_FOUND
-        }
+      return db.transaction((tx) =>
+        insertOwnedEvidence(tx, item, scope, goalId, CLIENT_DECLARED_PROVENANCE),
+      )
+    },
 
-        await tx.insert(evidence).values({
-          id: evidenceId,
-          stepId: authorizedStepId,
-          type: item.type,
-          score: String(item.score),
-          maxScore: String(item.maxScore),
-          passed: item.passed,
-          answers: item.answers,
-          recordedAt: item.recordedAt,
-        })
-        const saved = await tx.select().from(evidence).where(eq(evidence.id, evidenceId))
-        if (!saved[0]) {
-          throw new Error("Owned evidence save did not persist")
-        }
-        return toEvidence(saved[0])
-      })
+    async saveOwnedServerRecalculated(item, scope, goalId) {
+      return db.transaction((tx) =>
+        insertOwnedEvidence(tx, item, scope, goalId, SERVER_RECALCULATED_PROVENANCE),
+      )
     },
   }
 }

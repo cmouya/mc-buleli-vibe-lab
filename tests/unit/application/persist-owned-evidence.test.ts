@@ -96,6 +96,13 @@ function memoryOwnedEvidence(): OwnedEvidenceRepository & {
       records.push(item)
       return item
     },
+    async saveOwnedServerRecalculated(item, scope, goalId) {
+      this.lastScope = { organizationId: scope.organizationId, learnerId: scope.learnerId }
+      this.lastGoalId = goalId
+      const stored = { ...item, scoringProvenance: "server_recalculated" as const }
+      records.push(stored)
+      return stored
+    },
   }
 }
 

@@ -3,6 +3,7 @@ import type { PostgresJsDatabase } from "drizzle-orm/postgres-js"
 import { DomainError } from "../../modules/shared/index.js"
 import type { Evidence, EvidenceAnswer, EvidenceType } from "../../shared/types/domain.types.js"
 import type { OwnedProgressRepository } from "../../modules/evidence/index.js"
+import { scoringProvenanceFromPersisted } from "../../modules/evidence/scoring-provenance.js"
 import { evidence, goals, learningPaths, learningPathSteps } from "./schema.js"
 import * as schema from "./schema.js"
 
@@ -43,6 +44,7 @@ function toEvidence(row: typeof evidence.$inferSelect): Evidence {
     passed: row.passed,
     answers: asAnswers(row.answers),
     recordedAt: toIso(row.recordedAt),
+    scoringProvenance: scoringProvenanceFromPersisted(row.scoringProvenance),
   }
 }
 

@@ -184,6 +184,33 @@ describe("application — getOwnedPathProgress / getOwnedStepCompletion", () => 
     expect(result.complete).toBe(false)
   })
 
+  it("still completes only from passed when provenance is present", async () => {
+    const trustedFailed = {
+      ...evidence(STEP_A, false, "trusted-fail"),
+      scoringProvenance: "server_recalculated" as const,
+    }
+    const declaredPassed = {
+      ...evidence(STEP_A, true, "declared-pass"),
+      scoringProvenance: "client_declared" as const,
+    }
+    const failedOnly = await getOwnedStepCompletion(
+      STEP_A,
+      GOAL_A,
+      contextA(),
+      memoryDerived(ownedSeed([step(STEP_A)], [trustedFailed])),
+      memoryProgress(ownedSeed([step(STEP_A)], [trustedFailed])),
+    )
+    const passedDeclared = await getOwnedStepCompletion(
+      STEP_A,
+      GOAL_A,
+      contextA(),
+      memoryDerived(ownedSeed([step(STEP_A)], [declaredPassed])),
+      memoryProgress(ownedSeed([step(STEP_A)], [declaredPassed])),
+    )
+    expect(failedOnly.complete).toBe(false)
+    expect(passedDeclared.complete).toBe(true)
+  })
+
   it("completes after failed then passed Evidence", async () => {
     const seed = ownedSeed(
       [step(STEP_A)],

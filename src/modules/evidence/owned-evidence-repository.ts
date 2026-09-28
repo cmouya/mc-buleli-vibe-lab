@@ -9,4 +9,13 @@ export type { GoalOwnerScope }
  */
 export interface OwnedEvidenceRepository {
   saveOwned(evidence: Evidence, scope: GoalOwnerScope, goalId: string): Promise<Evidence>
+  /**
+   * Internal trusted write. The implementation assigns server_recalculated.
+   * Not wired to HTTP or application services in this slice.
+   */
+  saveOwnedServerRecalculated(
+    evidence: Evidence,
+    scope: GoalOwnerScope,
+    goalId: string,
+  ): Promise<Evidence>
 }

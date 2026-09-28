@@ -86,7 +86,9 @@ describe("M4.4 — Evidence repository (PostgreSQL)", () => {
         ),
       )
       expect(failed.passed).toBe(false)
+      expect(failed.scoringProvenance).toBe("client_declared")
       expect(passed.passed).toBe(true)
+      expect(passed.scoringProvenance).toBe("client_declared")
       expect(passed.recordedAt).toBe(NOW)
       expect(passed.answers).toEqual([{ questionIndex: 0, selectedIndex: 1, correct: true }])
       const byStep = await evidenceRepo.getByStepId(stepId)

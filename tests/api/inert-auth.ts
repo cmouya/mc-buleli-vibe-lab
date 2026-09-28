@@ -148,6 +148,9 @@ export function inertOwnedEvidence(): OwnedEvidenceRepository {
     async saveOwned() {
       throw new Error("owned Evidence writes are not used in this test")
     },
+    async saveOwnedServerRecalculated() {
+      throw new Error("owned Evidence writes are not used in this test")
+    },
   }
 }
 
@@ -201,6 +204,13 @@ export function memoryOwnedEvidence(): OwnedEvidenceRepository & {
       this.lastGoalId = goalId
       records.push(item)
       return item
+    },
+    async saveOwnedServerRecalculated(item, scope, goalId) {
+      this.lastScope = { organizationId: scope.organizationId, learnerId: scope.learnerId }
+      this.lastGoalId = goalId
+      const stored = { ...item, scoringProvenance: "server_recalculated" as const }
+      records.push(stored)
+      return stored
     },
   }
 }

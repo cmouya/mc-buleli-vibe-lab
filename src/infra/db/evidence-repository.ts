@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm"
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js"
 import type { Evidence, EvidenceAnswer, EvidenceType } from "../../shared/types/domain.types.js"
 import type { EvidenceRepository } from "../../modules/evidence/index.js"
+import { scoringProvenanceFromPersisted, CLIENT_DECLARED_PROVENANCE } from "../../modules/evidence/scoring-provenance.js"
 import { evidence } from "./schema.js"
 import * as schema from "./schema.js"
 
@@ -40,6 +41,7 @@ function toEvidence(row: typeof evidence.$inferSelect): Evidence {
     passed: row.passed,
     answers: asAnswers(row.answers),
     recordedAt: toIso(row.recordedAt),
+    scoringProvenance: scoringProvenanceFromPersisted(row.scoringProvenance),
   }
   return mapped
 }
@@ -60,6 +62,7 @@ export function createDrizzleEvidenceRepository(
         maxScore: String(item.maxScore),
         passed: item.passed,
         answers: item.answers,
+        scoringProvenance: CLIENT_DECLARED_PROVENANCE,
         recordedAt: item.recordedAt,
       })
       const saved = await db.select().from(evidence).where(eq(evidence.id, item.id))

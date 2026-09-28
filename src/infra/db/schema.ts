@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm"
+import type { OwnedQuizItem } from "../../modules/evidence/score-owned-quiz.js"
 import {
   boolean,
   check,
@@ -135,6 +136,36 @@ export const learningPathSteps = pgTable(
   ],
 )
 
+/** Step-owned answer key. Not selected by learner Step/Path reads. */
+export const stepQuizDefinitions = pgTable(
+  "step_quiz_definitions",
+  {
+    stepId: uuid("step_id")
+      .primaryKey()
+      .references(() => learningPathSteps.id, { onDelete: "cascade" }),
+    minimumCorrectCount: integer("minimum_correct_count").notNull(),
+    items: jsonb("items").$type<OwnedQuizItem[]>().notNull(),
+  },
+  (table) => [
+    check(
+      "step_quiz_definitions_minimum_correct_count_check",
+      sql`${table.minimumCorrectCount} >= 1`,
+    ),
+    check(
+      "step_quiz_definitions_items_array_check",
+      sql`jsonb_typeof(${table.items}) = 'array'`,
+    ),
+    check(
+      "step_quiz_definitions_items_nonempty_check",
+      sql`jsonb_array_length(${table.items}) >= 1`,
+    ),
+    check(
+      "step_quiz_definitions_minimum_correct_count_lte_items_check",
+      sql`${table.minimumCorrectCount} <= jsonb_array_length(${table.items})`,
+    ),
+  ],
+)
+
 export const evidence = pgTable(
   "evidence",
   {
@@ -147,6 +178,7 @@ export const evidence = pgTable(
     maxScore: numeric("max_score").notNull(),
     passed: boolean("passed").notNull(),
     answers: jsonb("answers").notNull().default([]),
+    scoringProvenance: text("scoring_provenance").notNull().default("client_declared"),
     recordedAt: timestamp("recorded_at", { withTimezone: true, mode: "string" }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
@@ -157,6 +189,10 @@ export const evidence = pgTable(
     check("evidence_score_check", sql`${table.score} >= 0`),
     check("evidence_max_score_check", sql`${table.maxScore} > 0`),
     check("evidence_score_lte_max_check", sql`${table.score} <= ${table.maxScore}`),
+    check(
+      "evidence_scoring_provenance_check",
+      sql`${table.scoringProvenance} IN ('client_declared', 'server_recalculated')`,
+    ),
     index("evidence_step_id_idx").on(table.stepId),
   ],
 )

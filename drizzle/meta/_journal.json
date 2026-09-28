@@ -78,6 +78,13 @@
       "when": 1790546366750,
       "tag": "0010_elite_valkyrie",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790634584872,
+      "tag": "0011_omniscient_jasper_sitwell",
+      "breakpoints": true
     }
   ]
 }
