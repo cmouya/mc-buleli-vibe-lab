@@ -15,7 +15,8 @@
 **ADR-021:** Skill Intelligence **semantics ACCEPTED / FROZEN** — [`skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md)
 **Slice 1 Phase A:** Goal Skill `requiredLevel` **write** persistence (`0009_quick_jazinda`; legacy NULL; Phase B deferred)
 **Slice 2:** Evidence↔Skill bind-only attribution (`0010_elite_valkyrie`; ⊆ Step coverage; no HTTP)
-**Next checkpoint:** **separate plan** for Phase B / Mastery projection / SkillGap. This freeze file does **not** authorize those slices, Skill HTTP, LearnerSkill tables, or Adaptive Path.
+**ADR-022:** Mastery Projection **semantic constraints ACCEPTED / FROZEN** — [`mastery-projection-constraints-decisions.md`](mastery-projection-constraints-decisions.md). **No** Mastery code.
+**Next checkpoint:** **separate implementation plan** for trusted scoring / mapping / aggregation before any Mastery engine. This freeze file does **not** authorize Mastery code, Skill HTTP, LearnerSkill tables, Phase B, or Adaptive Path.
 
 ## Sequence (historical freeze plan — later executed under C2)
 

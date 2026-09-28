@@ -156,4 +156,5 @@ This map is primarily Prototype 0 → modules. Server Drizzle migrations are ind
 - **Current migration head:** `0010_elite_valkyrie` (Slice 2: `evidence_skills` bind-only Evidence↔Skill; PK `(evidence_id, skill_id)`; no backfill).
 - Historical C2 Skill Identity tables: `0008_powerful_retro_girl`. Slice 1 Phase A: `0009_quick_jazinda`.
 - **ADR-021** freeze allocated **no** migration. `0009_quick_jazinda` and `0010_elite_valkyrie` were **generator-selected** after separate implementation authorizations.
+- **ADR-022** freeze allocated **no** migration. Head remains `0010_elite_valkyrie`.
 - Phase B (`NOT NULL` / legacy resolution) remains **unauthorized**.

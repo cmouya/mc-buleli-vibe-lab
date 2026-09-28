@@ -8,6 +8,7 @@
 **Implementation (this ADR freeze):** NOT STARTED by this ADR
 **Later Slice 1 Phase A (separately authorized):** Goal Skill `requiredLevel` **write** persistence — valid new binds `emerging` \| `proficient` \| `expert`; legacy `goal_skills.required_level` **NULL** remains transitional; different-level / legacy-NULL rebind **conflicts**; migration `0009_quick_jazinda` (generator-selected). Phase B NOT NULL **deferred**.
 **Later Slice 2 (separately authorized):** Evidence↔Skill **explicit bind-only** M:N (`evidence_skills`; ⊆ persisted Step coverage; no backfill; no HTTP). Attribution ≠ Mastery.
+**Later ADR-022 (separately authorized):** Mastery Projection **semantic constraints** freeze — [`mastery-projection-constraints-decisions.md`](mastery-projection-constraints-decisions.md). **No** Mastery code. HTTP Evidence remains Mastery-untrusted.
 **Migration head:** `0010_elite_valkyrie`
 
 This file is the binding record for **ADR-021**. Human architecture review **approved** decisions D-021-01–D-021-19. This freeze is **documentation / semantics only**. It does **not** authorize production code, tests, schema, SQL, Drizzle, or migration `0009`.
@@ -20,7 +21,7 @@ This file is the binding record for **ADR-021**. Human architecture review **app
 
 **Depends on:** [`docs/skill-identity-decisions.md`](skill-identity-decisions.md) (ADR-020), C2 persistence ledger [`docs/skill-identity-persistence-implementation-plan.md`](skill-identity-persistence-implementation-plan.md).
 
-**Next implementation checkpoint:** this ADR freeze still does **not** authorize further slices. **Slice 1 Phase A** was authorized separately. Next remaining: Phase B NOT NULL, Evidence attribution, Mastery, SkillGap wiring — each needs its own plan.
+**Next implementation checkpoint:** this ADR freeze still does **not** authorize further slices. **Slice 1 Phase A** and **Slice 2** were authorized separately. **ADR-022** freezes Mastery Projection **constraints** (docs-only). Mastery **code**, Phase B, SkillGap wiring, and Adaptive Path each still need their own **implementation** plan.
 
 ## Context
 
@@ -208,4 +209,4 @@ Smallest later slice (only after a separate plan): persist Goal Skill `requiredL
 
 ## Exit / Freeze State
 
-**ACCEPTED / FROZEN.** This ADR did **not** start implementation. **Slice 1 Phase A** (later authorized) persists Goal Skill `requiredLevel` for **new** writes. **Slice 2** (later authorized) persists explicit Evidence↔Skill attribution bind-only. Phase B, Mastery, SkillGap wiring, Adaptive Path, and Skill HTTP remain **out**. Head `0010_elite_valkyrie`.
+**ACCEPTED / FROZEN.** This ADR did **not** start implementation. **Slice 1 Phase A** (later authorized) persists Goal Skill `requiredLevel` for **new** writes. **Slice 2** (later authorized) persists explicit Evidence↔Skill attribution bind-only. **ADR-022** (later authorized, docs-only) freezes Mastery Projection **constraints**; Mastery **code** remains out. Phase B, SkillGap wiring, Adaptive Path, and Skill HTTP remain **out**. Head `0010_elite_valkyrie`.

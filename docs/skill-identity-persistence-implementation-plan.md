@@ -15,7 +15,7 @@
 **C2.5 / Checkpoint F:** documentation and regression **closure** (this checkpoint)
 **Tables:** `skills`, `goal_skills`, `step_skills` exist (`SCHEMA_SLICE` `c2.1-skill-identity-schema`). Slice 2 adds `evidence_skills` (bind-only).
 **Migration head:** `0010_elite_valkyrie` (Slice 2 `evidence_skills`; Slice 1 `0009_quick_jazinda`; C2 tables from `0008_powerful_retro_girl`)
-**Next product work:** **NOT AUTHORIZED** by C2.5. **ADR-021** semantics remain **FROZEN**. Slice 1 Phase A and Slice 2 bind-only attribution are **implemented** (no HTTP). Phase B NOT NULL, Mastery projection, and SkillGap wiring need a **separate plan**.
+**Next product work:** **NOT AUTHORIZED** by C2.5. **ADR-021** semantics remain **FROZEN**. **ADR-022** constraints are **FROZEN** (docs-only; no Mastery persist). Slice 1 Phase A and Slice 2 bind-only attribution are **implemented** (no HTTP). Phase B NOT NULL, Mastery **code**, and SkillGap wiring need a **separate implementation** plan.
 
 ## Human checkpoints (mandatory)
 

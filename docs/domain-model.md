@@ -266,14 +266,14 @@ Preuve tangible d’apprentissage produite par un assessment ou une activité.
 ### Relations
 
 - N Evidence → 1 Step (ownership : Evidence → Step → Path → Goal)
-- Evidence ↔ Skill **many-to-many** (**ADR-021** ; Slice 2 bind-only `evidence_skills`) ; Skills attribuées ⊆ couverture du Step
+- Evidence ↔ Skill **many-to-many** (**ADR-021** ; Slice 2 bind-only `evidence_skills`) ; Skills attribuées ⊆ couverture du Step ; attribution = **concern** ≠ preuve (**ADR-022**)
 - Evidence **informe** Mastery seulement via attribution + règles ; pas via coverage seule
 
 ### Règles métier
 
 - **Evidence before Completion** (I-05) : pas de Completion d’étape sans Evidence `passed = true` pour ce `stepId`.
 - Attribution ≠ Mastery. Evidence POST ne mute pas Mastery (ADR-018 / ADR-021).
-- **Actuellement implémenté :** Evidence persistée scopée Step (`quiz_attempt`) ; attribution explicite bind-only (`evidence_skills`) ; **pas** de `Evidence.skillId` ; **pas** de Mastery projection.
+- **Currently implemented:** Evidence persistée scopée Step (`quiz_attempt`) ; attribution explicite bind-only (`evidence_skills`) ; **pas** de `Evidence.skillId` ; **pas** de Mastery projection. Evidence POST HTTP : `score` / `passed` / `answers.correct` **client-déclarés** — **non autoritaires** pour Mastery jusqu’à un scoring de confiance (**ADR-022 C4**).
 - Prototype 0 : evidence **implicite** (localStorage) — n’est pas l’autorité serveur.
 
 ---
@@ -284,7 +284,7 @@ Preuve tangible d’apprentissage produite par un assessment ou une activité.
 
 Niveau de maîtrise **démontré** d’une compétence pour un apprenant — distinct de Progress et de Completion.
 
-**Architecture acceptée (ADR-021) :** Mastery est une **projection recalculable** depuis Evidence **attribuée** + règles déterministes. L’historique Evidence reste la source de vérité. Un cache futur n’est pas l’autorité. **I-04 n’est pas implémenté.**
+**Architecture acceptée (ADR-021) :** Mastery est une **projection recalculable** depuis Evidence **attribuée** + règles déterministes. L’historique Evidence reste la source de vérité. Un cache futur n’est pas l’autorité. **ADR-022** gèle les **contraintes** (éligibilité, confiance HTTP, UNKNOWN ≠ none, quiz V1 ≤ proficient, pas d’implémentation). Le DTO `Mastery` existant **n’est pas** le résultat de projection gelé. **I-04 n’est pas implémenté.**
 
 ### Attributs principaux (conceptuels)
 
@@ -302,7 +302,7 @@ Niveau de maîtrise **démontré** d’une compétence pour un apprenant — dis
 ### Règles métier
 
 - Ne pas inférer mastery depuis `%` du parcours, depuis Step coverage, ni depuis un Initial Estimate.
-- **UNKNOWN ≠ none.**
+- **UNKNOWN ≠ none.** UNKNOWN n’est **pas** un `MasteryLevel`. `LearnerSkill` default `none` n’est **pas** l’autorité Mastery (**ADR-022**).
 - L’IA ne détermine pas Mastery (I-08).
 - Prototype 0 : **non implémenté** — `skills[]` = proxy simpliste.
 
