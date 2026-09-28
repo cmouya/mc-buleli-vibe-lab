@@ -14,3 +14,11 @@ export type {
 export type { EvidenceRepository } from "./evidence-repository.js"
 export type { OwnedEvidenceRepository, GoalOwnerScope } from "./owned-evidence-repository.js"
 export type { OwnedProgressRepository } from "./owned-progress-repository.js"
+export { scoreOwnedQuiz } from "./score-owned-quiz.js"
+export type {
+  OwnedQuizItem,
+  OwnedQuizDefinition,
+  QuizSelection,
+  ScoredQuizAnswer,
+  ScoredQuizAttempt,
+} from "./score-owned-quiz.js"
