@@ -2,6 +2,8 @@
 
 Ce document décrit le **modèle métier cible** de Learnova. Le Prototype 0 n’implémente qu’une sous-partie ; les concepts ci-dessous guident l’évolution vers Learnova 1.0.
 
+Statuts **CURRENT / ACCEPTED / FROZEN / TARGET / EXPLORATORY / DEFERRED** : voir [Product Positioning](product-positioning.md#current-capability-ledger). Les attributs conceptuels et les sketches Prototype 0 ne remplacent pas les ADR acceptées. En particulier, Learner est déjà une identité serveur organization-scoped (ADR-016), distincte de User et de la session ; les descriptions Prototype 0 ci-dessous restent des sketches historiques.
+
 ---
 
 ## Vue d’ensemble des relations
@@ -273,7 +275,7 @@ Preuve tangible d’apprentissage produite par un assessment ou une activité.
 
 - **Evidence before Completion** (I-05) : pas de Completion d’étape sans Evidence `passed = true` pour ce `stepId`.
 - Attribution ≠ Mastery. Evidence POST ne mute pas Mastery (ADR-018 / ADR-021).
-- **Currently implemented:** Evidence persistée scopée Step (`quiz_attempt`) ; attribution explicite bind-only (`evidence_skills`) ; **pas** de `Evidence.skillId` ; **pas** de Mastery projection. Evidence POST HTTP : `score` / `passed` / `answers.correct` **client-déclarés** — **non autoritaires** pour Mastery jusqu’à un scoring de confiance (**ADR-022 C4**). **ADR-023** gèle la future autorité : sélections client, recalcul serveur, clé serveur (pas Golden Reference), provenance `client_declared` / `server_recalculated`, pas de backfill, transition keyed-step. **Non implémenté.** Plan : [`trusted-quiz-scoring-implementation-plan.md`](trusted-quiz-scoring-implementation-plan.md) (Slice 1 non démarré). `passed` reste I-05 et n’est pas `MasteryLevel`.
+- **CURRENT:** Evidence persistée scopée Step (`quiz_attempt`) ; attribution explicite bind-only (`evidence_skills`) ; **pas** de `Evidence.skillId` ; **pas** de Mastery projection. Evidence POST HTTP : `score` / `passed` / `answers.correct` **client-déclarés**, persistés `client_declared`, **non autoritaires** pour Mastery (**ADR-022 C4**). Le scorer pur, la persistance des clés quiz et la provenance existent (Slices 1/2 ; migration `0011_omniscient_jasper_sitwell`). La soumission HTTP de confiance et la transition keyed-step d’ADR-023 restent non implémentées. Voir le [plan avec addendum actuel](trusted-quiz-scoring-implementation-plan.md). `passed` reste I-05 et n’est pas `MasteryLevel`.
 - Prototype 0 : evidence **implicite** (localStorage) — n’est pas l’autorité serveur.
 
 ---

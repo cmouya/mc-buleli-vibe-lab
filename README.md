@@ -1,12 +1,14 @@
 # Learnova
 
-**Learnova** is a Learning Intelligence prototype — not a traditional LMS with a chatbot. It is a **GPS des compétences**: the learner states a goal, receives a personalized path, learns step by step, and progresses only after demonstrated validation.
+**Learnova** is a **Learning Intelligence System (LIS)** under development. It is a **GPS des compétences**: the learner states a goal, follows a learning path, and produces evidence. Its defining value is goal-driven intelligence and orchestration toward demonstrated mastery and measurable outcomes.
+
+Canonical reference: [Product Positioning](docs/product-positioning.md). Learnova targets complementarity with existing LMS ecosystems, enterprise interoperability, Skills Intelligence, AI Governance, and configurable African contextualisation within a globally usable system. These targets are not claims of current integration or advanced adaptation.
 
 > Don't search for a course. Tell us where you want to go.
 
 ## Product summary
 
-Learnova inverts the LMS logic:
+Learnova starts with a goal. This comparison describes product emphasis, not every LMS:
 
 | Traditional LMS | Learnova |
 |-----------------|----------|
@@ -14,7 +16,7 @@ Learnova inverts the LMS logic:
 | Content catalogue first | Goal first |
 | Completion = consumed | Validation = evidence (quiz) |
 
-**Core chain:**
+**Current demo chain** (progress is not mastery):
 
 ```
 Goal → Roadmap (GPS) → Dashboard → Lesson → Quiz → Validation → Progression
@@ -29,7 +31,9 @@ Domain principles (see `docs/product-principles.md`):
 
 ## Current MVP purpose
 
-This repository is **Prototype 0 evolving through M4**. The Golden Reference UI is still the Vite app on `localStorage`. M0–M4 are **done**: domain modules, application use cases, Fastify `/api/v1/`, and PostgreSQL + Drizzle for Goal → accepted Path → Steps → Evidence.
+**CURRENT:** The Golden Reference UI is still the Vite app on `localStorage`. The server includes M0–M4 foundations, M5.1–M5.3 identity/session/tenant context, M6.1–M6.4 owned learning persistence and derived Completion/Progress, and Skill Identity plus required proficiency and explicit Evidence attribution writes.
+
+Trusted-scoring Slice 1 (pure scorer) and Slice 2 (quiz persistence/provenance, migration `0011_omniscient_jasper_sitwell`) are present in the local worktree. The trusted submission API and keyed-step transition are not wired; current HTTP Evidence remains client-declared and Mastery-untrusted. Mastery projection is not implemented. See the [capability ledger](docs/product-positioning.md#current-capability-ledger) for source evidence and current/accepted/target/deferred distinctions.
 
 It demonstrates:
 
@@ -50,7 +54,7 @@ The learner UI does **not** dual-write to PostgreSQL. HTTP auth exists (`POST /a
 4. **Dashboard** (`#/dashboard`) — destination, progress, current step, next step
 5. **Lesson** (`#/lesson`) — micro-learning content + quiz
 6. **Quiz** — 3 questions, threshold 2/3 correct
-7. **Validation** — competency validated only if threshold met
+7. **Validation** — demo activity passes only if its threshold is met; this does not establish Skill Mastery
 8. **Progression** — step completed, next step unlocked (~17% for 1/6 steps)
 
 ## Technology stack
@@ -170,9 +174,10 @@ tests/e2e/            Playwright
 
 See [DEMO.md](DEMO.md) for a 3-minute live demo walkthrough.
 
-## Roadmap (not in this MVP)
+## Accepted architecture and target roadmap
 
-- Next.js + TypeScript runtime migration (future phase)
-- Backend, database, authentication
-- Real AI provider, Skill Graph, Mastery model
-- Mentor IA UI (contract exists, not wired)
+- **ACCEPTED / FROZEN:** React + TypeScript + Vite UI migration (ADR-004); trusted submission authority (ADR-023); Mastery constraints (ADR-021/022). Implementation remains partial or pending as described above.
+- **TARGET:** LMS complementarity, enterprise interoperability, institutional AI governance, configurable African-context learning, and measurable learning outcomes.
+- **EXPLORATORY / DEFERRED:** Real AI provider choice, Skill Graph/prerequisites, advanced adaptation policies, and Mentor IA UI (contract exists, not wired).
+
+Backend, database adapters, and session authentication already exist. See [Product Positioning](docs/product-positioning.md) and [Architecture Baseline](docs/architecture-baseline.md) before extending the product.

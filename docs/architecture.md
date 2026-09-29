@@ -1,6 +1,6 @@
 # Architecture — Learnova
 
-> Snapshot Prototype 0. **Source of truth for stages:** [`docs/architecture-baseline.md`](architecture-baseline.md) (M0–M4 Done; next M5). Golden Reference persistence is still `localStorage`; server Goal/Path/Evidence live in PostgreSQL (not wired to the UI).
+> Historical Prototype 0 snapshot. Its Next.js direction was superseded by ADR-004 (React + TypeScript + Vite); the historical body remains unchanged. **Accepted architecture:** [baseline](architecture-baseline.md). **Current/accepted/target/deferred capabilities and LIS positioning:** [Product Positioning](product-positioning.md). Golden Reference persistence remains `localStorage`; server persistence is not wired to that UI.
 
 ## État des lieux : Prototype 0
 

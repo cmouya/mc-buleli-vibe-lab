@@ -2,6 +2,8 @@
 
 Ces principes sont **non négociables**. Ils guident les décisions produit, UX, domaine et architecture.
 
+Catégorie produit : **Learning Intelligence System (LIS)**. Le [positionnement canonique](product-positioning.md) complète ces principes. Les implications ci-dessous sont des exigences produit/architecture, pas un inventaire de fonctionnalités livrées : distinguer **CURRENT**, **ACCEPTED / FROZEN**, **TARGET** et **EXPLORATORY / DEFERRED** selon son [registre de capacités](product-positioning.md#current-capability-ledger).
+
 ---
 
 ## 1. Goal before Content
@@ -138,3 +140,14 @@ Toute décision IA significative (parcours proposé, étape suggérée, feedback
 | Progress ≠ Mastery | 100 % = expert |
 | AI assists, Rules decide | Validation 100 % IA |
 | AI explainable | Parcours sans justification |
+
+## Guidance pour les contributions
+
+- Traiter Learnova comme un LIS ; préserver Goal before Content et Skills before Courses dans toute fonction de contenu/catalogue.
+- Viser la complémentarité avec les LMS existants ; placer les futures intégrations entreprise derrière des interfaces et adapters explicites.
+- Construire Skills Intelligence sur les ADR existantes. Ne jamais assimiler inférence, estimation, attribution, complétion ou progression à une maîtrise vérifiée.
+- Appliquer l’AI Governance : le domaine conserve l’autorité de validation, scoring, ownership et autorisation. La revue humaine future ne crée pas une seconde autorité de maîtrise.
+- Distinguer systématiquement capacité actuelle, architecture acceptée, cible et possibilité différée. Les exigences de provenance IA, d’audit, de politiques tenant et de protection des données ne sont pas toutes implémentées.
+- Garder la contextualisation africaine configurable dans un LIS global ; aucune géographie obligatoire ni équivalence entre origine géographique et qualité d’une compétence.
+
+Règles détaillées et sujets d’ADR futurs : [Product Positioning](product-positioning.md). Les ADR Accepted/Frozen conservent leur autorité.

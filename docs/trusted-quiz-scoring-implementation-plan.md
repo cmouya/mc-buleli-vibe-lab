@@ -1,5 +1,15 @@
 # Trusted Quiz Scoring — Implementation Plan
 
+## Current local implementation addendum — 2026-09-29
+
+**CURRENT (local worktree `bb11cef`):** Slice 1 pure scorer exists (`bb4084e`, [source](../src/modules/evidence/score-owned-quiz.ts)). Slice 2 quiz/provenance persistence exists (`bb11cef`, [repository](../src/infra/db/owned-step-quiz-repository.ts), [migration 0011](../drizzle/0011_omniscient_jasper_sitwell.sql)). This source inspection does not assert deployment or rerun DB validation.
+
+**ACCEPTED / FROZEN, pending implementation:** Slice 3 trusted HTTP submission and keyed-step rejection are absent. Current HTTP still persists client-declared scores; the internal server-recalculated persistence method is not wired to a trusted submission route. Mastery remains unimplemented and separately gated. **TARGET** enterprise/context capabilities and **EXPLORATORY / DEFERRED** designs are recorded in [Product Positioning](product-positioning.md).
+
+The authored plan below is preserved as its pre-implementation specification. Its “NOT STARTED”, “no schema” and migration-head statements describe that historical authoring checkpoint, not the current state. No additional slice is authorized by this addendum.
+
+---
+
 **Provenance:** Written after human acceptance of the ADR-023 trusted-scoring design. This file is the D-023-10 implementation plan. Authoring it does **not** start code.
 
 **Depends on:** [`docs/trusted-quiz-scoring-decisions.md`](trusted-quiz-scoring-decisions.md) (ADR-023), [`docs/mastery-projection-constraints-decisions.md`](mastery-projection-constraints-decisions.md) (ADR-022), [`docs/skill-intelligence-semantics-decisions.md`](skill-intelligence-semantics-decisions.md) (ADR-021).

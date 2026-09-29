@@ -2,6 +2,8 @@
 
 Matrice de migration **progressive**. Aucun fichier n’est déplacé en Phase 0.
 
+**Historical scope:** The early Phase 0 map below preserves its original plan, including the former Next.js direction superseded by ADR-004. For accepted architecture use [Architecture Baseline](architecture-baseline.md); for CURRENT / ACCEPTED / FROZEN / TARGET / EXPLORATORY / DEFERRED capabilities use [Product Positioning](product-positioning.md). The server migration section at the end records the local migration head.
+
 **Légende actions :** `KEEP` conserver tel quel · `ARCHIVE` documenter puis retirer · `EXTRACT` extraire logique vers module · `MIGRATE` porter vers Next.js · `REPLACE` remplacer par nouvelle implémentation
 
 ---
@@ -153,9 +155,9 @@ Phase 4  Next.js routes + Tailwind + retire Vite (quand parity)
 
 This map is primarily Prototype 0 → modules. Server Drizzle migrations are independent.
 
-- **Current migration head:** `0010_elite_valkyrie` (Slice 2: `evidence_skills` bind-only Evidence↔Skill; PK `(evidence_id, skill_id)`; no backfill).
+- **Current local migration head:** `0011_omniscient_jasper_sitwell` (trusted-scoring Slice 2: `step_quiz_definitions` and `evidence.scoring_provenance`). This records source files, not database deployment verification. Skill attribution migration remains `0010_elite_valkyrie`.
 - Historical C2 Skill Identity tables: `0008_powerful_retro_girl`. Slice 1 Phase A: `0009_quick_jazinda`.
 - **ADR-021** freeze allocated **no** migration. `0009_quick_jazinda` and `0010_elite_valkyrie` were **generator-selected** after separate implementation authorizations.
-- **ADR-022** freeze allocated **no** migration. Head remains `0010_elite_valkyrie`.
-- **ADR-023** freeze allocated **no** migration. Quiz-key and Evidence provenance are concepts only. The implementation plan ([`trusted-quiz-scoring-implementation-plan.md`](trusted-quiz-scoring-implementation-plan.md)) also allocates **no** migration number. Trusted-scoring schema is **not** generated. Head remains `0010_elite_valkyrie`.
+- **ADR-022** freeze allocated **no** migration; its freeze-time head was `0010_elite_valkyrie`.
+- **ADR-023** freeze and the original [implementation plan](trusted-quiz-scoring-implementation-plan.md) allocated **no** migration number. Later implementation added migration `0011_omniscient_jasper_sitwell` at local commit `bb11cef`. Pure scorer and persistence exist; trusted submission HTTP remains unimplemented. This positioning patch adds no migration.
 - Phase B (`NOT NULL` / legacy resolution) remains **unauthorized**.

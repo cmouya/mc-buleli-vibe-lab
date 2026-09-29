@@ -2,7 +2,9 @@
 
 ## Qu’est-ce que Learnova ?
 
-Learnova est une **plateforme de Learning Intelligence** : un système qui accompagne un apprenant de son **objectif** jusqu’à la **maîtrise démontrée** de compétences, en adaptant en continu le parcours, les activités et le soutien pédagogique.
+Learnova est un **Learning Intelligence System (LIS)**. Sa vision est d’accompagner un apprenant de son **objectif** jusqu’à la **maîtrise démontrée** de compétences, avec un parcours, des activités et un soutien pédagogique adaptés aux preuves et au contexte.
+
+Cette page décrit la **TARGET** produit. Le [positionnement canonique](product-positioning.md) distingue **CURRENT**, **ACCEPTED / FROZEN**, **TARGET** et **EXPLORATORY / DEFERRED** ; ses références au code local précisent les capacités présentes. Une ambition décrite ici ne vaut pas implémentation.
 
 Learnova n’est pas un LMS traditionnel. Ce n’est pas un catalogue de cours avec un chatbot. C’est un **GPS des compétences** orienté destination.
 
@@ -13,7 +15,7 @@ Learnova n’est pas un LMS traditionnel. Ce n’est pas un catalogue de cours a
 ### Côté apprenant
 
 - L’apprenant sait *où* il veut aller (objectif professionnel, projet, reconversion) mais ne sait pas *par où* commencer.
-- Les LMS le renvoient vers un catalogue : il doit déjà connaître les bons cours, modules et prérequis.
+- Une entrée centrée sur le catalogue suppose qu’il connaît déjà les bons cours, modules et prérequis.
 - La progression affichée (cours terminés, vidéos vues) ne prouve pas la **maîtrise** réelle.
 - Le parcours est rigide : peu d’adaptation quand l’apprenant échoue, accélère ou change de contexte.
 
@@ -26,6 +28,8 @@ Learnova n’est pas un LMS traditionnel. Ce n’est pas un catalogue de cours a
 Learnova adresse ces gaps en inversant la logique : **l’objectif précède le contenu**, les **compétences** précèdent les **cours**, et la **preuve** précède la **validation**.
 
 ## Learnova vs LMS traditionnel
+
+Comparaison d’orientation produit, sans généraliser à tous les LMS. Learnova vise à compléter les LMS, bibliothèques, systèmes d’identité et infrastructures existants ; leur remplacement n’est pas une condition d’adoption.
 
 | LMS traditionnel | Learnova |
 |------------------|----------|
@@ -53,12 +57,16 @@ Learnova organise l’expérience autour de cette chaîne :
 
 ```
 Goal
+  → Competency requirements
   → Skills
+  → Skill gap / Learner state
   → Learning Path
-  → Learning Activities
+  → Content & Learning Activities
   → Evidence
-  → Mastery
+  → Assessment
+  → Mastery / Progression (dimensions distinctes)
   → Adaptation
+  → Measurable outcomes / Impact
 ```
 
 ### Goal (Objectif)
@@ -91,7 +99,7 @@ Ajustement du parcours, du rythme, du contenu ou de la remédiation selon les pr
 
 ## Learning Intelligence System
 
-Un **Learning Intelligence System** (LIS) combine :
+La **cible** Learnova combine :
 
 - **Modèle apprenant** (profil, préférences, historique, lacunes)
 - **Graphe de compétences** (relations, prérequis, niveaux)
@@ -108,7 +116,16 @@ Le Prototype 0 (hackathon, Vite) démontre une **tranche verticale** de cette vi
 
 `Goal → Learning Path → Learning Activity → Evidence (quiz) → Progress`
 
-Les briques **Skills** (graphe), **Mastery** (niveau de maîtrise) et **Adaptation** sont implicites ou absentes — elles constituent la feuille de route produit post-Phase 0.
+Dans ce snapshot UI, **Skills** (graphe), **Mastery** et **Adaptation** sont implicites ou absentes. Le serveur local a depuis ajouté l’identité Skill, les liens Goal/Step, les niveaux requis et l’attribution Evidence↔Skill. Le scorer pur et la persistance quiz/provenance existent aussi ; le contrat HTTP de soumission de confiance reste à intégrer. La projection Mastery, le SkillGap applicatif et l’Adaptive Path restent non implémentés. Voir le [registre des capacités actuelles](product-positioning.md#current-capability-ledger).
+
+## Orientations stratégiques
+
+- **Skills Intelligence** structure le produit et prolonge les sémantiques acceptées ADR-020–023 ; une inférence ne vaut jamais maîtrise vérifiée.
+- **Interopérabilité entreprise — TARGET :** standards d’apprentissage, fédération d’identité et de contenus, échanges avec les LMS via interfaces/adapters. Les protocoles détaillés restent à décider.
+- **AI Governance :** autorité du domaine, explicabilité et auditabilité ; politiques institutionnelles, provenance IA et revue humaine sont des exigences cibles, sans nouvelle autorité de scoring ou de maîtrise.
+- **Contextualisation africaine — TARGET :** architecture globale, apprentissage contextualisé et forte capacité de contextualisation africaine, configurable selon l’institution, la langue et les contraintes locales. Learnova reste utilisable dans le monde entier.
+
+Ces orientations sont détaillées dans le [positionnement produit](product-positioning.md) ; elles n’autorisent aucune nouvelle implémentation.
 
 ## Ambition long terme
 
