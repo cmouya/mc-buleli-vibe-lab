@@ -1,7 +1,7 @@
 # Learnova — Product Positioning
 
 **Status:** Product positioning foundation, prepared for human validation. Documentation only; no implementation authorization.
-**Reference date:** 2026-09-29. Current capability below is based on the local worktree at `bb11cef`, not an assumed remote state.
+**Reference date:** 2026-09-30. Current capability below reflects local implementation through `ae6e5a6a565a2a240b5b978b05792774a8cd5992` and its completed validation; it does not assert production deployment.
 
 ## Authority and capability status
 
@@ -129,7 +129,7 @@ BAD/AfDB requirements are an external enterprise benchmark informing the roadmap
 | Identity and owned learning spine | **CURRENT:** M5.1–M5.3 and M6.1–M6.4 foundations: sessions, OrganizationContext, organization-scoped Learner, owned Goal/Path/Step/Evidence, derived Completion/Progress; [routes](../src/server/routes/v1/organizations.ts), [progress use cases](../src/application/get-owned-progress.ts). Full RBAC is deferred. |
 | Skill foundations | **CURRENT:** organization Skills, Goal/Step bindings, requiredLevel writes and bind-only attribution; [schema](../src/infra/db/schema.ts), [Goal binding](../src/application/bind-owned-goal-skill.ts), [Evidence binding](../src/application/bind-owned-evidence-skill.ts). No Skill HTTP or production SkillGap engine. |
 | Trusted scoring foundations | **CURRENT:** Slice 1 pure scorer (`bb4084e`); Slice 2 quiz persistence and scoring provenance (`bb11cef`). [Scorer](../src/modules/evidence/score-owned-quiz.ts), [quiz repository](../src/infra/db/owned-step-quiz-repository.ts), [migration 0011](../drizzle/0011_omniscient_jasper_sitwell.sql). Presence in source does not prove migration deployment. |
-| Trusted submission API | **ACCEPTED / FROZEN, not wired:** selections-only submission and keyed-step rejection remain to be implemented. Current HTTP Evidence still accepts client-declared fields and persists `client_declared`; it remains Mastery-untrusted. Internal `server_recalculated` persistence is not an end-to-end trusted API. |
+| Trusted submission API | **CURRENT:** Slice 3 (`ae6e5a6`), validated through unit, API and real PostgreSQL integration tests. Selections-only input, server scoring and `server_recalculated` persistence; keyed Steps reject legacy submissions, while unkeyed Steps retain `client_declared`. Trusted POST responses and GET responses for trusted Evidence omit per-answer correctness and key material. Ownership, Progress and historical rows are preserved; no automatic Skill attribution or Mastery. [Submission service](../src/application/submit-owned-quiz-attempt.ts), [response serialization](../src/server/serialize-evidence.ts), [implementation status](trusted-quiz-scoring-implementation-plan.md). |
 | Mastery | **ACCEPTED / FROZEN semantics, unimplemented projection:** ADR-021–023 and ADR-022 implementation gate remain authoritative. |
 | Enterprise integration | **TARGET:** SCORM, xAPI, OIDC/SAML federation, LMS synchronization, content federation, and LRS compatibility. Existing REST and password sessions do not establish these capabilities. |
 | Adaptation, impact and context | **TARGET:** advanced adaptive learning, enterprise impact analytics and configurable African contextualisation. Concrete policies and designs remain **EXPLORATORY / DEFERRED**. |

@@ -1,12 +1,22 @@
 # Trusted Quiz Scoring — Implementation Plan
 
-## Current local implementation addendum — 2026-09-29
+## Current local implementation addendum — 2026-09-30
 
-**CURRENT (local worktree `bb11cef`):** Slice 1 pure scorer exists (`bb4084e`, [source](../src/modules/evidence/score-owned-quiz.ts)). Slice 2 quiz/provenance persistence exists (`bb11cef`, [repository](../src/infra/db/owned-step-quiz-repository.ts), [migration 0011](../drizzle/0011_omniscient_jasper_sitwell.sql)). This source inspection does not assert deployment or rerun DB validation.
+**CURRENT — implementation complete:** trusted-scoring Slices 1–3 are implemented, reviewed and validated in the local repository through commit `ae6e5a6a565a2a240b5b978b05792774a8cd5992`. This is not a production deployment claim.
 
-**ACCEPTED / FROZEN, pending implementation:** Slice 3 trusted HTTP submission and keyed-step rejection are absent. Current HTTP still persists client-declared scores; the internal server-recalculated persistence method is not wired to a trusted submission route. Mastery remains unimplemented and separately gated. **TARGET** enterprise/context capabilities and **EXPLORATORY / DEFERRED** designs are recorded in [Product Positioning](product-positioning.md).
+- **Slice 1 — CURRENT:** pure scorer (`bb4084e`, [source](../src/modules/evidence/score-owned-quiz.ts)).
+- **Slice 2 — CURRENT:** quiz/provenance persistence (`bb11cef`, [repository](../src/infra/db/owned-step-quiz-repository.ts), [migration 0011](../drizzle/0011_omniscient_jasper_sitwell.sql)).
+- **Slice 3 — CURRENT:** trusted submission API and keyed-step transition (`ae6e5a6`, [application service](../src/application/submit-owned-quiz-attempt.ts), [routes](../src/server/routes/v1/organizations.ts)).
 
-The authored plan below is preserved as its pre-implementation specification. Its “NOT STARTED”, “no schema” and migration-head statements describe that historical authoring checkpoint, not the current state. No additional slice is authorized by this addendum.
+**Implemented contract:** `POST /api/v1/organizations/:organizationId/goals/:goalId/steps/:stepId/quiz-attempts` accepts only `selections: [{ questionIndex, selectedIndex }]`. Additional fields are rejected before Ajv can strip them. The server loads the owned quiz, uses the existing pure scorer and persists through the `server_recalculated` write path. Invalid or unauthorized submissions create no Evidence.
+
+Keyed Steps reject new legacy client-declared submissions; unkeyed Steps preserve the legacy contract and `client_declared` provenance. Historical rows remain unchanged and can still satisfy I-05. Trusted POST responses and GET responses for trusted Evidence omit per-answer correctness and answer-key structures; internal correction remains stored. Tenant/learner authorization and existing Progress/retry semantics are preserved.
+
+**Validation:** typecheck, unit tests, API tests, PostgreSQL integration tests and build PASS; `git diff --check` PASS. Real PostgreSQL persistence was validated, including the [Slice 3 integration test](../tests/db/trusted-quiz-submission.test.ts). Slice 3 introduced no migration; the migration head remains `0011_omniscient_jasper_sitwell`.
+
+**ACCEPTED / FROZEN:** ADR-023 decisions remain unchanged. Trusted scoring complete does not authorize Mastery: ADR-022's implementation gate remains closed. No Mastery projection, derived Skill proficiency, automatic Evidence↔Skill attribution or adaptive-state mutation was introduced. Enterprise/context capabilities remain **TARGET** or **EXPLORATORY / DEFERRED** as recorded in [Product Positioning](product-positioning.md).
+
+The authored plan below is preserved as its pre-implementation specification. Its “NOT STARTED”, “no schema”, entry/exit instructions and migration-head statements describe that historical authoring checkpoint, not the current state. No additional milestone is authorized by this addendum.
 
 ---
 

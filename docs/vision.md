@@ -116,7 +116,7 @@ Le Prototype 0 (hackathon, Vite) démontre une **tranche verticale** de cette vi
 
 `Goal → Learning Path → Learning Activity → Evidence (quiz) → Progress`
 
-Dans ce snapshot UI, **Skills** (graphe), **Mastery** et **Adaptation** sont implicites ou absentes. Le serveur local a depuis ajouté l’identité Skill, les liens Goal/Step, les niveaux requis et l’attribution Evidence↔Skill. Le scorer pur et la persistance quiz/provenance existent aussi ; le contrat HTTP de soumission de confiance reste à intégrer. La projection Mastery, le SkillGap applicatif et l’Adaptive Path restent non implémentés. Voir le [registre des capacités actuelles](product-positioning.md#current-capability-ledger).
+Dans ce snapshot UI, **Skills** (graphe), **Mastery** et **Adaptation** sont implicites ou absentes. Le serveur local a depuis ajouté l’identité Skill, les liens Goal/Step, les niveaux requis et l’attribution Evidence↔Skill. Trusted-scoring Slices 1–3 sont **CURRENT** et validés localement (`ae6e5a6`) : scorer pur, persistance quiz/provenance et soumission HTTP de confiance avec rejet legacy sur Step avec clé. La projection Mastery, le SkillGap applicatif et l’Adaptive Path restent non implémentés. Voir le [registre des capacités actuelles](product-positioning.md#current-capability-ledger).
 
 ## Orientations stratégiques
 

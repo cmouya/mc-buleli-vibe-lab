@@ -159,5 +159,5 @@ This map is primarily Prototype 0 → modules. Server Drizzle migrations are ind
 - Historical C2 Skill Identity tables: `0008_powerful_retro_girl`. Slice 1 Phase A: `0009_quick_jazinda`.
 - **ADR-021** freeze allocated **no** migration. `0009_quick_jazinda` and `0010_elite_valkyrie` were **generator-selected** after separate implementation authorizations.
 - **ADR-022** freeze allocated **no** migration; its freeze-time head was `0010_elite_valkyrie`.
-- **ADR-023** freeze and the original [implementation plan](trusted-quiz-scoring-implementation-plan.md) allocated **no** migration number. Later implementation added migration `0011_omniscient_jasper_sitwell` at local commit `bb11cef`. Pure scorer and persistence exist; trusted submission HTTP remains unimplemented. This positioning patch adds no migration.
+- **ADR-023** freeze and the original [implementation plan](trusted-quiz-scoring-implementation-plan.md) allocated **no** migration number. Slice 2 later added `0011_omniscient_jasper_sitwell` at `bb11cef`. **CURRENT (2026-09-30):** trusted-scoring Slices 1–3 are implemented and validated through unit, API and PostgreSQL integration tests; Slice 3 (`ae6e5a6`) adds trusted submission and keyed-step rejection with **no new migration**. No production deployment is asserted.
 - Phase B (`NOT NULL` / legacy resolution) remains **unauthorized**.

@@ -33,7 +33,7 @@ Domain principles (see `docs/product-principles.md`):
 
 **CURRENT:** The Golden Reference UI is still the Vite app on `localStorage`. The server includes M0–M4 foundations, M5.1–M5.3 identity/session/tenant context, M6.1–M6.4 owned learning persistence and derived Completion/Progress, and Skill Identity plus required proficiency and explicit Evidence attribution writes.
 
-Trusted-scoring Slice 1 (pure scorer) and Slice 2 (quiz persistence/provenance, migration `0011_omniscient_jasper_sitwell`) are present in the local worktree. The trusted submission API and keyed-step transition are not wired; current HTTP Evidence remains client-declared and Mastery-untrusted. Mastery projection is not implemented. See the [capability ledger](docs/product-positioning.md#current-capability-ledger) for source evidence and current/accepted/target/deferred distinctions.
+Trusted-scoring Slices 1–3 are **CURRENT** at `ae6e5a6`: pure scorer, quiz persistence/provenance, and selections-only trusted submission with keyed-step legacy rejection. Validated through unit, API and PostgreSQL integration tests. Unkeyed submissions remain `client_declared`; trusted submissions persist `server_recalculated`. Mastery projection remains unimplemented and gated by ADR-022. This records local validation, not production deployment. See the [capability ledger](docs/product-positioning.md#current-capability-ledger).
 
 It demonstrates:
 
@@ -176,7 +176,7 @@ See [DEMO.md](DEMO.md) for a 3-minute live demo walkthrough.
 
 ## Accepted architecture and target roadmap
 
-- **ACCEPTED / FROZEN:** React + TypeScript + Vite UI migration (ADR-004); trusted submission authority (ADR-023); Mastery constraints (ADR-021/022). Implementation remains partial or pending as described above.
+- **ACCEPTED / FROZEN:** React + TypeScript + Vite UI migration (ADR-004); trusted submission authority (ADR-023); Mastery constraints (ADR-021/022). Trusted-scoring Slices 1–3 are CURRENT; the UI migration and Mastery projection remain unimplemented.
 - **TARGET:** LMS complementarity, enterprise interoperability, institutional AI governance, configurable African-context learning, and measurable learning outcomes.
 - **EXPLORATORY / DEFERRED:** Real AI provider choice, Skill Graph/prerequisites, advanced adaptation policies, and Mentor IA UI (contract exists, not wired).
 
