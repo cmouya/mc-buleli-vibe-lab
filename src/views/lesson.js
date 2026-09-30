@@ -144,6 +144,7 @@ function renderQuizPanel(step, lesson) {
             </label>`,
             )
             .join("")}
+          <p id="quiz-error-${qIndex}" class="quiz__feedback quiz__feedback--bad" hidden>${t("lesson.questionUnanswered", { n: qIndex + 1 })}</p>
         </fieldset>`,
         )
         .join("")}
@@ -182,8 +183,8 @@ function renderResults({ lesson, step, score, total, passed, details, next }) {
     return `
       <div class="validation-success">
         <p class="eyebrow">${t("lesson.validation")}</p>
-        <h2>${t("lesson.skillValidated")}</h2>
-        <p class="quiz-score">${t("lesson.score", { score, total })}</p>
+        <h2 id="quiz-result-heading" tabindex="-1" aria-describedby="quiz-result-score">${t("lesson.skillValidated")}</h2>
+        <p id="quiz-result-score" class="quiz-score">${t("lesson.score", { score, total })}</p>
         <p class="success">${t("lesson.bravo")}</p>
         <ul class="quiz-review">
           ${details
@@ -211,8 +212,8 @@ function renderResults({ lesson, step, score, total, passed, details, next }) {
 
   return `
     <div class="validation-retry">
-      <h2>${t("lesson.notReached")}</h2>
-      <p class="quiz-score">${t("lesson.failScore", { score, total, pass: passScore })}</p>
+      <h2 id="quiz-result-heading" tabindex="-1" aria-describedby="quiz-result-score">${t("lesson.notReached")}</h2>
+      <p id="quiz-result-score" class="quiz-score">${t("lesson.failScore", { score, total, pass: passScore })}</p>
       <p class="quiz__feedback quiz__feedback--bad">
         ${t("lesson.retryLead")}
       </p>
@@ -254,6 +255,26 @@ export function bindLesson(root, rerender) {
   const passScore = lesson.quiz?.passScore ?? DEFAULT_PASS_SCORE
   const next = getNextStep()
 
+  function markQuestion(index, invalid) {
+    const error = form.querySelector(`#quiz-error-${index}`)
+    error.hidden = !invalid
+    form.querySelectorAll(`input[name="q${index}"]`).forEach((radio) => {
+      if (invalid) {
+        radio.setAttribute("aria-invalid", "true")
+        radio.setAttribute("aria-describedby", error.id)
+      } else {
+        radio.removeAttribute("aria-invalid")
+        radio.removeAttribute("aria-describedby")
+      }
+    })
+  }
+
+  questions.forEach((_, index) => {
+    form.querySelectorAll(`input[name="q${index}"]`).forEach((radio) => {
+      radio.addEventListener("change", () => markQuestion(index, false))
+    })
+  })
+
   form.addEventListener("submit", (event) => {
     event.preventDefault()
 
@@ -269,8 +290,9 @@ export function bindLesson(root, rerender) {
     )
 
     if (unanswered) {
-      results.hidden = false
-      results.innerHTML = `<p class="quiz__feedback quiz__feedback--bad">${t("lesson.unanswered")}</p>`
+      selectedAnswers.forEach((answer, index) => markQuestion(index, answer < 0))
+      const firstMissing = selectedAnswers.findIndex((answer) => answer < 0)
+      form.querySelector(`input[name="q${firstMissing}"]`).focus()
       return
     }
 
@@ -280,9 +302,13 @@ export function bindLesson(root, rerender) {
     results.hidden = false
     results.innerHTML = renderResults({ lesson, step, score, total, passed, details, next })
 
+    results.querySelector("#quiz-result-heading").focus()
+
     if (!passed) {
       results.querySelector("#retry-quiz")?.addEventListener("click", () => {
         rerender?.()
+        // The shell replaces root during rerender; locate the new form.
+        document.querySelector('#quiz-form input[type="radio"]')?.focus()
       })
     }
   })

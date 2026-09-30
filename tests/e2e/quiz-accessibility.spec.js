@@ -1,0 +1,80 @@
+import { expect, test } from "@playwright/test"
+
+for (const [lang, missing, failed, passed, failScore, score] of [
+  ["FR", "Choisissez une réponse à la question 2.", "Validation non atteinte", "Quiz réussi", "Score : 0/3 — seuil requis : 2/3", "Score : 3/3"],
+  ["EN", "Choose an answer for question 2.", "Validation not reached", "Quiz passed", "Score: 0/3 — required threshold: 2/3", "Score: 3/3"],
+]) {
+  test(`quiz error guidance, result and retry focus in ${lang}`, async ({ page }) => {
+    await page.goto("/")
+    await page.evaluate(() => {
+      localStorage.removeItem("learnova-learner")
+      sessionStorage.removeItem("learnova-ui-lang")
+    })
+    await page.goto("/#/goal")
+    await page.reload()
+    await page.locator("#goal").fill("Piloter Outlook avec l'IA")
+    await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
+    await expect(page.getByTestId("goal-confirmation")).toBeVisible()
+    await page.getByRole("link", { name: "Construire mon parcours", exact: true }).click()
+    await expect(page.getByTestId("roadmap-ready")).toBeVisible()
+    await page.getByRole("link", { name: "Commencer mon parcours" }).click()
+    await page.getByRole("link", { name: "Continuer mon parcours" }).click()
+    await page.getByRole("button", { name: lang, exact: true }).click()
+    const state = () => page.evaluate(() => JSON.parse(localStorage.getItem("learnova-learner")))
+    const before = await state()
+    const submit = page.getByTestId("quiz-submit")
+    const radio = (q, v) => page.locator(`input[name="q${q}"][value="${v}"]`)
+    await radio(0, 0).check()
+    await submit.click()
+    await expect(radio(0, 0)).toBeChecked()
+    await expect(radio(1, 0)).toBeFocused()
+    await expect(radio(1, 0)).toHaveAccessibleDescription(missing)
+    for (const q of [1, 2]) {
+      await expect(page.locator(`#quiz-error-${q}`)).toBeVisible()
+      for (let v = 0; v < 3; v++) {
+        await expect(radio(q, v)).toHaveAttribute("aria-invalid", "true")
+        await expect(radio(q, v)).toHaveAttribute("aria-describedby", `quiz-error-${q}`)
+      }
+    }
+    expect(await state()).toEqual(before)
+    await page.keyboard.press("ArrowDown")
+    await expect(radio(1, 1)).toBeChecked()
+    await expect(page.locator("#quiz-error-1")).toBeHidden()
+    await expect(page.locator('input[name="q1"][aria-invalid]')).toHaveCount(0)
+    await expect(page.locator('input[name="q1"][aria-describedby]')).toHaveCount(0)
+    await expect(page.locator("#quiz-error-2")).toBeVisible()
+    await submit.click()
+    await expect(radio(2, 0)).toBeFocused()
+    expect(await state()).toEqual(before)
+
+    for (let q = 0; q < 3; q++) await radio(q, 0).check()
+    await submit.click()
+    const heading = page.locator("#quiz-result-heading")
+    await expect(heading).toBeFocused()
+    await expect(heading).toHaveAccessibleName(failed)
+    await expect(heading).toHaveAccessibleDescription(failScore)
+    await expect(heading).toHaveAttribute("tabindex", "-1")
+    await expect(page.locator('#quiz-results [aria-live], #quiz-results [role="alert"], #quiz-results [role="status"]')).toHaveCount(0)
+    let saved = await state()
+    expect(saved.evidence).toHaveLength(1)
+    expect(saved.steps[0].status).toBe("current")
+    expect(saved.steps.filter(s => s.status === "done")).toHaveLength(0)
+
+    await page.locator("#retry-quiz").click()
+    await expect(radio(0, 0)).toBeFocused()
+    await expect(page.locator('#quiz-form input:checked')).toHaveCount(0)
+    await expect(page.locator('#quiz-form [aria-invalid]')).toHaveCount(0)
+    expect((await state()).evidence).toHaveLength(1)
+    for (let q = 0; q < 3; q++) await radio(q, 1).check()
+    await submit.click()
+    await expect(heading).toBeFocused()
+    await expect(heading).toHaveAccessibleName(passed)
+    await expect(heading).toHaveAccessibleDescription(score)
+    saved = await state()
+    expect(saved.evidence).toHaveLength(2)
+    expect(saved.steps[0].status).toBe("done")
+    expect(saved.steps[1].status).toBe("current")
+    await page.locator("#continue-btn").click()
+    await expect(page.getByTestId("progress-label")).toHaveText(lang === "FR" ? "Progression : 17 %" : "Progress: 17 %")
+  })
+}
