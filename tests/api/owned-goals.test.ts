@@ -1,3 +1,4 @@
+import { inertOwnedQuizzes } from "./inert-auth.js"
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
 import {
@@ -236,7 +237,7 @@ describe("API — owned Goal HTTP", () => {
         },
       },
     }
-    const app = await buildApp({ auth, learners, ownedGoals, ownedDerived, ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
+    const app = await buildApp({ auth, learners, ownedGoals, ownedDerived, ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress() })
     const adaCookie = await loginCookie(app, "ada@acme.test")
     const bobCookie = await loginCookie(app, "bob@acme.test")
     const eveCookie = await loginCookie(app, "eve@acme.test")
@@ -428,7 +429,7 @@ describe("API — owned Goal HTTP", () => {
       learners: memoryLearners(),
       ownedGoals: memoryOwnedGoals(),
       ownedDerived: inertOwnedDerivedContent(),
-      ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress(),
+      ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress(),
     })
     const response = await app.inject({
       method: "GET",

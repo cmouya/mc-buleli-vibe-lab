@@ -45,6 +45,8 @@ describe("server — layer boundary", () => {
     expect(source).toMatch(/ownedPaths: OwnedLearningPathRepository/)
     expect(source).toMatch(/ownedEvidence: OwnedEvidenceRepository/)
     expect(source).toMatch(/ownedProgress: OwnedProgressRepository/)
+    expect(source).toMatch(/ownedQuizzes: OwnedStepQuizRepository/)
+    expect(source).toMatch(/ownedQuizzes: opts\.ownedQuizzes/)
     expect(source).toMatch(/await registerAuthRoutes\(app, opts\.auth\)/)
     expect(source).toMatch(/ownedGoals: opts\.ownedGoals/)
     expect(source).toMatch(/ownedDerived: opts\.ownedDerived/)

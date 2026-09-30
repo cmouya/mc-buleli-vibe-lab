@@ -34,13 +34,13 @@ describe("slice 2 — answer key stays off learner reads", () => {
     }
   })
 
-  it("has no stepId-only authoritative quiz method and no quiz-attempts route", () => {
+  it("requires scoped keys and keeps scoring and persistence out of the route", () => {
     const port = source("src/modules/evidence/owned-step-quiz-repository.ts")
     expect(port).toMatch(/goalId: string/)
     expect(port).toMatch(/scope: GoalOwnerScope/)
     expect(port).not.toMatch(/getByStepId/)
     const routes = source("src/server/routes/v1/organizations.ts")
-    expect(routes).not.toMatch(/quiz-attempts/)
+    expect(routes).toMatch(/quiz-attempts/)
     expect(routes).not.toMatch(/saveOwnedServerRecalculated/)
     expect(routes).not.toMatch(/stepQuizDefinitions/)
   })

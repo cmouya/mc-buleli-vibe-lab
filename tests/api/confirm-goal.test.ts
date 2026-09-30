@@ -1,3 +1,4 @@
+import { inertOwnedQuizzes } from "./inert-auth.js"
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
 import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedEvidence, inertOwnedGoals, inertOwnedPaths, inertOwnedProgress } from "./inert-auth.js"
@@ -12,7 +13,7 @@ const analyzedBody = {
 
 describe("API — POST /api/v1/goals/confirm", () => {
   it("confirms an analyzed goal via the application use case", async () => {
-    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/goals/confirm",
@@ -26,7 +27,7 @@ describe("API — POST /api/v1/goals/confirm", () => {
   })
 
   it("maps GOAL_NOT_ANALYZED to 409 without confirming", async () => {
-    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/goals/confirm",
@@ -38,7 +39,7 @@ describe("API — POST /api/v1/goals/confirm", () => {
   })
 
   it("rejects a malformed body with 400", async () => {
-    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/goals/confirm",

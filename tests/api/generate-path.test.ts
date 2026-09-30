@@ -1,3 +1,4 @@
+import { inertOwnedQuizzes } from "./inert-auth.js"
 import { describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
@@ -33,7 +34,7 @@ describe("API — POST /api/v1/paths/generate", () => {
   it("returns a path proposal from the injected PathGenerator", async () => {
     const calls: PathGeneratorInput[] = []
     const app = await buildApp({
-      auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress(),
+      auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress(),
       pathGenerator: {
         async generatePath(input) {
           calls.push(input)
@@ -53,7 +54,7 @@ describe("API — POST /api/v1/paths/generate", () => {
   })
 
   it("rejects a malformed body with 400", async () => {
-    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress(), pathGenerator: stubGenerator() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress(), pathGenerator: stubGenerator() })
     const response = await app.inject({
       method: "POST",
       url: "/api/v1/paths/generate",
@@ -66,7 +67,7 @@ describe("API — POST /api/v1/paths/generate", () => {
 
   it("maps generator failure to 500 INTERNAL_ERROR", async () => {
     const app = await buildApp({
-      auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress(),
+      auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress(),
       pathGenerator: {
         async generatePath() {
           throw new Error("generator-failed")

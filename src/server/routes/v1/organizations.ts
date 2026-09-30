@@ -7,6 +7,7 @@ import {
   persistOwnedGoal,
   persistOwnedPath,
   persistOwnedEvidence,
+  submitOwnedQuizAttempt,
   getOwnedPathProgress,
   resolveLearnerContext,
   resolveOrganizationContext,
@@ -17,8 +18,11 @@ import {
   type OwnedGoalRepository,
   type OwnedLearningPathRepository,
   type OwnedEvidenceRepository,
+  type OwnedStepQuizRepository,
   type OwnedProgressRepository,
 } from "../../../application/index.js"
+import { serializeEvidence } from "../../serialize-evidence.js"
+import { assertQuizAttemptBody, quizAttemptBodySchema } from "../../quiz-attempt-body.js"
 import { AUTH_COOKIE_NAME } from "../../auth-cookie.js"
 import { DomainError } from "../../../modules/shared/index.js"
 
@@ -29,6 +33,8 @@ export type OrganizationRouteDependencies = LoginDependencies & {
   ownedPaths: OwnedLearningPathRepository
   ownedEvidence: OwnedEvidenceRepository
   ownedProgress: OwnedProgressRepository
+  /** Required for trusted submissions and the keyed-Step legacy guard. */
+  ownedQuizzes: OwnedStepQuizRepository
 }
 
 const ownedGoalBodySchema = {
@@ -396,6 +402,48 @@ export async function registerOrganizationRoutes(
   )
 
   app.post(
+    "/api/v1/organizations/:organizationId/goals/:goalId/steps/:stepId/quiz-attempts",
+    {
+      // Check the raw parsed body before Ajv can strip fields or coerce values.
+      preValidation: async (request) => { assertQuizAttemptBody(request.body) },
+      schema: {
+        tags: ["organizations"],
+        summary: "Submit selections for a server-scored owned quiz",
+        params: {
+          type: "object",
+          additionalProperties: false,
+          required: ["organizationId", "goalId", "stepId"],
+          properties: {
+            organizationId: { type: "string" },
+            goalId: { type: "string" },
+            stepId: { type: "string" },
+          },
+        },
+        body: quizAttemptBodySchema,
+      },
+    },
+    async (request) => {
+      const auth = await resolveSession(request.cookies[AUTH_COOKIE_NAME], deps)
+      const { organizationId, goalId, stepId } = request.params as {
+        organizationId: string
+        goalId: string
+        stepId: string
+      }
+      const organization = resolveOrganizationContext(auth, organizationId)
+      const learner = await resolveLearnerContext(organization, deps.learners)
+      const body = request.body as { selections: Array<{ questionIndex: number; selectedIndex: number }> }
+      const result = await submitOwnedQuizAttempt(
+        { goalId, stepId, selections: body.selections },
+        learner,
+        deps.ownedDerived,
+        deps.ownedQuizzes,
+        deps.ownedEvidence,
+      )
+      return serializeEvidence(result)
+    },
+  )
+
+  app.post(
     "/api/v1/organizations/:organizationId/goals/:goalId/steps/:stepId/evidence",
     {
       schema: {
@@ -441,6 +489,7 @@ export async function registerOrganizationRoutes(
         learner,
         deps.ownedDerived,
         deps.ownedEvidence,
+        deps.ownedQuizzes,
       )
     },
   )
@@ -476,7 +525,7 @@ export async function registerOrganizationRoutes(
       if (!item) {
         throw RESOURCE_NOT_FOUND
       }
-      return item
+      return serializeEvidence(item)
     },
   )
 }

@@ -11,7 +11,7 @@ export interface OwnedEvidenceRepository {
   saveOwned(evidence: Evidence, scope: GoalOwnerScope, goalId: string): Promise<Evidence>
   /**
    * Internal trusted write. The implementation assigns server_recalculated.
-   * Not wired to HTTP or application services in this slice.
+   * Used by the owned quiz submission service after server-side scoring.
    */
   saveOwnedServerRecalculated(
     evidence: Evidence,

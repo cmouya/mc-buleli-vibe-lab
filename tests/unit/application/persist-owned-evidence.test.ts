@@ -1,3 +1,4 @@
+import { inertOwnedQuizzes } from "../../api/inert-auth.js"
 import { readFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -112,7 +113,7 @@ describe("application — persistOwnedEvidence", () => {
       { step: step(STEP_A), goalId: GOAL_A, organizationId: "org-a", learnerId: "lrn-a" },
     ])
     const owned = memoryOwnedEvidence()
-    const saved = await persistOwnedEvidence(payload(), contextA(), derived, owned, { now: NOW })
+    const saved = await persistOwnedEvidence(payload(), contextA(), derived, owned, inertOwnedQuizzes(), { now: NOW })
     expect(saved.stepId).toBe(STEP_A)
     expect(saved.type).toBe("quiz_attempt")
     expect(saved.score).toBe(1)
@@ -146,6 +147,7 @@ describe("application — persistOwnedEvidence", () => {
       contextA(),
       derived,
       owned,
+      inertOwnedQuizzes(),
       { now: NOW },
     )
     expect(saved.stepId).toBe(STEP_A)
@@ -165,6 +167,7 @@ describe("application — persistOwnedEvidence", () => {
       contextA(),
       memoryDerived(),
       owned,
+      inertOwnedQuizzes(),
     )
     const otherOrg = persistOwnedEvidence(
       payload({ stepId: STEP_B, goalId: GOAL_B }),
@@ -173,6 +176,7 @@ describe("application — persistOwnedEvidence", () => {
         { step: step(STEP_B), goalId: GOAL_B, organizationId: "org-b", learnerId: "lrn-b" },
       ]),
       owned,
+      inertOwnedQuizzes(),
     )
     await expect(unknown).rejects.toMatchObject({
       code: "RESOURCE_NOT_FOUND",
@@ -191,10 +195,10 @@ describe("application — persistOwnedEvidence", () => {
     ])
     const owned = memoryOwnedEvidence()
     await expect(
-      persistOwnedEvidence(payload(), contextB(), derived, owned),
+      persistOwnedEvidence(payload(), contextB(), derived, owned, inertOwnedQuizzes()),
     ).rejects.toMatchObject({ code: "RESOURCE_NOT_FOUND", message: "Not found" })
     await expect(
-      persistOwnedEvidence(payload(), contextA2(), derived, owned),
+      persistOwnedEvidence(payload(), contextA2(), derived, owned, inertOwnedQuizzes()),
     ).rejects.toMatchObject({ code: "RESOURCE_NOT_FOUND", message: "Not found" })
     expect(owned.records).toHaveLength(0)
   })
@@ -205,7 +209,7 @@ describe("application — persistOwnedEvidence", () => {
     ])
     const owned = memoryOwnedEvidence()
     await expect(
-      persistOwnedEvidence(payload({ goalId: GOAL_B }), contextA(), derived, owned),
+      persistOwnedEvidence(payload({ goalId: GOAL_B }), contextA(), derived, owned, inertOwnedQuizzes()),
     ).rejects.toMatchObject({ code: "RESOURCE_NOT_FOUND", message: "Not found" })
     expect(owned.records).toHaveLength(0)
   })
@@ -216,7 +220,7 @@ describe("application — persistOwnedEvidence", () => {
     ])
     const owned = memoryOwnedEvidence()
     await expect(
-      persistOwnedEvidence(payload({ stepId: STEP_LEGACY }), contextA(), derived, owned),
+      persistOwnedEvidence(payload({ stepId: STEP_LEGACY }), contextA(), derived, owned, inertOwnedQuizzes()),
     ).rejects.toMatchObject({ code: "RESOURCE_NOT_FOUND", message: "Not found" })
     expect(owned.records).toHaveLength(0)
   })
@@ -237,6 +241,7 @@ describe("application — persistOwnedEvidence", () => {
       contextA(),
       derived,
       owned,
+      inertOwnedQuizzes(),
       { now: NOW },
     )
     expect(saved.stepId).toBe(STEP_A)

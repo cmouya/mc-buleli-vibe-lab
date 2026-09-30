@@ -1,3 +1,4 @@
+import { inertOwnedQuizzes } from "./inert-auth.js"
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
 import {
@@ -329,7 +330,7 @@ describe("API — owned Evidence POST", () => {
       ownedDerived,
       ownedPaths: inertOwnedPaths(),
       ownedEvidence,
-      ownedProgress: inertOwnedProgress(),
+      ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress(),
     })
     const adaCookie = await loginCookie(app, "ada@acme.test")
     const bobCookie = await loginCookie(app, "bob@acme.test")
@@ -564,7 +565,7 @@ describe("API — owned Evidence POST", () => {
       ownedDerived: memoryOwnedDerivedContent([]),
       ownedPaths: inertOwnedPaths(),
       ownedEvidence: memoryOwnedEvidence(),
-      ownedProgress: inertOwnedProgress(),
+      ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress(),
     })
     const response = await app.inject({
       method: "POST",

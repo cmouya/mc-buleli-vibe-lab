@@ -10,6 +10,7 @@ import type {
   OwnedGoalRepository,
   OwnedLearningPathRepository,
   OwnedEvidenceRepository,
+  OwnedStepQuizRepository,
   OwnedProgressRepository,
   PathGenerator,
 } from "../application/index.js"
@@ -40,6 +41,8 @@ export interface BuildAppOptions {
   ownedEvidence: OwnedEvidenceRepository
   /** Required for organization-scoped owned Path Progress reads. Not used by public confirm/generate. */
   ownedProgress: OwnedProgressRepository
+  /** Required for trusted submissions and the keyed-Step legacy guard. */
+  ownedQuizzes: OwnedStepQuizRepository
 }
 
 export async function buildApp(opts: BuildAppOptions) {
@@ -63,6 +66,9 @@ export async function buildApp(opts: BuildAppOptions) {
   }
   if (!opts.ownedProgress) {
     throw new Error("buildApp requires ownedProgress; owned Progress read routes are always registered")
+  }
+  if (!opts.ownedQuizzes) {
+    throw new Error("buildApp requires ownedQuizzes; trusted quiz routes are always registered")
   }
   const app = Fastify({ logger: false })
   app.setErrorHandler(mapErrorToHttp)
@@ -94,6 +100,7 @@ export async function buildApp(opts: BuildAppOptions) {
     ownedPaths: opts.ownedPaths,
     ownedEvidence: opts.ownedEvidence,
     ownedProgress: opts.ownedProgress,
+    ownedQuizzes: opts.ownedQuizzes,
   })
 
   app.get(

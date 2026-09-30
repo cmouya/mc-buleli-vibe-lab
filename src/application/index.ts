@@ -82,3 +82,6 @@ export type { OrganizationContext } from "./resolve-organization-context.js"
 export { resolveLearnerContext } from "./resolve-learner-context.js"
 export type { LearnerContext } from "./resolve-learner-context.js"
 export type { LoginDependencies, LoginInput, LoginResult } from "./login.js"
+
+export { submitOwnedQuizAttempt } from "./submit-owned-quiz-attempt.js"
+export type { SubmitOwnedQuizAttemptInput, OwnedStepQuizRepository } from "./submit-owned-quiz-attempt.js"

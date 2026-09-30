@@ -280,3 +280,10 @@ export function memoryOwnedDerivedContent(goals: Goal[]) {
     evidenceRows: Evidence[]
   }
 }
+
+export function inertOwnedQuizzes(): import("../../src/modules/evidence/index.js").OwnedStepQuizRepository {
+  return {
+    async getOwned() { return null },
+    async saveOwned() { throw new Error("quiz authoring is not used in this test") },
+  }
+}

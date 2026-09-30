@@ -27,6 +27,7 @@ import {
   createDrizzleOrganizationSkillRepository,
   createDrizzleOwnedDerivedContentRepository,
   createDrizzleOwnedEvidenceRepository,
+  createDrizzleOwnedStepQuizRepository,
   createDrizzleOwnedGoalRepository,
   createDrizzleOwnedLearningPathRepository,
   createDrizzleOwnedProgressRepository,
@@ -192,6 +193,7 @@ describe("Slice 2 — EvidenceSkill repository (PostgreSQL)", () => {
         contextA,
         derived,
         ownedEvidence,
+        createDrizzleOwnedStepQuizRepository(db),
         { now: NOW },
       )
       const evidenceA2 = await persistOwnedEvidence(
@@ -199,6 +201,7 @@ describe("Slice 2 — EvidenceSkill repository (PostgreSQL)", () => {
         contextA,
         derived,
         ownedEvidence,
+        createDrizzleOwnedStepQuizRepository(db),
         { now: NOW },
       )
       const evidenceB = await persistOwnedEvidence(
@@ -206,6 +209,7 @@ describe("Slice 2 — EvidenceSkill repository (PostgreSQL)", () => {
         contextB,
         derived,
         ownedEvidence,
+        createDrizzleOwnedStepQuizRepository(db),
         { now: NOW },
       )
       const evidenceA2Learner = await persistOwnedEvidence(
@@ -213,6 +217,7 @@ describe("Slice 2 — EvidenceSkill repository (PostgreSQL)", () => {
         contextA2,
         derived,
         ownedEvidence,
+        createDrizzleOwnedStepQuizRepository(db),
         { now: NOW },
       )
 

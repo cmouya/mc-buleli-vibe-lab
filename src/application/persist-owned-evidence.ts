@@ -6,7 +6,7 @@
  */
 
 import { recordQuizEvidence, type EvidenceAnswer } from "../modules/evidence/index.js"
-import type { Evidence, OwnedEvidenceRepository } from "../modules/evidence/index.js"
+import type { Evidence, OwnedEvidenceRepository, OwnedStepQuizRepository } from "../modules/evidence/index.js"
 import { DomainError, type DomainClockOptions } from "../modules/shared/index.js"
 import type { OwnedDerivedContentRepository } from "../modules/learning-path/index.js"
 import type { LearnerContext } from "./resolve-learner-context.js"
@@ -44,12 +44,17 @@ export async function persistOwnedEvidence(
   context: LearnerContext,
   derived: OwnedDerivedContentRepository,
   evidence: OwnedEvidenceRepository,
+  quizzes: OwnedStepQuizRepository,
   opts?: DomainClockOptions,
 ): Promise<Evidence> {
   const scope = scopeOf(context)
   const step = await getOwnedStep(input.stepId, input.goalId, context, derived)
   if (!step?.id) {
     throw NOT_FOUND
+  }
+
+  if (await quizzes.getOwned(step.id, input.goalId, scope)) {
+    throw new DomainError("QUIZ_TRUSTED_SUBMISSION_REQUIRED", "Submit selections through quiz-attempts for this Step")
   }
 
   const recorded = recordQuizEvidence(

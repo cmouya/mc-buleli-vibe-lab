@@ -1,3 +1,4 @@
+import { inertOwnedQuizzes } from "./inert-auth.js"
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
 import {
@@ -186,7 +187,7 @@ async function loginCookie(
 describe("API — organization context", () => {
   it("allows membership and denies cross-tenant, zero memberships, and forged ids with the same 403", async () => {
     const { auth, ada, bob } = await tenantFixture()
-    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
+    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress() })
     const adaCookie = await loginCookie(app, "ada@acme.test")
     const bobCookie = await loginCookie(app, "bob@acme.test")
     const caraCookie = await loginCookie(app, "cara@acme.test")
@@ -253,7 +254,7 @@ describe("API — organization context", () => {
 
   it("returns 401 without a cookie or with an unknown cookie", async () => {
     const { auth, ada } = await tenantFixture()
-    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
+    const app = await buildApp({ auth, learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress() })
     const url = `/api/v1/organizations/${ada.organization.id}/context`
     const missing = await app.inject({ method: "GET", url })
     const garbage = await app.inject({
@@ -269,7 +270,7 @@ describe("API — organization context", () => {
   })
 
   it("keeps confirm and generate public", async () => {
-    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
+    const app = await buildApp({ auth: inertAuth(), learners: inertLearners(), ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress() })
     const confirm = await app.inject({
       method: "POST",
       url: "/api/v1/goals/confirm",
@@ -344,7 +345,7 @@ describe("API — learner context", () => {
         },
       },
     }
-    const app = await buildApp({ auth, learners, ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress() })
+    const app = await buildApp({ auth, learners, ownedGoals: inertOwnedGoals(), ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress() })
     const adaCookie = await loginCookie(app, "ada@acme.test")
     const bobCookie = await loginCookie(app, "bob@acme.test")
 

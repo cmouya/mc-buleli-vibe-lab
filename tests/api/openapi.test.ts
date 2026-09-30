@@ -1,3 +1,4 @@
+import { inertOwnedQuizzes } from "./inert-auth.js"
 import { describe, expect, it } from "vitest"
 import { buildApp } from "../../src/server/app.js"
 import { inertAuth, inertLearners, inertOwnedDerivedContent, inertOwnedEvidence, inertOwnedGoals, inertOwnedPaths, inertOwnedProgress } from "./inert-auth.js"
@@ -8,7 +9,7 @@ describe("API — GET /api/v1/openapi.json", () => {
       auth: inertAuth(),
       learners: inertLearners(),
       ownedGoals: inertOwnedGoals(),
-      ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedProgress: inertOwnedProgress(),
+      ownedDerived: inertOwnedDerivedContent(), ownedPaths: inertOwnedPaths(), ownedEvidence: inertOwnedEvidence(), ownedQuizzes: inertOwnedQuizzes(), ownedProgress: inertOwnedProgress(),
       pathGenerator: {
         async generatePath() {
           return { pathId: "x", pathTitle: "x", steps: [] }
