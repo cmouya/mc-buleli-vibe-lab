@@ -6,7 +6,7 @@ const OUTLOOK_GOAL =
 async function navigateToLessonQuiz(page) {
   await page.goto("/#/goal")
   await page.locator("#goal").fill(OUTLOOK_GOAL)
-  await page.getByRole("button", { name: "Analyser mon objectif" }).click()
+  await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
   await expect(page.getByTestId("goal-confirmation")).toBeVisible({ timeout: 5000 })
   await page.getByRole("link", { name: "Construire mon parcours" }).click()
   await expect(page.getByTestId("roadmap-ready")).toBeVisible({ timeout: 10000 })
@@ -37,7 +37,7 @@ test("SCENARIO 1 E2E: failed quiz does not validate competency or increase progr
   await submitQuizAnswers(page, "0")
 
   await expect(page.getByText("Validation non atteinte")).toBeVisible()
-  await expect(page.getByText("Compétence validée")).not.toBeVisible()
+  await expect(page.getByText("Quiz réussi")).not.toBeVisible()
   await expect(page.getByRole("button", { name: "Réessayer le quiz" })).toBeVisible()
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("learnova-learner") || "{}"))
@@ -58,7 +58,7 @@ test("SCENARIO 2 E2E: retry after failure then success validates and increases p
   await expect(page.locator("#quiz-form")).toBeVisible()
   await submitQuizAnswers(page, "1")
 
-  await expect(page.getByText("Compétence validée")).toBeVisible()
+  await expect(page.getByText("Quiz réussi")).toBeVisible()
   await page.getByRole("link", { name: /Continuer vers l'étape 2/i }).click()
 
   await expect(page).toHaveURL(/#\/dashboard/)

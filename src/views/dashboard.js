@@ -58,7 +58,7 @@ export function renderDashboard() {
     <section class="panel">
       <h2>${t("dash.destination")}</h2>
       <p class="destination destination--compact">${escapeHtml(state.goal)}</p>
-      <p class="step-meta">${t(`levels.${state.level}`)} · ${t(`hours.${state.hoursPerWeek}`)}</p>
+      <p class="step-meta">${t("goal.metaLevel")} : ${t(`levels.${state.level}`)} · ${t(`hours.${state.hoursPerWeek}`)}</p>
     </section>
 
     <section class="panel">

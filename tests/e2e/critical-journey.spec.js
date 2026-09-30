@@ -22,7 +22,7 @@ test("TEST-E2E-002: user can enter or select a learning goal", async ({ page }) 
   await expect(page.getByRole("heading", { name: /Quel objectif/i })).toBeVisible()
 
   await page.locator("#goal").fill(OUTLOOK_GOAL)
-  await page.getByRole("button", { name: "Analyser mon objectif" }).click()
+  await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
 
   await expect(page.getByTestId("goal-confirmation")).toBeVisible({ timeout: 5000 })
   await expect(page.getByTestId("goal-confirmation")).toContainText(OUTLOOK_GOAL)
@@ -31,7 +31,7 @@ test("TEST-E2E-002: user can enter or select a learning goal", async ({ page }) 
 test("TEST-E2E-003: goal analysis leads to a generated roadmap", async ({ page }) => {
   await page.goto("/#/goal")
   await page.locator("#goal").fill(OUTLOOK_GOAL)
-  await page.getByRole("button", { name: "Analyser mon objectif" }).click()
+  await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
   await expect(page.getByTestId("goal-confirmation")).toBeVisible({ timeout: 5000 })
 
   await page.getByRole("link", { name: "Construire mon parcours" }).click()
@@ -43,7 +43,7 @@ test("TEST-E2E-003: goal analysis leads to a generated roadmap", async ({ page }
 test("TEST-E2E-004: roadmap navigation leads to the learner dashboard", async ({ page }) => {
   await page.goto("/#/goal")
   await page.locator("#goal").fill(OUTLOOK_GOAL)
-  await page.getByRole("button", { name: "Analyser mon objectif" }).click()
+  await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
   await expect(page.getByTestId("goal-confirmation")).toBeVisible({ timeout: 5000 })
   await page.getByRole("link", { name: "Construire mon parcours" }).click()
   await expect(page.getByTestId("roadmap-ready")).toBeVisible({ timeout: 10000 })
@@ -57,7 +57,7 @@ test("TEST-E2E-004: roadmap navigation leads to the learner dashboard", async ({
 test("TEST-E2E-005: user can start the first learning step", async ({ page }) => {
   await page.goto("/#/goal")
   await page.locator("#goal").fill(OUTLOOK_GOAL)
-  await page.getByRole("button", { name: "Analyser mon objectif" }).click()
+  await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
   await expect(page.getByTestId("goal-confirmation")).toBeVisible({ timeout: 5000 })
   await page.getByRole("link", { name: "Construire mon parcours" }).click()
   await expect(page.getByTestId("roadmap-ready")).toBeVisible({ timeout: 10000 })
@@ -73,7 +73,7 @@ test("TEST-E2E-005: user can start the first learning step", async ({ page }) =>
 test("TEST-E2E-006: user can complete the quiz", async ({ page }) => {
   await page.goto("/#/goal")
   await page.locator("#goal").fill(OUTLOOK_GOAL)
-  await page.getByRole("button", { name: "Analyser mon objectif" }).click()
+  await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
   await expect(page.getByTestId("goal-confirmation")).toBeVisible({ timeout: 5000 })
   await page.getByRole("link", { name: "Construire mon parcours" }).click()
   await expect(page.getByTestId("roadmap-ready")).toBeVisible({ timeout: 10000 })
@@ -92,7 +92,7 @@ test("TEST-E2E-006: user can complete the quiz", async ({ page }) => {
 test("TEST-E2E-007: successful quiz validation marks first step completed", async ({ page }) => {
   await page.goto("/#/goal")
   await page.locator("#goal").fill(OUTLOOK_GOAL)
-  await page.getByRole("button", { name: "Analyser mon objectif" }).click()
+  await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
   await expect(page.getByTestId("goal-confirmation")).toBeVisible({ timeout: 5000 })
   await page.getByRole("link", { name: "Construire mon parcours" }).click()
   await expect(page.getByTestId("roadmap-ready")).toBeVisible({ timeout: 10000 })
@@ -104,7 +104,7 @@ test("TEST-E2E-007: successful quiz validation marks first step completed", asyn
     await blocks.nth(i).locator('input[value="1"]').check()
   }
   await page.getByRole("button", { name: "Valider mes réponses" }).click()
-  await expect(page.getByText("Compétence validée")).toBeVisible()
+  await expect(page.getByText("Quiz réussi")).toBeVisible()
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("learnova-learner") || "{}"))
   expect(stored.steps[0].status).toBe("done")
@@ -114,7 +114,7 @@ test("TEST-E2E-007: successful quiz validation marks first step completed", asyn
 test("TEST-E2E-008: progression changes from 0%", async ({ page }) => {
   await page.goto("/#/goal")
   await page.locator("#goal").fill(OUTLOOK_GOAL)
-  await page.getByRole("button", { name: "Analyser mon objectif" }).click()
+  await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
   await expect(page.getByTestId("goal-confirmation")).toBeVisible({ timeout: 5000 })
   await page.getByRole("link", { name: "Construire mon parcours" }).click()
   await expect(page.getByTestId("roadmap-ready")).toBeVisible({ timeout: 10000 })
@@ -131,5 +131,5 @@ test("TEST-E2E-008: progression changes from 0%", async ({ page }) => {
 
   await expect(page).toHaveURL(/#\/dashboard/)
   await expect(page.getByTestId("progress-label")).toHaveText("Progression : 17 %")
-  await expect(page.getByText("1 compétence acquise")).toBeVisible()
+  await expect(page.getByText("1 étape terminée")).toBeVisible()
 })

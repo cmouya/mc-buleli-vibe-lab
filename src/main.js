@@ -41,7 +41,10 @@ function shell(content) {
           </div>
         </nav>
       </header>
-      <main class="main">${content}</main>
+      <div class="main">
+        <p class="panel" data-testid="demo-notice">${t("meta.demoNotice")}</p>
+        <main class="main">${content}</main>
+      </div>
       <footer class="footer">
         <p>${t("footer.line1").replace("Learnova", "<strong>Learnova</strong>")}</p>
         <p>${t("footer.line2")}</p>
@@ -64,7 +67,7 @@ function render({ parts }) {
 
   const html = (views[key] || views.home)()
   app.innerHTML = shell(html)
-  const main = app.querySelector(".main")
+  const main = app.querySelector("main")
 
   if (key === "goal") {
     bindGoal(main, () => render({ parts: currentParts }))

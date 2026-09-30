@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { getLanguage, loadLanguage, setLanguage, t, UI_LANG_KEY } from "../../src/i18n/index.js"
 import { renderLanding } from "../../src/views/landing.js"
-import { renderLesson } from "../../src/views/lesson.js"
+import { bindLesson, renderLesson } from "../../src/views/lesson.js"
 import {
   confirmCurrentGoal,
   getState,
@@ -11,6 +11,10 @@ import {
   setPath,
   setProfile,
 } from "../../src/store.js"
+
+import { renderGoal } from "../../src/views/goal.js"
+import { renderRoadmap } from "../../src/views/roadmap.js"
+import { renderDashboard } from "../../src/views/dashboard.js"
 
 const OUTLOOK_STEP = {
   id: "outlook-1",
@@ -108,5 +112,49 @@ describe("i18n — prototype language switcher", () => {
     expect(html).toContain(storedLessonSnippet)
     expect(html).toContain(OUTLOOK_STEP.title)
     expect(getState().steps[0].status).toBe("current")
+  })
+})
+
+
+describe.each([
+  ["fr", "Quiz réussi", "Parcours terminé", "étape terminée", "autodéclaré"],
+  ["en", "Quiz passed", "Path completed", "step completed", "Self-reported"],
+])("truthful local journey in %s", (lang, passedLabel, completedLabel, stepLabel, levelLabel) => {
+  it("keeps failure at zero and describes success and completion without mastery claims", () => {
+    localStorage.clear()
+    resetLearner()
+    setLanguage(lang)
+    expect(renderGoal()).toContain(levelLabel)
+    setProfile({ goal: "Outlook", level: "debutant", hoursPerWeek: 5 })
+    setAnalyzed(true)
+    confirmCurrentGoal()
+    setPath({ pathId: "outlook-email-ia", pathTitle: "Outlook", steps: [{ ...OUTLOOK_STEP }] })
+    expect(renderGoal()).toContain(levelLabel)
+    expect(renderRoadmap().toLowerCase()).toContain(levelLabel.toLowerCase())
+    expect(renderDashboard()).toContain(levelLabel)
+
+    const root = document.createElement("div")
+    document.body.append(root)
+    const submit = (answer) => {
+      root.innerHTML = renderLesson()
+      bindLesson(root)
+      root.querySelectorAll(`input[value="${answer}"]`).forEach(input => { input.checked = true })
+      root.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
+      return root.textContent
+    }
+    const failure = submit(0)
+    expect(failure).toContain(t("lesson.notReached"))
+    expect(getState().steps[0].status).toBe("current")
+    expect(renderDashboard()).toContain(t("roadmap.progressLabel", { percent: 0 }))
+    const success = submit(1)
+    expect(success).toContain(passedLabel)
+    expect(getState().steps[0].status).toBe("done")
+    expect(renderDashboard()).toContain(t("roadmap.progressLabel", { percent: 100 }))
+    expect(renderDashboard()).toContain(stepLabel)
+    expect(renderLesson()).toContain(t("lesson.youValidated", { skill: OUTLOOK_STEP.skill }))
+    expect(renderRoadmap()).toContain(completedLabel)
+    const screens = [renderLanding(), renderGoal(), renderRoadmap(), renderDashboard(), renderLesson(), failure, success].join(" ")
+    expect(screens).not.toMatch(/compétences? acquises?|compétence validée|vous maîtrisez|Objectif atteint|skills? acquired|Skill validated|you master|Goal reached|server-recalculated/i)
+    root.remove()
   })
 })
