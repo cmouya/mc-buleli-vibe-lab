@@ -1,7 +1,23 @@
 import { t, tList } from "../i18n/index.js"
 import { confirmCurrentGoal, getState, setAnalyzed, setProfile } from "../store.js"
 
+let preparation = null
+
+export function cancelGoalPreparation() {
+  if (preparation) window.clearTimeout(preparation.timer)
+  preparation = null
+}
+
+function preparationMatches(operation) {
+  const state = getState()
+  return preparation === operation && window.location.hash === operation.route && state === operation.state &&
+    state.steps === operation.steps &&
+    JSON.stringify([state.goal, state.level, state.hoursPerWeek, state.intent, state.analyzed, state.confirmed]) === operation.snapshot
+}
+
 export function renderGoal() {
+  if (preparation && !preparationMatches(preparation)) cancelGoalPreparation()
+  if (preparation) return renderAnalyzing()
   const state = getState()
   if (state.analyzed && state.goal) {
     return renderConfirmation(state)
@@ -135,11 +151,23 @@ export function bindGoal(root, rerender) {
         level: String(data.get("level") || "debutant"),
         hoursPerWeek: Number(data.get("hours") || 5),
       })
-      root.innerHTML = renderAnalyzing()
-      window.setTimeout(() => {
+      cancelGoalPreparation()
+      const state = getState()
+      const operation = {
+        state,
+        route: window.location.hash,
+        steps: state.steps,
+        snapshot: JSON.stringify([state.goal, state.level, state.hoursPerWeek, state.intent, state.analyzed, state.confirmed]),
+        timer: null,
+      }
+      preparation = operation
+      operation.timer = window.setTimeout(() => {
+        if (!preparationMatches(operation)) return
+        preparation = null
         setAnalyzed(true)
         rerender()
       }, 1600)
+      rerender()
     })
     return
   }

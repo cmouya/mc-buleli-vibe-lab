@@ -4,18 +4,41 @@ import { generateLearningPath } from "../application/index.js"
 import { navigate } from "../router.js"
 import { getCurrentStep, getProgressPercent, getState, hasPath, setPath } from "../store.js"
 
-let generating = false
+let generation = null
+
+export function cancelRoadmapGeneration() {
+  if (generation) window.clearTimeout(generation.timer)
+  generation = null
+}
+
+function generationMatches(operation) {
+  const state = getState()
+  return generation === operation && window.location.hash === operation.route && state === operation.state &&
+    state.steps === operation.steps && state.confirmed &&
+    JSON.stringify([state.goal, state.level, state.hoursPerWeek, state.intent, state.analyzed, state.confirmed]) === operation.snapshot
+}
 
 export function renderRoadmap() {
   const state = getState()
 
-  if (!state.goal) {
+  if (generation && !generationMatches(generation)) cancelRoadmapGeneration()
+  if (!state.goal || !state.confirmed) {
     return `
       <section class="panel panel--center">
         <p class="eyebrow">${t("roadmap.missingEyebrow")}</p>
         <h1>${t("roadmap.missingTitle")}</h1>
         <p class="muted">${t("roadmap.missingLead")}</p>
         <a class="btn btn--primary" href="#/goal">${t("roadmap.missingCta")}</a>
+      </section>
+    `
+  }
+
+  if (!hasPath() && generation?.status === "error") {
+    return `
+      <section class="panel panel--center" data-testid="roadmap-error">
+        <h1>${t("roadmap.errorTitle")}</h1>
+        <p>${t("roadmap.errorLead")}</p>
+        <button type="button" class="btn btn--primary" data-retry-roadmap>${t("roadmap.retry")}</button>
       </section>
     `
   }
@@ -118,39 +141,57 @@ export function renderRoadmap() {
   `
 }
 
-export function bindRoadmap(rerender) {
+export function bindRoadmap(root, rerender) {
   const state = getState()
-  if (!state.goal) {
+  if (!state.goal || !state.confirmed) {
+    cancelRoadmapGeneration()
     navigate("/goal")
     return
   }
-  if (hasPath() || generating) {
+  if (generation && !generationMatches(generation)) cancelRoadmapGeneration()
+  if (hasPath()) return
+  if (generation?.status === "error") {
+    root.querySelector("[data-retry-roadmap]")?.addEventListener("click", () => {
+      cancelRoadmapGeneration()
+      rerender()
+    }, { once: true })
     return
   }
+  if (generation) return
 
-  generating = true
-  const started = Date.now()
-  generateLearningPath(
-    {
-      goal: state.goal,
-      level: state.level,
-      hoursPerWeek: state.hoursPerWeek,
-      intent: state.intent,
-    },
-    getPathGenerator(),
-  )
-    .then(async (result) => {
-      const wait = Math.max(0, 1400 - (Date.now() - started))
-      await new Promise((resolve) => setTimeout(resolve, wait))
-      setPath(result)
-    })
-    .catch(() => {
-      generating = false
-    })
-    .finally(() => {
-      generating = false
-      rerender()
-    })
+  const operation = {
+    state,
+    route: window.location.hash,
+    steps: state.steps,
+    snapshot: JSON.stringify([state.goal, state.level, state.hoursPerWeek, state.intent, state.analyzed, state.confirmed]),
+    status: "pending",
+    timer: null,
+    started: Date.now(),
+  }
+  generation = operation
+  const input = { goal: state.goal, level: state.level, hoursPerWeek: state.hoursPerWeek, intent: state.intent }
+  const fail = () => {
+    if (!generationMatches(operation)) return
+    operation.status = "error"
+    rerender()
+  }
+  // Catch synchronous adapter failures as well as rejected generation promises.
+  Promise.resolve().then(() => {
+    if (!generationMatches(operation)) return
+    return generateLearningPath(input, getPathGenerator())
+  }).then((result) => {
+    if (!generationMatches(operation)) return
+    operation.timer = window.setTimeout(() => {
+      if (!generationMatches(operation)) return
+      try {
+        setPath(result)
+        generation = null
+        rerender()
+      } catch {
+        fail()
+      }
+    }, Math.max(0, 1400 - (Date.now() - operation.started)))
+  }).catch(fail)
 }
 
 function escapeHtml(value) {

@@ -3,8 +3,8 @@ import { getLanguage, loadLanguage, setLanguage, t } from "./i18n/index.js"
 import { initRouter } from "./router.js"
 import { loadState } from "./store.js"
 import { renderLanding } from "./views/landing.js"
-import { bindGoal, renderGoal } from "./views/goal.js"
-import { bindRoadmap, renderRoadmap } from "./views/roadmap.js"
+import { bindGoal, cancelGoalPreparation, renderGoal } from "./views/goal.js"
+import { bindRoadmap, cancelRoadmapGeneration, renderRoadmap } from "./views/roadmap.js"
 import { renderDashboard } from "./views/dashboard.js"
 import { bindLesson, renderLesson } from "./views/lesson.js"
 
@@ -13,6 +13,7 @@ loadState()
 loadLanguage()
 let pendingScrollId = null
 let currentParts = []
+let currentView = null
 
 function shell(content) {
   const lang = getLanguage()
@@ -57,6 +58,15 @@ function render({ parts }) {
   currentParts = parts
   const key = parts[0] === "path" ? "roadmap" : parts[0] || "home"
 
+  if (currentView !== key) {
+    cancelGoalPreparation()
+    cancelRoadmapGeneration()
+    currentView = key
+  }
+  const rerenderActiveView = () => {
+    if (currentView === key) render({ parts: currentParts })
+  }
+
   const views = {
     home: renderLanding,
     goal: renderGoal,
@@ -70,10 +80,10 @@ function render({ parts }) {
   const main = app.querySelector("main")
 
   if (key === "goal") {
-    bindGoal(main, () => render({ parts: currentParts }))
+    bindGoal(main, rerenderActiveView)
   }
   if (key === "roadmap") {
-    bindRoadmap(() => render({ parts: ["roadmap"] }))
+    bindRoadmap(main, rerenderActiveView)
   }
   if (key === "lesson") {
     bindLesson(main, () => render({ parts: currentParts }))

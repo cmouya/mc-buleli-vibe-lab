@@ -86,6 +86,9 @@ export const translations = {
       done: "Terminé",
     },
     roadmap: {
+      errorTitle: "Parcours indisponible",
+      errorLead: "La préparation du parcours a échoué. Vous pouvez réessayer.",
+      retry: "Réessayer",
       missingEyebrow: "Destination manquante",
       missingTitle: "Commencez par votre objectif",
       missingLead: "Learnova construit un itinéraire à partir d'une destination, pas d'un catalogue.",
@@ -277,6 +280,9 @@ export const translations = {
       done: "Done",
     },
     roadmap: {
+      errorTitle: "Path unavailable",
+      errorLead: "Path preparation failed. You can try again.",
+      retry: "Try again",
       missingEyebrow: "Destination missing",
       missingTitle: "Start with your goal",
       missingLead: "Learnova builds an itinerary from a destination, not from a catalogue.",
