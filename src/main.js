@@ -54,7 +54,7 @@ function shell(content) {
   `
 }
 
-function render({ parts }) {
+function render({ parts, languageSwitch = false }) {
   currentParts = parts
   const key = parts[0] === "path" ? "roadmap" : parts[0] || "home"
 
@@ -96,7 +96,7 @@ function render({ parts }) {
     }
     setLanguage(button.dataset.lang)
     event.stopPropagation()
-    render({ parts: currentParts })
+    render({ parts: currentParts, languageSwitch: true })
   })
 
   const discover = app.querySelector("[data-discover]")
@@ -109,6 +109,16 @@ function render({ parts }) {
     pendingScrollId = "concept"
     window.location.hash = "#/"
   })
+
+  // Focus only the active Goal/Roadmap view, after bindings may redirect.
+  const routePart = window.location.hash.replace(/^#/, "").split("/").filter(Boolean)[0] || "home"
+  const routeKey = routePart === "path" ? "roadmap" : routePart
+  if ((key === "goal" || key === "roadmap") && routeKey === key && main.isConnected) {
+    const target = languageSwitch
+      ? app.querySelector(`[data-lang="${getLanguage()}"]`)
+      : main.querySelector("[data-view-heading]")
+    target?.focus()
+  }
 
   if (pendingScrollId && key === "home") {
     const id = pendingScrollId

@@ -11,12 +11,14 @@ test.beforeEach(async ({ page }) => {
 async function submit(page) {
   await page.locator("#goal").fill("Piloter Outlook avec l'IA")
   await page.getByRole("button", { name: "Vérifier mon objectif" }).click()
+  await expect(page.locator("main [data-view-heading]")).toBeFocused()
 }
 async function generate(page) {
   await submit(page)
   await page.clock.runFor(1600)
   await page.getByRole("link", { name: "Construire mon parcours", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Construction de votre itinéraire…" })).toBeVisible()
+  await expect(page.locator("main [data-view-heading]")).toBeFocused()
 }
 async function state(page) {
   return page.evaluate(() => JSON.parse(localStorage.getItem("learnova-learner")))
@@ -31,6 +33,7 @@ test("leaving Goal cancels preparation and returning restores the saved form", a
   expect((await state(page)).analyzed).toBe(false)
   await page.getByRole("link", { name: "Objectif", exact: true }).click()
   await expect(page.locator("#goal")).toHaveValue("Piloter Outlook avec l'IA")
+  await expect(page.locator("main [data-view-heading]")).toBeFocused()
   await expect(page.getByTestId("goal-confirmation")).toHaveCount(0)
 })
 
@@ -39,7 +42,10 @@ test("leaving Roadmap prevents late navigation and writes; returning starts a fr
   await page.getByRole("link", { name: "Accueil", exact: true }).click()
   await expect(page).toHaveURL(/#\/$/)
   await expect(page.getByRole("link", { name: "Construire mon parcours", exact: true })).toBeVisible()
+  const homeAction = page.getByRole("link", { name: "Construire mon parcours", exact: true })
+  await homeAction.focus()
   await page.clock.runFor(2000)
+  await expect(homeAction).toBeFocused()
   expect((await state(page)).steps).toEqual([])
   await expect(page.getByTestId("roadmap-ready")).toHaveCount(0)
   await expect(page.getByRole("link", { name: "Construire mon parcours", exact: true })).toBeVisible()
@@ -55,18 +61,26 @@ test("language switches during Goal and Roadmap preserve deadlines and the discl
   await page.clock.runFor(800)
   await page.getByRole("button", { name: "EN", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Preparing your summary…" })).toBeVisible()
+  await expect(page.getByRole("button", { name: "EN", exact: true })).toBeFocused()
   await expect(page.getByTestId("demo-notice")).toBeVisible()
   await page.clock.runFor(800)
   await expect(page.getByTestId("goal-confirmation")).toBeVisible()
+  await expect(page.locator("main [data-view-heading]")).toBeFocused()
+  await page.getByRole("button", { name: "FR", exact: true }).click()
+  await expect(page.getByRole("button", { name: "FR", exact: true })).toBeFocused()
+  await page.getByRole("button", { name: "EN", exact: true }).click()
+  await expect(page.getByRole("button", { name: "EN", exact: true })).toBeFocused()
   await page.getByRole("link", { name: "Build my path", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Building your itinerary…" })).toBeVisible()
   await page.clock.runFor(700)
   await page.getByRole("button", { name: "FR", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Construction de votre itinéraire…" })).toBeVisible()
   await expect(page.getByTestId("demo-notice")).toBeVisible()
+  await expect(page.getByRole("button", { name: "FR", exact: true })).toBeFocused()
   await page.clock.runFor(700)
   await expect(page.getByTestId("roadmap-ready")).toBeVisible()
   await expect(page.getByRole("heading", { name: "Votre destination", exact: true })).toBeVisible()
+  await expect(page.locator("main [data-view-heading]")).toBeFocused()
 })
 
 test("Roadmap requires explicit confirmation", async ({ page }) => {
@@ -79,3 +93,33 @@ test("Roadmap requires explicit confirmation", async ({ page }) => {
   expect((await state(page)).steps).toEqual([])
   await expect(page.getByTestId("goal-confirmation")).toBeVisible()
 })
+
+for (const [language, message] of [["FR", "Indiquez un objectif avant de continuer."], ["EN", "Enter a goal before continuing."]]) {
+  test(`Goal accessible validation and correction in ${language}`, async ({ page }) => {
+    await expect(page.locator("main [data-view-heading]")).toBeFocused()
+    await page.getByRole("button", { name: language, exact: true }).click()
+    const goal = page.locator("#goal")
+    const before = await page.evaluate(() => localStorage.getItem("learnova-learner"))
+    for (const text of ["", "   "]) {
+      await goal.fill(text)
+      await page.locator('#goal-form button[type="submit"]').click()
+      await expect(goal).toBeFocused()
+      await expect(goal).toHaveAttribute("aria-invalid", "true")
+      await expect(goal).toHaveAccessibleDescription(message)
+      expect(await page.evaluate(() => localStorage.getItem("learnova-learner"))).toBe(before)
+    }
+    await goal.fill("Outlook")
+    await expect(page.locator("#form-error")).toBeHidden()
+    await expect(goal).not.toHaveAttribute("aria-invalid")
+    await expect(goal).not.toHaveAttribute("aria-describedby")
+    await goal.fill("")
+    await page.locator('#goal-form button[type="submit"]').click()
+    await page.locator("[data-example]").first().click()
+    await expect(goal).toBeFocused()
+    await expect(page.locator("#form-error")).toBeHidden()
+    await expect(goal).not.toHaveAttribute("aria-invalid")
+    await expect(goal).not.toHaveAttribute("aria-describedby")
+    await expect(page.getByTestId("demo-notice")).toBeVisible()
+    await expect(page.locator('main [aria-live], main [role="alert"], main [role="status"]')).toHaveCount(0)
+  })
+}

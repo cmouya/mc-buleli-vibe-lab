@@ -26,7 +26,7 @@ export function renderRoadmap() {
     return `
       <section class="panel panel--center">
         <p class="eyebrow">${t("roadmap.missingEyebrow")}</p>
-        <h1>${t("roadmap.missingTitle")}</h1>
+        <h1 data-view-heading tabindex="-1">${t("roadmap.missingTitle")}</h1>
         <p class="muted">${t("roadmap.missingLead")}</p>
         <a class="btn btn--primary" href="#/goal">${t("roadmap.missingCta")}</a>
       </section>
@@ -36,8 +36,8 @@ export function renderRoadmap() {
   if (!hasPath() && generation?.status === "error") {
     return `
       <section class="panel panel--center" data-testid="roadmap-error">
-        <h1>${t("roadmap.errorTitle")}</h1>
-        <p>${t("roadmap.errorLead")}</p>
+        <h1 data-view-heading tabindex="-1" aria-describedby="roadmap-error-description">${t("roadmap.errorTitle")}</h1>
+        <p id="roadmap-error-description">${t("roadmap.errorLead")}</p>
         <button type="button" class="btn btn--primary" data-retry-roadmap>${t("roadmap.retry")}</button>
       </section>
     `
@@ -47,8 +47,8 @@ export function renderRoadmap() {
     return `
       <section class="panel panel--center">
         <p class="eyebrow">${t("roadmap.buildingEyebrow")}</p>
-        <h1>${t("roadmap.buildingTitle")}</h1>
-        <p class="muted">${t("roadmap.buildingLead")}</p>
+        <h1 data-view-heading tabindex="-1" aria-describedby="roadmap-loading-description">${t("roadmap.buildingTitle")}</h1>
+        <p id="roadmap-loading-description" class="muted">${t("roadmap.buildingLead")}</p>
         <div class="spinner" aria-hidden="true"></div>
         <p class="hint">${t("roadmap.buildingHint")}</p>
       </section>
@@ -69,7 +69,7 @@ export function renderRoadmap() {
 
   return `
     <section class="panel roadmap-hero">
-      <h1>${t("roadmap.destinationTitle")}</h1>
+      <h1 data-view-heading tabindex="-1">${t("roadmap.destinationTitle")}</h1>
       <p class="destination">${escapeHtml(state.goal)}</p>
       <h2 class="section-title">${t("roadmap.gpsTitle")}</h2>
       <p class="gps-count">${t("roadmap.stepsCount", { count: state.steps.length })}</p>

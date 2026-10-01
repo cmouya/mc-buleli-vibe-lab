@@ -32,10 +32,10 @@ function renderForm(state) {
   return `
     <section class="panel goal">
       <p class="eyebrow">${t("goal.eyebrow")}</p>
-      <h1>${t("goal.title")}</h1>
+      <h1 data-view-heading tabindex="-1">${t("goal.title")}</h1>
       <p class="muted">${t("goal.lead")}</p>
 
-      <form id="goal-form" class="form goal__form" data-testid="goal-form">
+      <form id="goal-form" class="form goal__form" data-testid="goal-form" novalidate>
         <label class="sr-only" for="goal">${t("goal.labelGoal")}</label>
         <textarea id="goal" name="goal" rows="4" maxlength="280" required placeholder="${t("goal.placeholder")}">${escapeHtml(state.goal)}</textarea>
 
@@ -78,8 +78,8 @@ function renderAnalyzing() {
   return `
     <section class="panel panel--center goal-wait">
       <p class="eyebrow">${t("goal.analyzingEyebrow")}</p>
-      <h1>${t("goal.analyzingTitle")}</h1>
-      <p class="muted">${t("goal.analyzingLead")}</p>
+      <h1 data-view-heading tabindex="-1" aria-describedby="goal-preparation-description">${t("goal.analyzingTitle")}</h1>
+      <p id="goal-preparation-description" class="muted">${t("goal.analyzingLead")}</p>
       <div class="spinner" aria-hidden="true"></div>
     </section>
   `
@@ -89,7 +89,7 @@ function renderConfirmation(state) {
   return `
     <section class="panel goal-confirm" data-testid="goal-confirmation">
       <p class="eyebrow">${t("goal.confirmEyebrow")}</p>
-      <h1>${t("goal.confirmTitle")}</h1>
+      <h1 data-view-heading tabindex="-1">${t("goal.confirmTitle")}</h1>
       <div class="meta-grid meta-grid--confirm">
         <article>
           <p class="meta-label">${t("goal.metaGoal")}</p>
@@ -127,12 +127,21 @@ export function bindGoal(root, rerender) {
     const goal = form.querySelector("#goal")
     const error = root.querySelector("#form-error")
 
+    const clearErrorIfCorrected = () => {
+      if (!goal.value.trim()) return
+      error.hidden = true
+      goal.removeAttribute("aria-invalid")
+      goal.removeAttribute("aria-describedby")
+    }
+    goal.addEventListener("input", clearErrorIfCorrected)
+
     root.querySelector("#examples")?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-example]")
       if (!button) {
         return
       }
       goal.value = button.dataset.example
+      clearErrorIfCorrected()
       goal.focus()
     })
 
@@ -141,10 +150,12 @@ export function bindGoal(root, rerender) {
       const text = goal.value.trim()
       if (!text) {
         error.hidden = false
+        goal.setAttribute("aria-invalid", "true")
+        goal.setAttribute("aria-describedby", "form-error")
         goal.focus()
         return
       }
-      error.hidden = true
+      clearErrorIfCorrected()
       const data = new FormData(form)
       setProfile({
         goal: text,
