@@ -104,7 +104,7 @@ test("TEST-E2E-007: successful quiz validation marks first step completed", asyn
     await blocks.nth(i).locator('input[value="1"]').check()
   }
   await page.getByRole("button", { name: "Valider mes réponses" }).click()
-  await expect(page.getByText("Quiz réussi")).toBeVisible()
+  await expect(page.getByText("Étape validée")).toBeVisible()
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("learnova-learner") || "{}"))
   expect(stored.steps[0].status).toBe("done")
@@ -131,5 +131,5 @@ test("TEST-E2E-008: progression changes from 0%", async ({ page }) => {
 
   await expect(page).toHaveURL(/#\/dashboard/)
   await expect(page.getByTestId("progress-label")).toHaveText("Progression : 17 %")
-  await expect(page.getByText("1 étape terminée")).toBeVisible()
+  await expect(page.getByText("1 étape validée")).toBeVisible()
 })

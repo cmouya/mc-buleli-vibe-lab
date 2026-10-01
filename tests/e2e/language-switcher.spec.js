@@ -87,9 +87,9 @@ test.describe("language switcher", () => {
   })
 
   for (const [lang, submitLabel, loadingLabel, noticeText] of [
-    ["FR", "Vérifier mon objectif", "Préparation du récapitulatif…",
+    ["FR", "Vérifier mon objectif", "Préparation de votre objectif…",
       "Démonstration locale · Parcours préparés à partir de modèles · Résultats de quiz calculés dans le navigateur."],
-    ["EN", "Review my goal", "Preparing your summary…",
+    ["EN", "Review my goal", "Preparing your goal…",
       "Local demo · Paths built from prepared templates · Quiz results calculated in the browser."],
   ]) {
     test(`demo disclosure persists throughout Goal preparation in ${lang}`, async ({ page }) => {
@@ -202,7 +202,7 @@ test("transient quiz draft, errors, results and retry survive FR/EN without dupl
   await expect(radio(0, 1)).toBeChecked()
   for (let q = 1; q < 3; q++) await radio(q, 1).check()
   await page.getByTestId("quiz-submit").click()
-  for (const [lang, label] of [["EN", "Quiz passed"], ["FR", "Quiz réussi"]]) {
+  for (const [lang, label] of [["EN", "Step validated"], ["FR", "Étape validée"]]) {
     await switchTo(lang)
     await expect(page.locator("#quiz-result-heading")).toHaveText(label)
     await expect(page.locator("#quiz-result-score")).toContainText("3/3")

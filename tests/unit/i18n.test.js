@@ -117,8 +117,8 @@ describe("i18n — prototype language switcher", () => {
 
 
 describe.each([
-  ["fr", "Quiz réussi", "Parcours terminé", "étape terminée", "autodéclaré"],
-  ["en", "Quiz passed", "Path completed", "step completed", "Self-reported"],
+  ["fr", "Étape validée", "Parcours terminé", "étape validée", "autodéclaré"],
+  ["en", "Step validated", "Path completed", "step validated", "Self-reported"],
 ])("truthful local journey in %s", (lang, passedLabel, completedLabel, stepLabel, levelLabel) => {
   it("keeps failure at zero and describes success and completion without mastery claims", () => {
     localStorage.clear()

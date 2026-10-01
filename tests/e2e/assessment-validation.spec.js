@@ -37,7 +37,7 @@ test("SCENARIO 1 E2E: failed quiz does not validate competency or increase progr
   await submitQuizAnswers(page, "0")
 
   await expect(page.getByText("Validation non atteinte")).toBeVisible()
-  await expect(page.getByText("Quiz réussi")).not.toBeVisible()
+  await expect(page.getByText("Étape validée")).not.toBeVisible()
   await expect(page.getByRole("button", { name: "Réessayer le quiz" })).toBeVisible()
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("learnova-learner") || "{}"))
@@ -58,7 +58,7 @@ test("SCENARIO 2 E2E: retry after failure then success validates and increases p
   await expect(page.locator("#quiz-form")).toBeVisible()
   await submitQuizAnswers(page, "1")
 
-  await expect(page.getByText("Quiz réussi")).toBeVisible()
+  await expect(page.getByText("Étape validée")).toBeVisible()
   await page.getByRole("link", { name: /Continuer vers l'étape 2/i }).click()
 
   await expect(page).toHaveURL(/#\/dashboard/)

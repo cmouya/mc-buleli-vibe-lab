@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test"
 
 for (const [lang, missing, failed, passed, failScore, score] of [
-  ["FR", "Choisissez une réponse à la question 2.", "Validation non atteinte", "Quiz réussi", "Score : 0/3 — seuil requis : 2/3", "Score : 3/3"],
-  ["EN", "Choose an answer for question 2.", "Validation not reached", "Quiz passed", "Score: 0/3 — required threshold: 2/3", "Score: 3/3"],
+  ["FR", "Choisissez une réponse à la question 2.", "Validation non atteinte", "Étape validée", "Score : 0/3 — seuil requis : 2/3", "Score : 3/3"],
+  ["EN", "Choose an answer for question 2.", "Validation not reached", "Step validated", "Score: 0/3 — required threshold: 2/3", "Score: 3/3"],
 ]) {
   test(`quiz error guidance, result and retry focus in ${lang}`, async ({ page }) => {
     await page.goto("/")

@@ -61,7 +61,7 @@ describe("Goal preparation", () => {
     redraw = vi.fn(mountGoal); mountGoal(); submitGoal()
     await vi.advanceTimersByTimeAsync(800)
     setLanguage("en"); mountGoal()
-    expect(root.textContent).toContain("Preparing your summary")
+    expect(root.textContent).toContain("Preparing your goal")
     await vi.advanceTimersByTimeAsync(800)
     expect(root.querySelector('[data-testid="goal-confirmation"]')).not.toBeNull()
     expect(getState().confirmed).toBe(false)

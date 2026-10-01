@@ -60,7 +60,7 @@ test("language switches during Goal and Roadmap preserve deadlines and the discl
   await submit(page)
   await page.clock.runFor(800)
   await page.getByRole("button", { name: "EN", exact: true }).click()
-  await expect(page.getByRole("heading", { name: "Preparing your summary…" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Preparing your goal…" })).toBeVisible()
   await expect(page.getByRole("button", { name: "EN", exact: true })).toBeFocused()
   await expect(page.getByTestId("demo-notice")).toBeVisible()
   await page.clock.runFor(800)
