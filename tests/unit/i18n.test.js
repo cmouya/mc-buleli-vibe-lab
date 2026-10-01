@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest"
 import { getLanguage, loadLanguage, setLanguage, t, UI_LANG_KEY } from "../../src/i18n/index.js"
 import { renderLanding } from "../../src/views/landing.js"
-import { bindLesson, renderLesson } from "../../src/views/lesson.js"
+import { bindLesson, renderLesson, resetLessonState } from "../../src/views/lesson.js"
 import {
   confirmCurrentGoal,
   getState,
@@ -135,9 +135,12 @@ describe.each([
 
     const root = document.createElement("div")
     document.body.append(root)
-    const submit = (answer) => {
+    const mount = () => {
       root.innerHTML = renderLesson()
-      bindLesson(root)
+      bindLesson(root, mount)
+    }
+    mount()
+    const submit = (answer) => {
       root.querySelectorAll(`input[value="${answer}"]`).forEach(input => { input.checked = true })
       root.querySelector("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }))
       return root.textContent
@@ -146,11 +149,13 @@ describe.each([
     expect(failure).toContain(t("lesson.notReached"))
     expect(getState().steps[0].status).toBe("current")
     expect(renderDashboard()).toContain(t("roadmap.progressLabel", { percent: 0 }))
+    root.querySelector("#retry-quiz").click()
     const success = submit(1)
     expect(success).toContain(passedLabel)
     expect(getState().steps[0].status).toBe("done")
     expect(renderDashboard()).toContain(t("roadmap.progressLabel", { percent: 100 }))
     expect(renderDashboard()).toContain(stepLabel)
+    resetLessonState()
     expect(renderLesson()).toContain(t("lesson.youValidated", { skill: OUTLOOK_STEP.skill }))
     expect(renderRoadmap()).toContain(completedLabel)
     const screens = [renderLanding(), renderGoal(), renderRoadmap(), renderDashboard(), renderLesson(), failure, success].join(" ")

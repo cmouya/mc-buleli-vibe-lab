@@ -3,10 +3,10 @@ import { getLanguage, loadLanguage, setLanguage, t } from "./i18n/index.js"
 import { initRouter } from "./router.js"
 import { loadState } from "./store.js"
 import { renderLanding } from "./views/landing.js"
-import { bindGoal, cancelGoalPreparation, renderGoal } from "./views/goal.js"
+import { bindGoal, cancelGoalPreparation, resetGoalDraft, renderGoal } from "./views/goal.js"
 import { bindRoadmap, cancelRoadmapGeneration, renderRoadmap } from "./views/roadmap.js"
 import { renderDashboard } from "./views/dashboard.js"
-import { bindLesson, renderLesson } from "./views/lesson.js"
+import { bindLesson, renderLesson, resetLessonState } from "./views/lesson.js"
 
 const app = document.querySelector("#app")
 loadState()
@@ -59,6 +59,8 @@ function render({ parts, languageSwitch = false }) {
   const key = parts[0] === "path" ? "roadmap" : parts[0] || "home"
 
   if (currentView !== key) {
+    if (currentView === "goal") resetGoalDraft()
+    if (currentView === "lesson") resetLessonState()
     cancelGoalPreparation()
     cancelRoadmapGeneration()
     currentView = key
@@ -113,7 +115,7 @@ function render({ parts, languageSwitch = false }) {
   // Focus only the active Goal/Roadmap view, after bindings may redirect.
   const routePart = window.location.hash.replace(/^#/, "").split("/").filter(Boolean)[0] || "home"
   const routeKey = routePart === "path" ? "roadmap" : routePart
-  if ((key === "goal" || key === "roadmap") && routeKey === key && main.isConnected) {
+  if ((key === "goal" || key === "roadmap" || (key === "lesson" && languageSwitch)) && routeKey === key && main.isConnected) {
     const target = languageSwitch
       ? app.querySelector(`[data-lang="${getLanguage()}"]`)
       : main.querySelector("[data-view-heading]")

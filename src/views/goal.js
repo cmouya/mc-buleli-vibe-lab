@@ -2,6 +2,18 @@ import { t, tList } from "../i18n/index.js"
 import { confirmCurrentGoal, getState, setAnalyzed, setProfile } from "../store.js"
 
 let preparation = null
+let draft = null
+
+export function resetGoalDraft() { draft = null }
+
+function currentDraft() {
+  const state = getState()
+  const context = JSON.stringify([state.goal, state.level, state.hoursPerWeek, state.analyzed, state.confirmed])
+  if (!draft || draft.state !== state || draft.steps !== state.steps || draft.context !== context) {
+    draft = { state, steps: state.steps, context, goal: state.goal, level: state.level, hoursPerWeek: state.hoursPerWeek, invalid: false }
+  }
+  return draft
+}
 
 export function cancelGoalPreparation() {
   if (preparation) window.clearTimeout(preparation.timer)
@@ -22,7 +34,7 @@ export function renderGoal() {
   if (state.analyzed && state.goal) {
     return renderConfirmation(state)
   }
-  return renderForm(state)
+  return renderForm(currentDraft())
 }
 
 function renderForm(state) {
@@ -37,7 +49,7 @@ function renderForm(state) {
 
       <form id="goal-form" class="form goal__form" data-testid="goal-form" novalidate>
         <label class="sr-only" for="goal">${t("goal.labelGoal")}</label>
-        <textarea id="goal" name="goal" rows="4" maxlength="280" required placeholder="${t("goal.placeholder")}">${escapeHtml(state.goal)}</textarea>
+        <textarea id="goal" name="goal" rows="4" maxlength="280" required ${state.invalid ? 'aria-invalid="true" aria-describedby="form-error"' : ''} placeholder="${t("goal.placeholder")}">${escapeHtml(state.goal)}</textarea>
 
         <p class="chips-label">${t("goal.examplesLabel")}</p>
         <div class="chips" id="examples">
@@ -67,7 +79,7 @@ function renderForm(state) {
           </div>
         </fieldset>
 
-        <p id="form-error" class="error" hidden>${t("goal.formError")}</p>
+        <p id="form-error" class="error" ${state.invalid ? "" : "hidden"}>${t("goal.formError")}</p>
         <button class="btn btn--primary" type="submit">${t("goal.submit")}</button>
       </form>
     </section>
@@ -127,8 +139,15 @@ export function bindGoal(root, rerender) {
     const goal = form.querySelector("#goal")
     const error = root.querySelector("#form-error")
 
+    const remember = () => {
+      const data = new FormData(form)
+      Object.assign(currentDraft(), { goal: goal.value, level: String(data.get("level")), hoursPerWeek: Number(data.get("hours")) })
+    }
+    form.addEventListener("input", remember)
+    form.addEventListener("change", remember)
     const clearErrorIfCorrected = () => {
       if (!goal.value.trim()) return
+      currentDraft().invalid = false
       error.hidden = true
       goal.removeAttribute("aria-invalid")
       goal.removeAttribute("aria-describedby")
@@ -141,14 +160,17 @@ export function bindGoal(root, rerender) {
         return
       }
       goal.value = button.dataset.example
+      remember()
       clearErrorIfCorrected()
       goal.focus()
     })
 
     form.addEventListener("submit", (event) => {
       event.preventDefault()
+      remember()
       const text = goal.value.trim()
       if (!text) {
+        currentDraft().invalid = true
         error.hidden = false
         goal.setAttribute("aria-invalid", "true")
         goal.setAttribute("aria-describedby", "form-error")
@@ -162,6 +184,7 @@ export function bindGoal(root, rerender) {
         level: String(data.get("level") || "debutant"),
         hoursPerWeek: Number(data.get("hours") || 5),
       })
+      resetGoalDraft()
       cancelGoalPreparation()
       const state = getState()
       const operation = {

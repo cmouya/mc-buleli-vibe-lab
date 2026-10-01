@@ -7,9 +7,28 @@ import {
 } from "../shared/assessment.js"
 import { getCurrentStep, getNextStep, getState, hasPath, submitQuizAttempt } from "../store.js"
 
+let viewState = null
+
+export function resetLessonState() { viewState = null }
+
+function lessonState() {
+  const state = getState()
+  if (!viewState || viewState.state !== state || viewState.steps !== state.steps) {
+    viewState = { state, steps: state.steps, step: getCurrentStep(), answers: [], missing: [], result: null }
+  }
+  return viewState
+}
+
+function resultHtml(ui, lesson) {
+  const questions = normalizeQuizQuestions(lesson)
+  const details = ui.result.details.map(item => ({ ...questions[item.index], ...item }))
+  return renderResults({ lesson, step: ui.step, ...ui.result, details })
+}
+
 export function renderLesson() {
   const state = getState()
-  const step = getCurrentStep()
+  const ui = lessonState()
+  const step = ui.step
 
   if (!state.goal || !hasPath() || !step) {
     return emptyState(
@@ -95,7 +114,7 @@ export function renderLesson() {
     </section>
 
     <section class="panel" id="quiz-section">
-      ${alreadyDone ? renderValidatedPanel(step, next) : renderQuizPanel(step, lesson)}
+      ${ui.result ? `<div id="quiz-results" data-testid="quiz-results">${resultHtml(ui, lesson)}</div>` : alreadyDone ? renderValidatedPanel(step, next) : renderQuizPanel(step, lesson)}
     </section>
 
     <section class="panel">
@@ -123,6 +142,7 @@ function conceptsForDisplay(lesson) {
 }
 
 function renderQuizPanel(step, lesson) {
+  const ui = lessonState()
   const questions = normalizeQuizQuestions(lesson)
   const passScore = lesson.quiz?.passScore ?? DEFAULT_PASS_SCORE
 
@@ -139,12 +159,12 @@ function renderQuizPanel(step, lesson) {
             .map(
               (option, oIndex) => `
             <label class="quiz__option">
-              <input type="radio" name="q${qIndex}" value="${oIndex}" required />
+              <input type="radio" name="q${qIndex}" value="${oIndex}" required ${ui.answers[qIndex] === oIndex ? "checked" : ""} ${ui.missing.includes(qIndex) ? `aria-invalid="true" aria-describedby="quiz-error-${qIndex}"` : ""} />
               <span>${escapeHtml(option)}</span>
             </label>`,
             )
             .join("")}
-          <p id="quiz-error-${qIndex}" class="quiz__feedback quiz__feedback--bad" hidden>${t("lesson.questionUnanswered", { n: qIndex + 1 })}</p>
+          <p id="quiz-error-${qIndex}" class="quiz__feedback quiz__feedback--bad" ${ui.missing.includes(qIndex) ? "" : "hidden"}>${t("lesson.questionUnanswered", { n: qIndex + 1 })}</p>
         </fieldset>`,
         )
         .join("")}
@@ -176,8 +196,7 @@ function renderValidatedPanel(step, next) {
   `
 }
 
-function renderResults({ lesson, step, score, total, passed, details, next }) {
-  const passScore = lesson.quiz?.passScore ?? DEFAULT_PASS_SCORE
+function renderResults({ lesson, step, score, total, passed, details, next, passScore }) {
 
   if (passed) {
     return `
@@ -235,7 +254,18 @@ function renderResults({ lesson, step, score, total, passed, details, next }) {
 }
 
 export function bindLesson(root, rerender) {
-  const step = getCurrentStep()
+  const ui = lessonState()
+  const step = ui.step
+  if (ui.result) {
+    root.querySelector("#retry-quiz")?.addEventListener("click", () => {
+      ui.answers = []
+      ui.missing = []
+      ui.result = null
+      rerender?.()
+      document.querySelector('#quiz-form input[type="radio"]')?.focus()
+    })
+    return
+  }
   if (!step || step.status === "todo" || step.status === "done") {
     return
   }
@@ -256,6 +286,8 @@ export function bindLesson(root, rerender) {
   const next = getNextStep()
 
   function markQuestion(index, invalid) {
+    ui.missing = ui.missing.filter(item => item !== index)
+    if (invalid) ui.missing.push(index)
     const error = form.querySelector(`#quiz-error-${index}`)
     error.hidden = !invalid
     form.querySelectorAll(`input[name="q${index}"]`).forEach((radio) => {
@@ -271,7 +303,10 @@ export function bindLesson(root, rerender) {
 
   questions.forEach((_, index) => {
     form.querySelectorAll(`input[name="q${index}"]`).forEach((radio) => {
-      radio.addEventListener("change", () => markQuestion(index, false))
+      radio.addEventListener("change", () => {
+        ui.answers[index] = Number(radio.value)
+        markQuestion(index, false)
+      })
     })
   })
 
@@ -283,6 +318,7 @@ export function bindLesson(root, rerender) {
       return selected ? Number(selected.value) : -1
     })
 
+    ui.answers = selectedAnswers
     const { details, score, total, passed, unanswered } = evaluateQuizSubmission(
       questions,
       selectedAnswers,
@@ -298,14 +334,19 @@ export function bindLesson(root, rerender) {
 
     submitQuizAttempt(step.id, { details, score, total, passed })
 
+    ui.result = { score, total, passed, passScore, next,
+      details: details.map(({ index, selected, correct }) => ({ index, selected, correct })) }
     form.hidden = true
     results.hidden = false
-    results.innerHTML = renderResults({ lesson, step, score, total, passed, details, next })
+    results.innerHTML = resultHtml(ui, lesson)
 
     results.querySelector("#quiz-result-heading").focus()
 
     if (!passed) {
       results.querySelector("#retry-quiz")?.addEventListener("click", () => {
+        ui.answers = []
+        ui.missing = []
+        ui.result = null
         rerender?.()
         // The shell replaces root during rerender; locate the new form.
         document.querySelector('#quiz-form input[type="radio"]')?.focus()
