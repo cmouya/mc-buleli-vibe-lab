@@ -72,7 +72,7 @@ describe("i18n — prototype language switcher", () => {
     expect(JSON.parse(storedBefore || "{}")).not.toHaveProperty("lang")
   })
 
-  it("translates Lesson UI chrome to English without translating stored lesson content", () => {
+  it("resolves the Outlook lesson in English without rewriting stored path content", () => {
     setProfile({
       goal: "Piloter Outlook avec l'IA",
       level: "debutant",
@@ -86,6 +86,7 @@ describe("i18n — prototype language switcher", () => {
       steps: [{ ...OUTLOOK_STEP }],
     })
 
+    const storedBefore = localStorage.getItem("learnova-learner")
     const storedLessonSnippet = "Pour piloter un projet d'optimisation e-mail"
     expect(renderLesson()).toContain("Module d'apprentissage")
     expect(renderLesson()).toContain("Concepts clés")
@@ -109,9 +110,13 @@ describe("i18n — prototype language switcher", () => {
     expect(html).not.toContain("Valider mes réponses")
     expect(html).not.toContain("Exemple pratique")
     expect(html).not.toContain("À retenir")
-    expect(html).toContain(storedLessonSnippet)
-    expect(html).toContain(OUTLOOK_STEP.title)
+    expect(html).toContain("To lead an AI-enabled email optimisation project")
+    expect(html).toContain("Understand how AI can support email management")
+    expect(html).toContain("Human review before sensitive communications are sent.")
+    expect(html).not.toContain(storedLessonSnippet)
+    expect(html).not.toContain(OUTLOOK_STEP.title)
     expect(getState().steps[0].status).toBe("current")
+    expect(localStorage.getItem("learnova-learner")).toBe(storedBefore)
   })
 })
 
@@ -156,7 +161,8 @@ describe.each([
     expect(renderDashboard()).toContain(t("roadmap.progressLabel", { percent: 100 }))
     expect(renderDashboard()).toContain(stepLabel)
     resetLessonState()
-    expect(renderLesson()).toContain(t("lesson.youValidated", { skill: OUTLOOK_STEP.skill }))
+    const displayedSkill = lang === "en" ? "AI and email" : "IA et messagerie"
+    expect(renderLesson()).toContain(t("lesson.youValidated", { skill: displayedSkill }))
     expect(renderRoadmap()).toContain(completedLabel)
     const screens = [renderLanding(), renderGoal(), renderRoadmap(), renderDashboard(), renderLesson(), failure, success].join(" ")
     expect(screens).not.toMatch(/compétences? acquises?|compétence validée|vous maîtrisez|Objectif atteint|skills? acquired|Skill validated|you master|Goal reached|server-recalculated/i)

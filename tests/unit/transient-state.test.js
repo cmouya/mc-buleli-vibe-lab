@@ -10,7 +10,7 @@ function path() {
   store.setProfile({ goal: "Outlook", level: "debutant", hoursPerWeek: 5 })
   store.setAnalyzed(true)
   store.confirmCurrentGoal()
-  store.setPath({ pathId: "same", pathTitle: "Outlook", steps: [
+  store.setPath({ pathId: "outlook-email-ia", pathTitle: "Outlook", steps: [
     { id: "outlook-1", title: "First" }, { id: "outlook-2", title: "Second" },
   ] })
 }
@@ -21,16 +21,16 @@ beforeEach(() => {
   root = document.createElement("main"); document.body.append(root)
 })
 afterEach(() => { root.remove(); resetLessonState(); resetGoalDraft(); vi.restoreAllMocks() })
-it("translates a computed result without evaluating or submitting again and invalidates reused path IDs", () => {
+it("localizes a computed Outlook result without evaluating or submitting again and invalidates reused paths", () => {
   path(); mountLesson()
   const evaluate = vi.spyOn(assessment, "evaluateQuizSubmission")
   const submit = vi.spyOn(store, "submitQuizAttempt")
   root.querySelectorAll('input[value="1"]').forEach(radio => { radio.checked = true })
   root.querySelector("form").dispatchEvent(new Event("submit", { cancelable: true }))
   const saved = JSON.stringify(store.getState())
-  for (const lang of ["en", "fr"]) {
+  for (const [lang, title] of [["en", "Understand how AI can support email management"], ["fr", "Comprendre les usages de l'IA dans la gestion des e-mails"]]) {
     setLanguage(lang); mountLesson()
-    expect(root.querySelector("h1").textContent).toBe("First")
+    expect(root.querySelector("h1").textContent).toBe(title)
     expect(root.querySelector("#quiz-result-score").textContent).toContain("3/3")
     expect(JSON.stringify(store.getState())).toBe(saved)
   }

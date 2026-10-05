@@ -53,7 +53,7 @@ test.describe("language switcher", () => {
     expect(after).toBe(before)
   })
 
-  test("switching to EN on Lesson re-renders lesson UI chrome", async ({ page }) => {
+  test("switching to EN resolves the Outlook lesson without rewriting learner storage", async ({ page }) => {
     const goal =
       "J'aimerais apprendre à piloter un projet d'optimisation intelligente de la gestion des e-mails Outlook par l'IA pour cadres d'entreprises."
     await page.goto("/#/goal")
@@ -80,10 +80,43 @@ test.describe("language switcher", () => {
     await expect(page.getByRole("heading", { name: "Practical example" })).toBeVisible()
     await expect(page.getByText("Key idea 1")).toBeVisible()
     await expect(page.getByRole("heading", { name: "Concepts clés" })).toHaveCount(0)
-    await expect(page.locator(".lesson__body")).toContainText("e-mail")
+    await expect(page.locator(".lesson-header h1")).toHaveText("Understand how AI can support email management")
+    await expect(page.locator(".lesson__body")).toContainText("To lead an AI-enabled email optimisation project")
+    await expect(page.locator("#quiz-form")).toContainText("Human review before sensitive communications are sent.")
+    await expect(page.locator("main")).not.toContainText("Comprendre les usages de l'IA")
 
     const storedAfter = await page.evaluate(() => localStorage.getItem("learnova-learner"))
     expect(storedAfter).toBe(storedBefore)
+  })
+
+  test("an English Outlook journey resolves roadmap and dashboard content", async ({ page }) => {
+    const goal = "I want to lead an AI project to optimise Outlook email management for business leaders."
+    await page.goto("/#/goal")
+    await page.getByRole("button", { name: "EN", exact: true }).click()
+    await page.locator("#goal").fill(goal)
+    await page.getByRole("button", { name: "Review my goal" }).click()
+    await expect(page.getByTestId("goal-confirmation")).toContainText(goal)
+    await page.getByRole("link", { name: "Build my path" }).click()
+    await expect(page.getByTestId("roadmap-ready")).toBeVisible({ timeout: 10000 })
+
+    const roadmap = page.getByTestId("roadmap-ready")
+    await expect(roadmap).toContainText("Leading an AI project for Outlook email management")
+    for (const title of [
+      "Understand how AI can support email management",
+      "Analyse current email handling processes",
+      "Design an intelligent Outlook and AI workflow",
+      "Automate sorting, summarisation, and prioritisation",
+      "Set security rules and human review points",
+      "Lead a pilot and measure its results",
+    ]) await expect(roadmap).toContainText(title)
+    await expect(roadmap).not.toContainText("Pilotage d'un projet IA")
+
+    const storedBefore = await page.evaluate(() => localStorage.getItem("learnova-learner"))
+    await page.getByRole("link", { name: "Start my path" }).click()
+    await expect(page.getByTestId("progress-label")).toHaveText("Progress: 0 %")
+    await expect(page.locator(".dash-here")).toContainText("Understand how AI can support email management")
+    await expect(page.locator(".dash-here")).toContainText("AI and email")
+    expect(await page.evaluate(() => localStorage.getItem("learnova-learner"))).toBe(storedBefore)
   })
 
   for (const [lang, submitLabel, loadingLabel, noticeText] of [
@@ -166,13 +199,16 @@ test("transient quiz draft, errors, results and retry survive FR/EN without dupl
   await page.getByRole("link", { name: "Continuer mon parcours" }).click()
   const stored = () => page.evaluate(() => localStorage.getItem("learnova-learner"))
   await expect(page.getByTestId("quiz-submit")).toBeVisible()
-  const title = await page.locator("main h1").textContent()
+  const titles = {
+    FR: "Comprendre les usages de l'IA dans la gestion des e-mails",
+    EN: "Understand how AI can support email management",
+  }
   const radio = (q, a) => page.locator(`input[name="q${q}"][value="${a}"]`)
   const switchTo = async lang => {
     const before = await stored()
     await page.getByRole("button", { name: lang, exact: true }).click()
     await expect(page.getByRole("button", { name: lang, exact: true })).toBeFocused()
-    await expect(page.locator("main h1")).toHaveText(title)
+    await expect(page.locator("main h1")).toHaveText(titles[lang])
     await expect(page.getByTestId("demo-notice")).toBeVisible()
     expect(await stored()).toBe(before)
   }
@@ -215,7 +251,7 @@ test("transient quiz draft, errors, results and retry survive FR/EN without dupl
   await page.locator("#continue-btn").click()
   await expect(page.getByTestId("progress-label")).toContainText("17 %")
   await page.locator('nav a[href="#/lesson"]').click()
-  await expect(page.locator("main h1")).not.toHaveText(title)
+  await expect(page.locator("main h1")).not.toHaveText(titles.FR)
   await expect(page.locator("#quiz-result-heading")).toHaveCount(0)
   await radio(0, 0).check()
   await page.locator('nav a[href="#/dashboard"]').click()

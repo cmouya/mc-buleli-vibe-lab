@@ -1,4 +1,5 @@
-import { t } from "../i18n/index.js"
+import { getLanguage, t } from "../i18n/index.js"
+import { resolvePathPresentation } from "../data/outlook-content.js"
 import { getPathGenerator } from "../adapters/ai/path-generator.js"
 import { generateLearningPath } from "../application/index.js"
 import { navigate } from "../router.js"
@@ -56,8 +57,9 @@ export function renderRoadmap() {
   }
 
   const percent = getProgressPercent()
-  const current = getCurrentStep()
-  const allDone = state.steps.every((step) => step.status === "done")
+  const presentation = resolvePathPresentation(state, getLanguage())
+  const current = presentation.steps.find((step) => step.id === getCurrentStep()?.id)
+  const allDone = presentation.steps.every((step) => step.status === "done")
   const nextLabel = allDone
     ? t("roadmap.goalReached")
     : current?.status !== "done"
@@ -98,9 +100,9 @@ export function renderRoadmap() {
 
     <section class="panel gps" aria-label="${t("roadmap.itineraryAria")}" data-testid="roadmap-ready">
       <h2>${t("roadmap.itineraryTitle")}</h2>
-      <p class="muted">${t("roadmap.itineraryMeta", { title: escapeHtml(state.pathTitle), count: state.steps.length })}</p>
+      <p class="muted">${t("roadmap.itineraryMeta", { title: escapeHtml(presentation.pathTitle), count: presentation.steps.length })}</p>
       <ol class="roadmap">
-        ${state.steps
+        ${presentation.steps
           .map(
             (step, index) => `
           <li class="roadmap__item roadmap__item--${step.status}">

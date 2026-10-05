@@ -1,3 +1,5 @@
+import { getOutlookLesson } from "./outlook-content.js"
+
 /**
  * Contenus pédagogiques de démonstration, indexés par id d'étape.
  */
@@ -458,80 +460,10 @@ export const lessons = {
       explanation: "L'objectif est l'efficacité professionnelle, pas la littérature.",
     },
   },
-  "outlook-1": {
-    title: "Comprendre les usages de l'IA dans la gestion des e-mails",
-    introduction:
-      "Pour piloter un projet d'optimisation e-mail avec l'IA, il faut d'abord distinguer ce que l'IA peut accélérer (tri, synthèse, brouillons) de ce qui doit rester sous contrôle humain (engagement, confidentialité, décisions sensibles). Cette étape pose le cadre pour un déploiement utile dans Outlook.",
-    keyConcepts: [
-      {
-        title: "Assistance, pas remplacement",
-        description:
-          "L'IA aide à trier, résumer et pré-rédiger — le cadre valide, ajuste et envoie. Le jugement métier reste central.",
-      },
-      {
-        title: "Usages à fort impact",
-        description:
-          "Priorisation, synthèse de fils longs, extraction d'actions et brouillons structurés réduisent la charge cognitive sur les boîtes à fort volume.",
-      },
-      {
-        title: "Contraintes entreprise",
-        description:
-          "Confidentialité, conformité et traçabilité imposent des règles avant toute automatisation dans Outlook.",
-      },
-    ],
-    example: {
-      title: "Cas pratique — boîte de réception d'un cadre",
-      body:
-        "Marie, directrice commerciale, reçoit 90 e-mails par jour dans Outlook. Un assistant IA propose : (1) un résumé matinal des fils prioritaires, (2) un tri par urgence/client, (3) un brouillon pour les relances standards. Marie relit chaque brouillon avant envoi et garde la main sur les négociations sensibles. Gain mesuré : 45 minutes par jour, sans perte de contrôle.",
-    },
-    takeaway:
-      "L'IA dans Outlook vise à libérer du temps de décision, pas à supprimer la responsabilité du cadre. Cartographiez d'abord les usages utiles, puis les garde-fous.",
-    quiz: {
-      passScore: 2,
-      questions: [
-        {
-          question:
-            "Un cadre reçoit 80 e-mails par jour. Quel usage de l'IA répond à la surcharge cognitive sans supprimer son jugement sur les réponses sensibles ?",
-          options: [
-            "Envoyer automatiquement toutes les réponses sans relecture.",
-            "Proposer un tri et des synthèses pour faciliter la revue avant action.",
-            "Supprimer définitivement les e-mails jugés non prioritaires.",
-          ],
-          answer: 1,
-          explanation:
-            "Le tri et la synthèse assistent la décision ; le cadre garde la validation sur les messages sensibles.",
-        },
-        {
-          question:
-            "Avant de déployer l'IA sur les workflows e-mail Outlook en entreprise, que faut-il évaluer en premier ?",
-          options: [
-            "Le thème visuel par défaut d'Outlook.",
-            "Les processus actuels, volumes et points de friction du traitement des e-mails.",
-            "Si le modèle peut rédiger des poèmes.",
-          ],
-          answer: 1,
-          explanation:
-            "Sans diagnostic des processus et volumes, on automatise au hasard — ou on rate les vrais gains.",
-        },
-        {
-          question:
-            "Quand un outil IA rédige des brouillons d'e-mails pour des cadres, quel principe de gouvernance est indispensable ?",
-          options: [
-            "Ne jamais montrer les brouillons à l'utilisateur.",
-            "Validation humaine avant envoi des communications sensibles.",
-            "Partager tout le contenu des e-mails avec des services externes sans restriction.",
-          ],
-          answer: 1,
-          explanation:
-            "La validation humaine protège la confidentialité, la conformité et la qualité des engagements pris.",
-        },
-      ],
-    },
-  },
 }
 
-export function getLesson(stepId) {
-  return lessons[stepId] || null
+export function getLesson(stepId, { pathId, language } = {}) {
+  return getOutlookLesson(pathId, stepId, language) || lessons[stepId] || null
 }
 
 export function buildFallbackLesson(step) {

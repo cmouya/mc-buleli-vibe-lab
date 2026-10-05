@@ -1,4 +1,5 @@
 import { AIService } from "./AIService.js"
+import { getOutlookPathTemplate } from "../data/outlook-content.js"
 
 const PATHS = {
   ia: {
@@ -111,66 +112,7 @@ const PATHS = {
       },
     ],
   },
-  outlook: {
-    pathId: "outlook-email-ia",
-    pathTitle: "Pilotage d'un projet IA pour la gestion des e-mails Outlook",
-    steps: [
-      {
-        id: "outlook-1",
-        title: "Comprendre les usages de l'IA dans la gestion des e-mails",
-        description:
-          "Cartographier tri, synthèse, priorisation et réponses assistées — et leurs limites pour les cadres.",
-        level: "Débutant",
-        duration: "45 min",
-        skill: "IA et messagerie",
-      },
-      {
-        id: "outlook-2",
-        title: "Analyser les processus actuels de traitement des e-mails",
-        description:
-          "Mesurer volumes, délais de réponse et points de friction dans Outlook avant toute automatisation.",
-        level: "Débutant",
-        duration: "50 min",
-        skill: "Diagnostic e-mail",
-      },
-      {
-        id: "outlook-3",
-        title: "Concevoir un workflow intelligent Outlook + IA",
-        description:
-          "Définir les étapes du parcours e-mail : réception, classification, brouillon, validation, archivage.",
-        level: "Intermédiaire",
-        duration: "1 h",
-        skill: "Workflow Outlook",
-      },
-      {
-        id: "outlook-4",
-        title: "Automatiser le tri, la synthèse et la priorisation",
-        description:
-          "Mettre en place règles, dossiers intelligents et résumés IA pour réduire la charge cognitive.",
-        level: "Intermédiaire",
-        duration: "55 min",
-        skill: "Automatisation e-mail",
-      },
-      {
-        id: "outlook-5",
-        title: "Mettre en place des règles de sécurité et de validation humaine",
-        description:
-          "Gouvernance, confidentialité des données et points de contrôle avant envoi pour les cadres.",
-        level: "Intermédiaire",
-        duration: "45 min",
-        skill: "Gouvernance IA",
-      },
-      {
-        id: "outlook-6",
-        title: "Piloter un projet pilote et mesurer les résultats",
-        description:
-          "Lancer sur un périmètre limité, suivre gains de temps et satisfaction, puis décider du déploiement.",
-        level: "Intermédiaire",
-        duration: "1 h",
-        skill: "Pilotage projet",
-      },
-    ],
-  },
+  outlook: getOutlookPathTemplate(),
 }
 
 const DEMO_MATCHERS = [

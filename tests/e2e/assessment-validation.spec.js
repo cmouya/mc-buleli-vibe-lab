@@ -68,3 +68,18 @@ test("SCENARIO 2 E2E: retry after failure then success validates and increases p
   expect(stored.steps[0].status).toBe("done")
   expect(stored.steps[1].status).toBe("current")
 })
+
+test("SCENARIO 3 E2E: two correct answers meet the unchanged 2/3 threshold", async ({ page }) => {
+  await navigateToLessonQuiz(page)
+
+  const blocks = page.locator(".quiz__block")
+  await blocks.nth(0).locator('input[value="1"]').check()
+  await blocks.nth(1).locator('input[value="1"]').check()
+  await blocks.nth(2).locator('input[value="0"]').check()
+  await page.getByRole("button", { name: "Valider mes réponses" }).click()
+
+  await expect(page.getByText("Étape validée")).toBeVisible()
+  await expect(page.getByText("Score : 2/3")).toBeVisible()
+  await page.getByRole("link", { name: /Continuer vers l'étape 2/i }).click()
+  await expect(page.getByTestId("progress-label")).toHaveText("Progression : 17 %")
+})

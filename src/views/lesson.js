@@ -1,5 +1,6 @@
 import { buildFallbackLesson, getLesson } from "../data/lessons.js"
-import { t } from "../i18n/index.js"
+import { getLanguage, t } from "../i18n/index.js"
+import { resolvePathPresentation } from "../data/outlook-content.js"
 import {
   DEFAULT_PASS_SCORE,
   evaluateQuizSubmission,
@@ -48,7 +49,10 @@ export function renderLesson() {
     )
   }
 
-  const lesson = getLesson(step.id) || buildFallbackLesson(step)
+  const presentation = resolvePathPresentation(state, getLanguage())
+  const displayStep = presentation.steps.find((item) => item.id === step.id) || step
+  const next = presentation.steps.find((item) => item.id === getNextStep()?.id) || getNextStep()
+  const lesson = getLesson(step.id, { pathId: state.pathId, language: getLanguage() }) || buildFallbackLesson(displayStep)
   if (!lesson) {
     return emptyState(
       t("lesson.unavailableTitle"),
@@ -59,18 +63,17 @@ export function renderLesson() {
   }
 
   const alreadyDone = step.status === "done"
-  const next = getNextStep()
   const concepts = conceptsForDisplay(lesson)
 
   return `
     <section class="panel lesson-header">
       <p class="eyebrow" data-testid="lesson-eyebrow">${t("lesson.eyebrow")}</p>
-      <h1>${escapeHtml(step.title)}</h1>
+      <h1>${escapeHtml(displayStep.title)}</h1>
       <p class="step-meta">
         ${t("lesson.inProgress", {
-          skill: escapeHtml(step.skill || t("lesson.skillFallback")),
-          level: escapeHtml(step.level),
-          duration: escapeHtml(step.duration),
+          skill: escapeHtml(displayStep.skill || t("lesson.skillFallback")),
+          level: escapeHtml(displayStep.level),
+          duration: escapeHtml(displayStep.duration),
           status: t(`status.${step.status}`),
         })}
       </p>
@@ -114,7 +117,7 @@ export function renderLesson() {
     </section>
 
     <section class="panel" id="quiz-section">
-      ${ui.result ? `<div id="quiz-results" data-testid="quiz-results">${resultHtml(ui, lesson)}</div>` : alreadyDone ? renderValidatedPanel(step, next) : renderQuizPanel(step, lesson)}
+      ${ui.result ? `<div id="quiz-results" data-testid="quiz-results">${resultHtml(ui, lesson)}</div>` : alreadyDone ? renderValidatedPanel(displayStep, next) : renderQuizPanel(step, lesson)}
     </section>
 
     <section class="panel">
@@ -270,7 +273,9 @@ export function bindLesson(root, rerender) {
     return
   }
 
-  const lesson = getLesson(step.id) || buildFallbackLesson(step)
+  const presentation = resolvePathPresentation(getState(), getLanguage())
+  const displayStep = presentation.steps.find((item) => item.id === step.id) || step
+  const lesson = getLesson(step.id, { pathId: getState().pathId, language: getLanguage() }) || buildFallbackLesson(displayStep)
   if (!lesson) {
     return
   }

@@ -1,4 +1,5 @@
-import { t } from "../i18n/index.js"
+import { getLanguage, t } from "../i18n/index.js"
+import { resolvePathPresentation } from "../data/outlook-content.js"
 import {
   getCompletedCompetenciesCount,
   getCurrentStep,
@@ -29,11 +30,12 @@ export function renderDashboard() {
     )
   }
 
-  const current = getCurrentStep()
-  const next = getNextStep()
+  const presentation = resolvePathPresentation(state, getLanguage())
+  const current = presentation.steps.find((step) => step.id === getCurrentStep()?.id)
+  const next = presentation.steps.find((step) => step.id === getNextStep()?.id)
   const percent = getProgressPercent()
   const completed = getCompletedCompetenciesCount()
-  const total = state.steps.length
+  const total = presentation.steps.length
   const skillsLabel =
     completed > 1
       ? t("dash.skillsMany", { count: completed, total })
@@ -107,7 +109,7 @@ export function renderDashboard() {
     <section class="panel">
       <h2>${t("dash.itinerary")}</h2>
       <ol class="dash-track" aria-label="${t("dash.itineraryAria")}">
-        ${state.steps
+        ${presentation.steps
           .map(
             (step, index) => `
           <li class="dash-track__item dash-track__item--${step.status}" title="${escapeHtml(step.title)}">
