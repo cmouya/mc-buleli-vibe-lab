@@ -15,6 +15,7 @@ import {
 import { renderGoal } from "../../src/views/goal.js"
 import { renderRoadmap } from "../../src/views/roadmap.js"
 import { renderDashboard } from "../../src/views/dashboard.js"
+import { getOutlookLesson } from "../../src/data/outlook-content.js"
 
 const OUTLOOK_STEP = {
   id: "outlook-1",
@@ -117,6 +118,32 @@ describe("i18n — prototype language switcher", () => {
     expect(html).not.toContain(OUTLOOK_STEP.title)
     expect(getState().steps[0].status).toBe("current")
     expect(localStorage.getItem("learnova-learner")).toBe(storedBefore)
+  })
+
+  it("provides complete bilingual Outlook lessons without changing quiz rules", () => {
+    for (const stepId of ["outlook-1", "outlook-2", "outlook-3", "outlook-4", "outlook-5", "outlook-6"]) {
+      const french = getOutlookLesson("outlook-email-ia", stepId, "fr")
+      const english = getOutlookLesson("outlook-email-ia", stepId, "en")
+
+      expect(french).toBeTruthy()
+      expect(english).toBeTruthy()
+      expect(french.title).not.toBe(english.title)
+      expect(french.introduction).toBeTruthy()
+      expect(english.introduction).toBeTruthy()
+      expect(french.keyConcepts).toHaveLength(3)
+      expect(english.keyConcepts).toHaveLength(3)
+      expect(french.example).toBeTruthy()
+      expect(english.example).toBeTruthy()
+      expect(french.quiz.passScore).toBe(2)
+      expect(english.quiz.passScore).toBe(2)
+      expect(french.quiz.questions).toHaveLength(3)
+      expect(english.quiz.questions).toHaveLength(3)
+      expect(english.quiz.questions.map((question) => question.answer)).toEqual(french.quiz.questions.map((question) => question.answer))
+      if (stepId !== "outlook-1") expect(english.quiz.questions.map((question) => question.answer)).toEqual([1, 0, 1])
+      expect(english.quiz.questions.flatMap((question) => question.options)).not.toContain("Objectif de l'étape")
+    }
+
+    expect(getOutlookLesson("outlook-email-ia", "outlook-2", "en").quiz.questions.map((question) => question.answer)).toEqual([1, 0, 1])
   })
 })
 

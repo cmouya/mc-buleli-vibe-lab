@@ -119,6 +119,47 @@ test.describe("language switcher", () => {
     expect(await page.evaluate(() => localStorage.getItem("learnova-learner"))).toBe(storedBefore)
   })
 
+  test("Outlook lessons 2 to 6 render fully in EN and return to FR without altering learner state", async ({ page }) => {
+    const lessons = [
+      ["outlook-2", "Analyse current email handling processes", "Analyser les processus actuels de traitement des e-mails"],
+      ["outlook-3", "Design an intelligent Outlook and AI workflow", "Concevoir un workflow intelligent Outlook + IA"],
+      ["outlook-4", "Automate sorting, summarisation, and prioritisation", "Automatiser le tri, la synthèse et la priorisation"],
+      ["outlook-5", "Set security rules and human review points", "Mettre en place des règles de sécurité et de validation humaine"],
+      ["outlook-6", "Lead a pilot and measure its results", "Piloter un projet pilote et mesurer les résultats"],
+    ]
+
+    for (const [currentId, englishTitle, frenchTitle] of lessons) {
+      await page.goto("/")
+      await page.evaluate((stepId) => {
+        const ids = ["outlook-1", "outlook-2", "outlook-3", "outlook-4", "outlook-5", "outlook-6"]
+        localStorage.setItem("learnova-learner", JSON.stringify({
+          goal: "Lead an AI project for Outlook email management.",
+          level: "debutant", hoursPerWeek: 5, analyzed: true, confirmed: true, intent: "professionnel",
+          pathId: "outlook-email-ia", pathTitle: "Pilotage d'un projet IA pour la gestion des e-mails Outlook",
+          steps: ids.map((id) => ({ id, title: id, status: id === stepId ? "current" : "todo" })),
+          skills: [], evidence: [], updatedAt: null,
+        }))
+      }, currentId)
+      await page.goto("/#/lesson")
+      await page.reload()
+      const storedBefore = await page.evaluate(() => localStorage.getItem("learnova-learner"))
+
+      await page.getByRole("button", { name: "EN", exact: true }).click()
+      await expect(page.locator(".lesson-header h1")).toHaveText(englishTitle)
+      await expect(page.locator("#quiz-form")).toContainText("Quiz item 1")
+      await expect(page.locator("main")).not.toContainText("Objectif de l'étape")
+      await expect(page.locator("main")).not.toContainText("Compétence visée")
+      await expect(page.locator("main")).not.toContainText("Mise en pratique")
+      await expect(page.locator("main")).not.toContainText("Appliquez cette étape à votre objectif")
+      expect(await page.evaluate(() => localStorage.getItem("learnova-learner"))).toBe(storedBefore)
+
+      await page.getByRole("button", { name: "FR", exact: true }).click()
+      await expect(page.locator(".lesson-header h1")).toHaveText(frenchTitle)
+      await expect(page.locator("#quiz-form")).toContainText("Question 1")
+      expect(await page.evaluate(() => localStorage.getItem("learnova-learner"))).toBe(storedBefore)
+    }
+  })
+
   for (const [lang, submitLabel, loadingLabel, noticeText] of [
     ["FR", "Vérifier mon objectif", "Préparation de votre objectif…",
       "Démonstration locale · Parcours préparés à partir de modèles · Résultats de quiz calculés dans le navigateur."],
