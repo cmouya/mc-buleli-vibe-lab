@@ -1,7 +1,8 @@
 import "./style.css"
 import { getLanguage, loadLanguage, setLanguage, t } from "./i18n/index.js"
+import { resolvePathPresentation } from "./data/outlook-content.js"
 import { initRouter } from "./router.js"
-import { loadState } from "./store.js"
+import { getCurrentStep, getProgressPercent, getState, hasPath, loadState } from "./store.js"
 import { renderLanding } from "./views/landing.js"
 import { bindGoal, cancelGoalPreparation, resetGoalDraft, renderGoal } from "./views/goal.js"
 import { bindRoadmap, cancelRoadmapGeneration, renderRoadmap } from "./views/roadmap.js"
@@ -15,8 +16,14 @@ let pendingScrollId = null
 let currentParts = []
 let currentView = null
 
-function shell(content) {
+function shell(content, routeKey) {
   const lang = getLanguage()
+  const hasJourney = hasPath()
+  const currentStep = getCurrentStep()
+  const presentation = hasJourney ? resolvePathPresentation(getState(), lang) : null
+  const displayCurrentStep = presentation?.steps.find((step) => step.id === currentStep?.id) || currentStep
+  const progress = getProgressPercent()
+  const navLink = (key, href, label) => `<a class="nav__link${routeKey === key ? " nav__link--active" : ""}" href="${href}"${routeKey === key ? ' aria-current="page"' : ""}>${label}</a>`
   return `
     <div class="layout">
       <header class="topbar">
@@ -30,17 +37,21 @@ function shell(content) {
           Learnova
         </a>
         <nav aria-label="${t("nav.aria")}">
-          <a href="#/">${t("nav.home")}</a>
-          <a href="#/goal">${t("nav.goal")}</a>
-          <a href="#/roadmap">${t("nav.roadmap")}</a>
-          <a href="#/dashboard">${t("nav.dashboard")}</a>
-          <a href="#/lesson">${t("nav.lesson")}</a>
+          ${navLink("home", "#/", t("nav.home"))}
+          ${navLink("goal", "#/goal", t("nav.goal"))}
+          ${navLink("roadmap", "#/roadmap", t("nav.roadmap"))}
+          ${navLink("dashboard", "#/dashboard", t("nav.dashboard"))}
+          ${navLink("lesson", "#/lesson", t("nav.lesson"))}
           <div class="lang-switch" data-testid="lang-switch" role="group" aria-label="${t("meta.langGroup")}">
             <button type="button" data-lang="fr" aria-pressed="${lang === "fr"}">FR</button>
             <span aria-hidden="true">|</span>
             <button type="button" data-lang="en" aria-pressed="${lang === "en"}">EN</button>
           </div>
         </nav>
+        ${hasJourney ? `<div class="journey-status" aria-label="${t("roadmap.progressAria")}">
+          <span class="journey-status__value">${progress}%</span>
+          <span class="journey-status__copy">${escapeHtml(displayCurrentStep ? displayCurrentStep.title : t("roadmap.goalReached"))}</span>
+        </div>` : ""}
       </header>
       <div class="main">
         <p class="panel" data-testid="demo-notice">${t("meta.demoNotice")}</p>
@@ -78,7 +89,7 @@ function render({ parts, languageSwitch = false }) {
   }
 
   const html = (views[key] || views.home)()
-  app.innerHTML = shell(html)
+  app.innerHTML = shell(html, key)
   const main = app.querySelector("main")
 
   if (key === "goal") {
@@ -130,3 +141,11 @@ function render({ parts, languageSwitch = false }) {
 }
 
 initRouter(render)
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+}
